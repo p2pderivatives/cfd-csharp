@@ -6,7 +6,8 @@ namespace Cfd
   /**
    * @brief network type
    */
-  public enum CfdNetworkType {
+  public enum CfdNetworkType
+  {
     Mainnet = 0,      //!< btc mainnet
     Testnet,          //!< btc testnet
     Regtest,          //!< btc regtest
@@ -18,7 +19,8 @@ namespace Cfd
   /**
    * @brief address type
    */
-  public enum CfdAddressType {
+  public enum CfdAddressType
+  {
     P2sh = 1,   //!< Legacy address (Script Hash)
     P2pkh,      //!< Legacy address (PublicKey Hash)
     P2wsh,      //!< Native segwit address (Script Hash)
@@ -30,7 +32,8 @@ namespace Cfd
   /**
    * @brief hash type
    */
-  public enum CfdHashType {
+  public enum CfdHashType
+  {
     P2sh = 1,   //!< Script Hash
     P2pkh,      //!< PublicKey Hash
     P2wsh,      //!< Native segwit Script Hash
@@ -42,7 +45,8 @@ namespace Cfd
   /**
    * @brief witness version
    */
-  public enum CfdWitnessVersion {
+  public enum CfdWitnessVersion
+  {
     VersionNone = -1,  //!< Missing WitnessVersion
     Version0 = 0,      //!< version 0
     Version1,          //!< version 1 (for future use)
@@ -66,7 +70,8 @@ namespace Cfd
   /**
    * @brief sighash type
    */
-  public enum CfdSighashType {
+  public enum CfdSighashType
+  {
     All = 0x01,    //!< SIGHASH_ALL
     None = 0x02,   //!< SIGHASH_NONE
     Single = 0x03  //!< SIGHASH_SINGLE
@@ -75,7 +80,8 @@ namespace Cfd
   /**
    * @brief descriptor script type.
    */
-  public enum CfdDescriptorScriptType {
+  public enum CfdDescriptorScriptType
+  {
     Null = 0,     //!< null
     Sh,           //!< script hash
     Wsh,          //!< segwit script hash
@@ -92,7 +98,8 @@ namespace Cfd
   /**
    * @brief descriptor key type.
    */
-  public enum CfdDescriptorKeyType {
+  public enum CfdDescriptorKeyType
+  {
     Null = 0,  //!< null
     Public,    //!< pubkey
     Bip32,     //!< bip32 extpubkey
@@ -105,45 +112,48 @@ namespace Cfd
     // Address_type
     // key_type
 
-    public Descriptor(string descriptor_str, CfdNetworkType network) {
+    public Descriptor(string descriptor_str, CfdNetworkType network)
+    {
       ParseDescriptor(descriptor_str, "", network);
     }
 
-    public Descriptor(string descriptor_str, string derive_path, CfdNetworkType network) {
+    public Descriptor(string descriptor_str, string derive_path, CfdNetworkType network)
+    {
       ParseDescriptor(descriptor_str, derive_path, network);
     }
 
-    public void ParseDescriptor(string descriptor_str, string derive_path, CfdNetworkType network) {
+    public void ParseDescriptor(string descriptor_str, string derive_path, CfdNetworkType network)
+    {
       descriptor = descriptor_str;
-      // FIXME 実装する
-/*
-    internal static extern CfdErrorCode CfdParseDescriptor(
-        [In] IntPtr handle,
-        [In] string descriptor,
-        [In] int network_type,
-        [In] string bip32_derivation_path,
-        [Out] out IntPtr descriptor_handle,
-        [Out] out uint max_index);
+      // FIXME implements
+      /*
+          internal static extern CfdErrorCode CfdParseDescriptor(
+              [In] IntPtr handle,
+              [In] string descriptor,
+              [In] int network_type,
+              [In] string bip32_derivation_path,
+              [Out] out IntPtr descriptor_handle,
+              [Out] out uint max_index);
 
-    internal static extern CfdErrorCode CfdGetDescriptorData(
-        [In] IntPtr handle,
-        [In] IntPtr descriptor_handle,
-        [In] uint index,
-        [Out] out uint max_index,
-        [Out] out uint depth,
-        [Out] out int script_type,
-        [Out] out IntPtr locking_script,
-        [Out] out IntPtr address,
-        [Out] out int hash_type,
-        [Out] out IntPtr redeem_script,
-        [Out] out int key_type,
-        [Out] out IntPtr pubkey,
-        [Out] out IntPtr ext_pubkey,
-        [Out] out IntPtr ext_privkey,
-        [Out] out bool is_multisig,
-        [Out] out uint max_key_num,
-        [Out] out uint req_sig_num);
-*/
+          internal static extern CfdErrorCode CfdGetDescriptorData(
+              [In] IntPtr handle,
+              [In] IntPtr descriptor_handle,
+              [In] uint index,
+              [Out] out uint max_index,
+              [Out] out uint depth,
+              [Out] out int script_type,
+              [Out] out IntPtr locking_script,
+              [Out] out IntPtr address,
+              [Out] out int hash_type,
+              [Out] out IntPtr redeem_script,
+              [Out] out int key_type,
+              [Out] out IntPtr pubkey,
+              [Out] out IntPtr ext_pubkey,
+              [Out] out IntPtr ext_privkey,
+              [Out] out bool is_multisig,
+              [Out] out uint max_key_num,
+              [Out] out uint req_sig_num);
+      */
     }
 
   }
@@ -158,19 +168,22 @@ namespace Cfd
     private CfdAddressType address_type;
     private CfdWitnessVersion witness_version;
 
-    public Address() {
+    public Address()
+    {
     }
 
-    public Address(string address_str) {
-      using(ErrorHandle handle = new ErrorHandle())
+    public Address(string address_str)
+    {
+      using (ErrorHandle handle = new ErrorHandle())
       {
         Initialize(handle, address_str);
         address = address_str;
       }
     }
 
-    public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network) {
-      using(ErrorHandle handle = new ErrorHandle())
+    public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
+    {
+      using (ErrorHandle handle = new ErrorHandle())
       {
         CfdErrorCode ret = CAddress.CfdCreateAddress(
           handle.GetHandle(),
@@ -181,7 +194,8 @@ namespace Cfd
           out IntPtr out_address,
           out IntPtr out_locking_script,
           out IntPtr out_p2sh_segwit_locking_script);
-        if (ret != CfdErrorCode.Success) {
+        if (ret != CfdErrorCode.Success)
+        {
           CUtil.ThrowError(handle, ret);
         }
         address = CUtil.ConvertToString(out_address);
@@ -193,8 +207,9 @@ namespace Cfd
       }
     }
 
-    public Address(Script script, CfdAddressType type, CfdNetworkType network) {
-      using(ErrorHandle handle = new ErrorHandle())
+    public Address(Script script, CfdAddressType type, CfdNetworkType network)
+    {
+      using (ErrorHandle handle = new ErrorHandle())
       {
         CfdErrorCode ret = CAddress.CfdCreateAddress(
           handle.GetHandle(),
@@ -205,7 +220,8 @@ namespace Cfd
           out IntPtr out_address,
           out IntPtr out_locking_script,
           out IntPtr out_p2sh_segwit_locking_script);
-        if (ret != CfdErrorCode.Success) {
+        if (ret != CfdErrorCode.Success)
+        {
           CUtil.ThrowError(handle, ret);
         }
         address = CUtil.ConvertToString(out_address);
@@ -217,16 +233,18 @@ namespace Cfd
       }
     }
 
-    public static Address GetAddressByLockingScript(Script in_locking_script, CfdNetworkType network) {
+    public static Address GetAddressByLockingScript(Script in_locking_script, CfdNetworkType network)
+    {
       string address = "";
-      using(ErrorHandle handle = new ErrorHandle())
+      using (ErrorHandle handle = new ErrorHandle())
       {
         CfdErrorCode ret = CAddress.CfdGetAddressFromLockingScript(
           handle.GetHandle(),
           in_locking_script.ToHexString(),
           (int)network,
           out IntPtr out_address);
-        if (ret != CfdErrorCode.Success) {
+        if (ret != CfdErrorCode.Success)
+        {
           CUtil.ThrowError(handle, ret);
         }
         address = CUtil.ConvertToString(out_address);
@@ -234,39 +252,48 @@ namespace Cfd
       return new Address(address);
     }
 
-    public string ToAddressString() {
+    public string ToAddressString()
+    {
       return address;
     }
 
-    public string GetLockingScript() {
+    public string GetLockingScript()
+    {
       return locking_script;
     }
 
-    public string GetHash() {
+    public string GetHash()
+    {
       return hash;
     }
 
-    public string GetP2shLockingScript() {
+    public string GetP2shLockingScript()
+    {
       return p2sh_segwit_locking_script;
     }
 
-    public CfdNetworkType GetNetwork() {
+    public CfdNetworkType GetNetwork()
+    {
       return network;
     }
 
-    public CfdAddressType GetAddressType() {
+    public CfdAddressType GetAddressType()
+    {
       return address_type;
     }
 
-    public CfdWitnessVersion GetWitnessVersion() {
+    public CfdWitnessVersion GetWitnessVersion()
+    {
       return witness_version;
     }
 
-    public void SetAddressType(CfdAddressType addr_type) {
+    public void SetAddressType(CfdAddressType addr_type)
+    {
       address_type = addr_type;
     }
 
-    private void Initialize(ErrorHandle handle, string address_str) {
+    private void Initialize(ErrorHandle handle, string address_str)
+    {
       CfdErrorCode ret = CAddress.CfdGetAddressInfo(
         handle.GetHandle(),
         address_str,
@@ -275,7 +302,8 @@ namespace Cfd
         out int out_witness_version,
         out IntPtr out_locking_script,
         out IntPtr out_hash);
-      if (ret != CfdErrorCode.Success) {
+      if (ret != CfdErrorCode.Success)
+      {
         CUtil.ThrowError(handle, ret);
       }
       network = (CfdNetworkType)out_network_type;

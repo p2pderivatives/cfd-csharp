@@ -21,9 +21,9 @@ jobs:
         dotnet: [2.2.110, 3.1.100]
         exclude:
           - os: macos-latest
-            dotnet: 3.1.100
+            dotnet: 2.2.110
           - os: ubuntu-latest
-            dotnet: 3.1.100
+            dotnet: 2.2.110
 
     steps:
     - name: setup dotnet

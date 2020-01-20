@@ -9,19 +9,42 @@ namespace Cfd
   /// <summary>
   /// cfd error code.
   /// </summary>
-  public enum CfdErrorCode {
-    Success = 0,               //!< 正常終了
-    UnknownError = -1,         //!< 不明なエラー
-    InternalError = -2,        //!< 内部エラー
-    MemoryFullError = -3,      //!< メモリ確保エラー
-    IllegalArgumentError = 1,  //!< 引数不正
-    IllegalStateError = 2,     //!< 状態不正
-    OutOfRangeError = 3,       //!< 範囲外の値
-    InvalidSettingError = 4,   //!< 設定不正
-    ConnectionError = 5,       //!< 接続エラー
-    DiskAccessError = 6,       //!< ディスクアクセスエラー
-    SignVerificationError = 7  //!< Signature Verification 失敗時のエラー
+  public enum CfdErrorCode
+  {
+    Success = 0,
+    UnknownError = -1,
+    InternalError = -2,
+    MemoryFullError = -3,
+    IllegalArgumentError = 1,
+    IllegalStateError = 2,
+    OutOfRangeError = 3,
+    InvalidSettingError = 4,
+    ConnectionError = 5,
+    DiskAccessError = 6,
+    SignVerificationError = 7
   };
+
+  public class StringUtil
+  {
+    public static byte[] ToBytes(string hex)
+    {
+      var buffer = new byte[hex.Length / 2];
+      char[] clist = hex.ToCharArray();
+      for (int i = 0; i < hex.Length / 2; ++i)
+      {
+        buffer[i] = (byte)((Convert.ToByte(clist[i * 2]) << 4) | Convert.ToByte(clist[(i * 2) + 1]));
+        // buffer[i] = Convert.ToByte(str.Substring(i*2, 2), 16));
+      }
+      return buffer;
+
+      //return hex.Select(x => Convert.ToByte(new string(x.ToArray()), 16)).ToArray();
+    }
+
+    public static string FromBytes(byte[] bytes)
+    {
+      return BitConverter.ToString(bytes).Replace("-", "");
+    }
+  }
 
   /// <summary>
   /// error handle wrapper class.
@@ -33,30 +56,34 @@ namespace Cfd
     /// <summary>
     /// constructor.
     /// </summary>
-    /// <param name="data">与えられたデータ列</param>
-    /// <param name="mean">dataの平均値(出力)</param>
-    /// <param name="variance">dataの分散(出力)</param>
-    public ErrorHandle() {
+    public ErrorHandle()
+    {
       CfdErrorCode ret = CUtil.CfdCreateSimpleHandle(out IntPtr temp_handle);
-      if (ret != CfdErrorCode.Success) {
+      if (ret != CfdErrorCode.Success)
+      {
         throw new System.InvalidOperationException();
       }
       handle = temp_handle;
     }
 
-    public IntPtr GetHandle() {
+    public IntPtr GetHandle()
+    {
       return handle;
     }
 
-    ~ErrorHandle() {
-      if (handle != IntPtr.Zero) {
+    ~ErrorHandle()
+    {
+      if (handle != IntPtr.Zero)
+      {
         CUtil.CfdFreeHandle(handle);
         handle = IntPtr.Zero;
       }
     }
 
-    public void Dispose() {
-      if (handle != IntPtr.Zero) {
+    public void Dispose()
+    {
+      if (handle != IntPtr.Zero)
+      {
         CUtil.CfdFreeHandle(handle);
         handle = IntPtr.Zero;
       }
@@ -67,32 +94,49 @@ namespace Cfd
   {
     private IntPtr handle = IntPtr.Zero;
 
-    public Handle() {
+    public Handle()
+    {
       CfdErrorCode ret = CUtil.CfdCreateSimpleHandle(out IntPtr temp_handle);
-      if (ret != CfdErrorCode.Success) {
+      if (ret != CfdErrorCode.Success)
+      {
         throw new System.InvalidOperationException();
       }
       handle = temp_handle;
     }
 
-    public IntPtr GetHandle() {
+    public IntPtr GetHandle()
+    {
       return handle;
     }
   }
 
   /// <summary>
-  /// cfd libraryへのアクセスおよびUtility関数を定義したクラス。
+  /// cfd library access utility.
   /// </summary>
   internal class CUtil
   {
     /// <summary>
-    /// cfdから取得したcharポインタから文字列を取得し、バッファを解放する。
+    /// Get string from cfd's pointer address, and free address buffer.
     /// </summary>
-    /// <param name="address">ポインタアドレス</param>
-    /// <returns>文字列情報</returns>
-    internal static string ConvertToString(IntPtr address) {
+    /// <param name="address">pointer address</param>
+    /// <returns>string</returns>
+    internal static byte[] ReverseBytes(byte[] bytes)
+    {
+      byte[] temp_bytes = bytes;
+      Array.Reverse(temp_bytes);
+      return temp_bytes;
+    }
+
+    /// <summary>
+    /// Get string from cfd's pointer address, and free address buffer.
+    /// </summary>
+    /// <param name="address">pointer address</param>
+    /// <returns>string</returns>
+    internal static string ConvertToString(IntPtr address)
+    {
       string result = "";
-      if (address != IntPtr.Zero) {
+      if (address != IntPtr.Zero)
+      {
         result = Marshal.PtrToStringAnsi(address);
         CfdFreeBuffer(address);
       }
@@ -100,28 +144,34 @@ namespace Cfd
     }
 
     /// <summary>
-    /// cfdのハンドル情報とエラーコードから、例外を生成してスローする。
+    /// Throw exception from error handle and error code.
     /// </summary>
-    /// <param name="handle">エラーハンドル</param>
-    /// <param name="error_code">エラーコード</param>
+    /// <param name="handle">error handle</param>
+    /// <param name="error_code">error code</param>
     /// <exception cref="System.ArgumentOutOfRangeException">argument range exception</exception>
     /// <exception cref="System.ArgumentException">argument exception</exception>
     /// <exception cref="System.InsufficientMemoryException">memory full exception</exception>
     /// <exception cref="System.InvalidOperationException">illegal exception</exception>
-    internal static void ThrowError(ErrorHandle handle, CfdErrorCode error_code) {
-      if (error_code == CfdErrorCode.Success) {
+    internal static void ThrowError(ErrorHandle handle, CfdErrorCode error_code)
+    {
+      if (error_code == CfdErrorCode.Success)
+      {
         return;
       }
 
       string err_message = "";
       CfdErrorCode ret = CfdGetLastErrorMessage(handle.GetHandle(), out IntPtr message_address);
-      if (ret == CfdErrorCode.Success) {
+      if (ret == CfdErrorCode.Success)
+      {
         string conv_message = ConvertToString(message_address);
         err_message = String.Format("CFD error[{0}] message:{1}", error_code, conv_message);
-      } else {
+      }
+      else
+      {
         err_message = String.Format("CFD error[{0}]", error_code);
       }
-      switch ((CfdErrorCode)error_code) {
+      switch ((CfdErrorCode)error_code)
+      {
         case CfdErrorCode.MemoryFullError:
           throw new InsufficientMemoryException(err_message);
         case CfdErrorCode.OutOfRangeError:
@@ -140,13 +190,16 @@ namespace Cfd
       }
     }
 
-    internal static void ThrowError(CfdErrorCode error_code) {
-      if (error_code == CfdErrorCode.Success) {
+    internal static void ThrowError(CfdErrorCode error_code)
+    {
+      if (error_code == CfdErrorCode.Success)
+      {
         return;
       }
 
       string err_message = String.Format("CFD error[{0}]", error_code);
-      switch ((CfdErrorCode)error_code) {
+      switch ((CfdErrorCode)error_code)
+      {
         case CfdErrorCode.MemoryFullError:
           throw new InsufficientMemoryException(err_message);
         case CfdErrorCode.OutOfRangeError:
