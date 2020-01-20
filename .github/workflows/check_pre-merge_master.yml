@@ -1,0 +1,67 @@
+name: master pre-merge check
+
+on: 
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+env:
+  CMAKE_VERSION: 3.15.5
+
+jobs:
+  cmake-build:
+    name: cmake build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        dotnet: [2.2.110, 3.1.100]
+
+    steps:
+    - name: setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.dotnet }}
+    - uses: actions/checkout@v1
+    - name: cmake-useCache-ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/cache@v1
+      id: cache
+      with:
+        path: cache/cmake
+        key: ${{ runner.os }}-cmake-3.15.5-x64
+    - name: cmake-download-ubuntu
+      if: matrix.os == 'ubuntu-latest' && steps.cache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p cache/cmake
+        cd cache/cmake
+        wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz
+        cd ../..
+    - name: cmake-setting-ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        export cmake_file_name="cmake-$CMAKE_VERSION-Linux-x86_64"
+        cd cache/cmake
+        tar zxvf $cmake_file_name.tar.gz
+        chmod +x $cmake_file_name/bin/cmake $cmake_file_name/bin/ctest
+        export CURRENT_DIR=$(pwd)
+        echo ::add-path::$CURRENT_DIR/$cmake_file_name/bin
+        cd ../..
+    - name: build
+      if: matrix.os != 'windows-latest'
+      run: ./tools/build.sh
+    - name: test
+      if: matrix.os != 'windows-latest'
+      run: ./tools/test.sh
+    - name: build-windows
+      if: matrix.os == 'windows-latest'
+      run: .\tools\build.bat
+    - name: test-windows
+      if: matrix.os == 'windows-latest'
+      run: .\tools\test.bat
+    - name: ubuntu-after
+      if: matrix.os == 'ubuntu-latest'
+      run: rm -rf cache/cmake/cmake-$CMAKE_VERSION-Linux-x86_64
