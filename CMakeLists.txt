@@ -68,7 +68,10 @@ endif()		# ENABLE_TESTS
 if(NOT CFD_SINGLE_BUILD)
 add_subdirectory(external)
 endif()
+
+if(WIN32)
 add_subdirectory(src)
+endif()
 
 
 ####################
@@ -77,7 +80,9 @@ add_subdirectory(src)
 if(ENABLE_TESTS)
 include(CTest)
 
+if(WIN32)
 add_subdirectory(test)
+endif()
 endif()		# ENABLE_TESTS
 
 

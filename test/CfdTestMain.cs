@@ -6,7 +6,7 @@ using Cfd;
 namespace Cfd.Tests
 {
   // [TestClass()]
-  public class CfdAddressTests
+  public class CfdTests
   {
     // [TestMethod()]
     public void TestAddress1() {
@@ -18,7 +18,7 @@ namespace Cfd.Tests
     }
 
     public static void Main() {
-      CfdAddressTests test_obj = new CfdAddressTests();
+      CfdTests test_obj = new CfdTests();
       test_obj.TestAddress1();
       Console.WriteLine();
 

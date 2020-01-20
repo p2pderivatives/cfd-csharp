@@ -44,21 +44,18 @@ go version 1.11 or lower, get `golang.org/dl/go1.13` or higher.
 
 ## Build
 
-### Using CMake
+### Windows
 
-- Visual Studio 2019 x64
-```Bash
+- tools/build.bat
+```Cmd
 # configure & build
-cmake -S . -B build -G "Visual Studio 16 2019" -A x64
-cmake -DENABLE_SHARED=on -DENABLE_JS_WRAPPER=off -DENABLE_CAPI=on -DCMAKE_BUILD_TYPE=Release --build build
-cmake --build build --parallel --config Release
-dir .\build\Release
+.\tools\build.bat
 ```
 
-- Visual Studio 2017 x64
-```Bash
+- CMake Visual Studio 2019 x64
+```Cmd
 # configure & build
-cmake -S . -B build -G "Visual Studio 15 2017 Win64"
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64
 cmake -DENABLE_SHARED=on -DENABLE_JS_WRAPPER=off -DENABLE_CAPI=on -DCMAKE_BUILD_TYPE=Release --build build
 cmake --build build --parallel --config Release
 dir .\build\Release
@@ -75,14 +72,27 @@ dir .\build\Release
 - `-DCMAKE_BUILD_TYPE=Debug`: Enable debug build.
 - `-DCFDCORE_DEBUG=on`: Enable cfd debug mode and loggings log files. [ON/OFF] (default:OFF)
 
+### Linux & MacOSX
+
+```Shell
+# configure & build
+.\tools\build.sh
+```
+
 ---
 
 ## Example
 
 ### Test
 
+- Windows
+```Cmd
+./tools/test.bat
+```
+
+- Linux & MacOSX
 ```Shell
-./build/Release/cfdcs_test.exe
+./tools/test.sh
 ```
 
 ### Example
