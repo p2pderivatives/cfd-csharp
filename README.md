@@ -29,7 +29,8 @@
 xcode-select --install
 
 # install dependencies using Homebrew
-brew install cmake dotnet
+brew install cmake
+brew cask install dotnet-sdk
 ```
 
 ### Linux(Ubuntu)
@@ -73,13 +74,13 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 - .NET Core 3.x
 ```Shell
 # configure & build
-.\tools\build.sh
+./tools/build.sh
 ```
 
 - .NET Core 2.x
 ```Shell
 # configure & build
-.\tools\build_core2.sh
+./tools/build_core2.sh
 ```
 
 ---
@@ -90,12 +91,12 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 - Windows (Visual Studio)
 ```Cmd
-./tools/test.bat
+.\tools\test.bat
 ```
 
 - Windows (.NET Core only)
 ```Cmd
-./tools/test_core3.bat
+.\tools\test_core3.bat
 ```
 
 - Linux & MacOSX
