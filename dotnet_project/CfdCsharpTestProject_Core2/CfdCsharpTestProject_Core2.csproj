@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>cfdcs</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
+    <OutputName>cfdcs_test</OutputName>
+    <AssemblyName>cfdcs_test</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -38,6 +41,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../src/*.cs" />
+    <Compile Include="../../test/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Project Include="./CfdCsharpTestProject.csproj" />
+    <ProjectReference Include="../CfdCsharpProject/CfdCsharpProject.csproj" />
   </ItemGroup>
 </Project>

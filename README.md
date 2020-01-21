@@ -9,7 +9,7 @@
 ## Dependencies
 
 - C# (7.1 or higher)
-  - .NET Framework 4.7 or higher
+  - .NET Framework 4.7 or higher (Windows only)
   - .NET Core 2.2.110 or higher
 - CMake (3.14.3 or higher)
 
@@ -36,9 +36,6 @@ apt-get install -y build-essential cmake dotnet
 
 cmake version 3.14.2 or lower, download from website and install cmake.
 (https://cmake.org/download/)
-
-go version 1.11 or lower, get `golang.org/dl/go1.13` or higher.
-(https://www.mazn.net/blog/2019/02/03/1704.html)
 
 ---
 

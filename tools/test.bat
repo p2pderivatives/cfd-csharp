@@ -3,5 +3,7 @@ if exist "test.bat" (
   cd ..
 )
 
-cd build\Release
-.\cfdcs_test.exe
+CALL .\build\Release\cfdcs_test.exe
+if not %ERRORLEVEL% == 0 (
+    exit /b 1
+)

@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputName>cfdcs_test</OutputName>
+    <AssemblyName>cfdcs_test</AssemblyName>
     <StartupObject>Cfd.Tests.CfdTests</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <OutputName>cfdcs_test</OutputName>
-    <AssemblyName>cfdcs_test</AssemblyName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -18,24 +16,14 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <OutputName>cfdcs_test</OutputName>
-    <AssemblyName>cfdcs_test</AssemblyName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin/Release</OutputPath>
-    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <OutputName>cfdcs_test</OutputName>
-    <AssemblyName>cfdcs_test</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -44,18 +32,12 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <OutputName>cfdcs_test</OutputName>
-    <AssemblyName>cfdcs_test</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
     <OutputPath>bin/Release</OutputPath>
-    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Project Include="./CfdCsharpTestProject.csproj" />
+    <Project Include="./CfdCsharpTestProject_Core3.csproj" />
     <ProjectReference Include="../CfdCsharpProject/CfdCsharpProject.csproj" />
   </ItemGroup>
 </Project>

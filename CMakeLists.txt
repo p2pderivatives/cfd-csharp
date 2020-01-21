@@ -12,6 +12,7 @@ option(ENABLE_TESTS "enable code tests (ON or OFF. default:ON)" ON)
 option(ENABLE_SHARED "enable shared library (ON or OFF. default:ON)" ON)
 option(ENABLE_ELEMENTS "enable elements code (ON or OFF. default:ON)" ON)
 option(ENABLE_CAPI  "enable c-api (ON or OFF. default:ON)" ON)
+option(ENABLE_CSHARP  "enable c-api (ON or OFF. default:ON)" ON)
 
 if(NOT WIN32)
 #option(TARGET_RPATH "target rpath list (separator is ';') (default:)" "")
@@ -25,6 +26,10 @@ endif()
 set(ENABLE_SHARED ON CACHE BOOL "" FORCE)
 set(ENABLE_ELEMENTS ON CACHE BOOL "" FORCE)
 set(ENABLE_CAPI ON CACHE BOOL "" FORCE)
+
+if(NOT ${CMAKE_GENERATOR} MATCHES "Visual Studio ([^9]|[9][0-9])")
+set(ENABLE_CSHARP OFF CACHE BOOL "" FORCE)
+endif()
 
 ####################
 # common setting
@@ -69,7 +74,7 @@ if(NOT CFD_SINGLE_BUILD)
 add_subdirectory(external)
 endif()
 
-if(WIN32)
+if(${ENABLE_CSHARP})
 add_subdirectory(src)
 endif()
 
@@ -80,7 +85,7 @@ endif()
 if(ENABLE_TESTS)
 include(CTest)
 
-if(WIN32)
+if(${ENABLE_CSHARP})
 add_subdirectory(test)
 endif()
 endif()		# ENABLE_TESTS
