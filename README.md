@@ -40,8 +40,11 @@ brew install cmake dotnet
 
 ```Shell
 # install dependencies using APT package Manager
-apt-get install -y build-essential cmake dotnet
+apt-get install -y build-essential cmake
 ```
+
+dotnet install is see manual.
+(ex. https://docs.microsoft.com/dotnet/core/install/linux-package-manager-ubuntu-1804)
 
 cmake version 3.14.2 or lower, download from website and install cmake.
 (https://cmake.org/download/)
@@ -67,9 +70,16 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 ### Linux & MacOSX
 
+- .NET Core 3.x
 ```Shell
 # configure & build
 .\tools\build.sh
+```
+
+- .NET Core 2.x
+```Shell
+# configure & build
+.\tools\build_core2.sh
 ```
 
 ---
@@ -90,7 +100,11 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 - Linux & MacOSX
 ```Shell
+echo ".NET Core 3.x"
 ./tools/test.sh
+
+echo ".NET Core 2.x"
+./tools/test_core2.sh
 ```
 
 ### Example
