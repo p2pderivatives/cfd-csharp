@@ -2,28 +2,48 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
+  /// <summary>
+  /// blind factor data class.
+  /// </summary>
   public class BlindFactor
   {
     private string hex_data;
 
+    /// <summary>
+    /// Constructor. (empty blinder)
+    /// </summary>
     public BlindFactor()
     {
       hex_data = "0000000000000000000000000000000000000000000000000000000000000000";
     }
 
+    /// <summary>
+    /// Constructor. (valid blind factor)
+    /// </summary>
+    /// <param name="blind_factor_hex">blinder hex</param>
     public BlindFactor(string blind_factor_hex)
     {
       hex_data = blind_factor_hex;
     }
 
+    /// <summary>
+    /// blinder hex string.
+    /// </summary>
+    /// <returns>blinder hex string</returns>
     public string ToHexString()
     {
       return hex_data;
     }
   }
 
+  /// <summary>
+  /// asset and amountValue data class.
+  /// </summary>
   public struct AssetValueData
   {
     public string asset { get; }
@@ -31,6 +51,13 @@ namespace Cfd
     public BlindFactor asset_blind_factor { get; }
     public BlindFactor amount_blind_factor { get; }
 
+    /// <summary>
+    /// Constructor. (use blinded utxo)
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshi_value">satoshi amount</param>
+    /// <param name="asset_blind_factor">asset blinder</param>
+    /// <param name="amount_blind_factor">amount blinder</param>
     public AssetValueData(string asset, long satoshi_value, BlindFactor asset_blind_factor, BlindFactor amount_blind_factor)
     {
       this.asset = asset;
@@ -39,14 +66,11 @@ namespace Cfd
       this.amount_blind_factor = amount_blind_factor;
     }
 
-    public AssetValueData(string asset, long satoshi_value, BlindFactor amount_blind_factor)
-    {
-      this.asset = asset;
-      this.satoshi_value = satoshi_value;
-      this.asset_blind_factor = new BlindFactor();
-      this.amount_blind_factor = amount_blind_factor;
-    }
-
+    /// <summary>
+    /// Constructor. (use unblinded utxo)
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshi_value">satoshi amount</param>
     public AssetValueData(string asset, long satoshi_value)
     {
       this.asset = asset;
@@ -54,8 +78,25 @@ namespace Cfd
       this.asset_blind_factor = new BlindFactor();
       this.amount_blind_factor = new BlindFactor();
     }
+
+    /// <summary>
+    /// Constructor. (use issue/reissue response only)
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshi_value">satoshi amount</param>
+    /// <param name="amount_blind_factor">amount blinder</param>
+    public AssetValueData(string asset, long satoshi_value, BlindFactor amount_blind_factor)
+    {
+      this.asset = asset;
+      this.satoshi_value = satoshi_value;
+      this.asset_blind_factor = new BlindFactor();
+      this.amount_blind_factor = amount_blind_factor;
+    }
   }
 
+  /// <summary>
+  /// unblinding issuance data. (asset and token)
+  /// </summary>
   public struct UnblindIssuanceData
   {
     public AssetValueData asset_data { get; }
@@ -68,17 +109,29 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// issuance blinding key pairs.
+  /// </summary>
   public struct IssuanceKeys
   {
     public Privkey asset_key { get; }
     public Privkey token_key { get; }
 
+    /// <summary>
+    /// Constructor. (use issueasset)
+    /// </summary>
+    /// <param name="asset_key">asset blinding key</param>
+    /// <param name="token_key">token blinding key</param>
     public IssuanceKeys(Privkey asset_key, Privkey token_key)
     {
       this.asset_key = asset_key;
       this.token_key = token_key;
     }
 
+    /// <summary>
+    /// Constructor. (use reissueasset)
+    /// </summary>
+    /// <param name="asset_key">asset blinding key</param>
     public IssuanceKeys(Privkey asset_key)
     {
       this.asset_key = asset_key;
@@ -86,6 +139,9 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// Confidential transaction class.
+  /// </summary>
   public class ConfidentialTransaction
   {
     private string tx;
@@ -116,11 +172,19 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="tx_hex">transaction hex</param>
     public ConfidentialTransaction(string tx_hex)
     {
       tx = tx_hex;
     }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="bytes">transaction byte array</param>
     public ConfidentialTransaction(byte[] bytes)
     {
       tx = StringUtil.FromBytes(bytes);
@@ -224,6 +288,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Blind transction txout only.
+    /// </summary>
+    /// <param name="utxos">txin utxo list</param>
+    /// <param name="confidential_keys">txout confidential key list</param>
     public void BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos,
         IDictionary<uint, Pubkey> confidential_keys)
     {
@@ -231,6 +300,12 @@ namespace Cfd
           confidential_keys);
     }
 
+    /// <summary>
+    /// Blind transction.
+    /// </summary>
+    /// <param name="utxos">txin utxo list</param>
+    /// <param name="issuance_keys">issuance blinding key list</param>
+    /// <param name="confidential_keys">txout confidential key list</param>
     public void BlindTransaction(IDictionary<OutPoint, AssetValueData> utxos,
         IDictionary<OutPoint, IssuanceKeys> issuance_keys,
         IDictionary<uint, Pubkey> confidential_keys)
@@ -299,6 +374,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Unblind transction output.
+    /// </summary>
+    /// <param name="txout_index">txout index</param>
+    /// <param name="blinding_key">blinding key</param>
+    /// <returns>asset and amount data</returns>
     public AssetValueData UnblindTxOut(uint txout_index, Privkey blinding_key)
     {
       AssetValueData result;
@@ -325,6 +406,13 @@ namespace Cfd
       return result;
     }
 
+    /// <summary>
+    /// Unblind transction output.
+    /// </summary>
+    /// <param name="txin_index">txin index</param>
+    /// <param name="asset_blinding_key">asset blinding key(issue/reissue)</param>
+    /// <param name="token_blinding_key">token blinding key(issue only)</param>
+    /// <returns>issuance asset data</returns>
     public UnblindIssuanceData UnblindIssuance(uint txin_index, Privkey asset_blinding_key, Privkey token_blinding_key)
     {
       UnblindIssuanceData result;
@@ -514,6 +602,9 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// cfd library (elements transaction) access class.
+  /// </summary>
   internal class CElementsTransaction
   {
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]

@@ -158,142 +158,143 @@ namespace Cfd
 
   }
 
-  public class Address
+  /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
+public class Address
+{
+  private string address;
+  private string locking_script;
+  private string p2sh_segwit_locking_script;
+  private string hash;
+  private CfdNetworkType network;
+  private CfdAddressType address_type;
+  private CfdWitnessVersion witness_version;
+
+  public Address()
   {
-    private string address;
-    private string locking_script;
-    private string p2sh_segwit_locking_script;
-    private string hash;
-    private CfdNetworkType network;
-    private CfdAddressType address_type;
-    private CfdWitnessVersion witness_version;
+  }
 
-    public Address()
-    {
-    }
-
-    public Address(string address_str)
-    {
-      using (ErrorHandle handle = new ErrorHandle())
+      public Address(string address_str)
       {
-        Initialize(handle, address_str);
-        address = address_str;
-      }
-    }
-
-    public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
-    {
-      using (ErrorHandle handle = new ErrorHandle())
-      {
-        CfdErrorCode ret = CAddress.CfdCreateAddress(
-          handle.GetHandle(),
-          (int)type,
-          pubkey.ToHexString(),
-          "",
-          (int)network,
-          out IntPtr out_address,
-          out IntPtr out_locking_script,
-          out IntPtr out_p2sh_segwit_locking_script);
-        if (ret != CfdErrorCode.Success)
+        using (ErrorHandle handle = new ErrorHandle())
         {
-          CUtil.ThrowError(handle, ret);
+          Initialize(handle, address_str);
+          address = address_str;
         }
-        address = CUtil.ConvertToString(out_address);
-        locking_script = CUtil.ConvertToString(out_locking_script);
-        p2sh_segwit_locking_script = CUtil.ConvertToString(out_p2sh_segwit_locking_script);
-
-        Initialize(handle, address);
-        address_type = type;
       }
-    }
 
-    public Address(Script script, CfdAddressType type, CfdNetworkType network)
+  public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
+  {
+    using (ErrorHandle handle = new ErrorHandle())
     {
-      using (ErrorHandle handle = new ErrorHandle())
+      CfdErrorCode ret = CAddress.CfdCreateAddress(
+        handle.GetHandle(),
+        (int)type,
+        pubkey.ToHexString(),
+        "",
+        (int)network,
+        out IntPtr out_address,
+        out IntPtr out_locking_script,
+        out IntPtr out_p2sh_segwit_locking_script);
+      if (ret != CfdErrorCode.Success)
       {
-        CfdErrorCode ret = CAddress.CfdCreateAddress(
-          handle.GetHandle(),
-          (int)type,
-          "",
-          script.ToHexString(),
-          (int)network,
-          out IntPtr out_address,
-          out IntPtr out_locking_script,
-          out IntPtr out_p2sh_segwit_locking_script);
-        if (ret != CfdErrorCode.Success)
-        {
-          CUtil.ThrowError(handle, ret);
-        }
-        address = CUtil.ConvertToString(out_address);
-        locking_script = CUtil.ConvertToString(out_locking_script);
-        p2sh_segwit_locking_script = CUtil.ConvertToString(out_p2sh_segwit_locking_script);
-
-        Initialize(handle, address);
-        address_type = type;
+        CUtil.ThrowError(handle, ret);
       }
-    }
+      address = CUtil.ConvertToString(out_address);
+      locking_script = CUtil.ConvertToString(out_locking_script);
+      p2sh_segwit_locking_script = CUtil.ConvertToString(out_p2sh_segwit_locking_script);
 
-    public static Address GetAddressByLockingScript(Script in_locking_script, CfdNetworkType network)
+      Initialize(handle, address);
+      address_type = type;
+    }
+  }
+
+  public Address(Script script, CfdAddressType type, CfdNetworkType network)
+  {
+    using (ErrorHandle handle = new ErrorHandle())
     {
-      string address = "";
-      using (ErrorHandle handle = new ErrorHandle())
+      CfdErrorCode ret = CAddress.CfdCreateAddress(
+        handle.GetHandle(),
+        (int)type,
+        "",
+        script.ToHexString(),
+        (int)network,
+        out IntPtr out_address,
+        out IntPtr out_locking_script,
+        out IntPtr out_p2sh_segwit_locking_script);
+      if (ret != CfdErrorCode.Success)
       {
-        CfdErrorCode ret = CAddress.CfdGetAddressFromLockingScript(
-          handle.GetHandle(),
-          in_locking_script.ToHexString(),
-          (int)network,
-          out IntPtr out_address);
-        if (ret != CfdErrorCode.Success)
-        {
-          CUtil.ThrowError(handle, ret);
-        }
-        address = CUtil.ConvertToString(out_address);
+        CUtil.ThrowError(handle, ret);
       }
-      return new Address(address);
-    }
+      address = CUtil.ConvertToString(out_address);
+      locking_script = CUtil.ConvertToString(out_locking_script);
+      p2sh_segwit_locking_script = CUtil.ConvertToString(out_p2sh_segwit_locking_script);
 
-    public string ToAddressString()
-    {
-      return address;
+      Initialize(handle, address);
+      address_type = type;
     }
+  }
 
-    public string GetLockingScript()
+  public static Address GetAddressByLockingScript(Script in_locking_script, CfdNetworkType network)
+  {
+    string address = "";
+    using (ErrorHandle handle = new ErrorHandle())
     {
-      return locking_script;
+      CfdErrorCode ret = CAddress.CfdGetAddressFromLockingScript(
+        handle.GetHandle(),
+        in_locking_script.ToHexString(),
+        (int)network,
+        out IntPtr out_address);
+      if (ret != CfdErrorCode.Success)
+      {
+        CUtil.ThrowError(handle, ret);
+      }
+      address = CUtil.ConvertToString(out_address);
     }
+    return new Address(address);
+  }
 
-    public string GetHash()
-    {
-      return hash;
-    }
+  public string ToAddressString()
+  {
+    return address;
+  }
 
-    public string GetP2shLockingScript()
-    {
-      return p2sh_segwit_locking_script;
-    }
+  public string GetLockingScript()
+  {
+    return locking_script;
+  }
 
-    public CfdNetworkType GetNetwork()
-    {
-      return network;
-    }
+  public string GetHash()
+  {
+    return hash;
+  }
 
-    public CfdAddressType GetAddressType()
-    {
-      return address_type;
-    }
+  public string GetP2shLockingScript()
+  {
+    return p2sh_segwit_locking_script;
+  }
 
-    public CfdWitnessVersion GetWitnessVersion()
-    {
-      return witness_version;
-    }
+  public CfdNetworkType GetNetwork()
+  {
+    return network;
+  }
 
-    public void SetAddressType(CfdAddressType addr_type)
-    {
-      address_type = addr_type;
-    }
+  public CfdAddressType GetAddressType()
+  {
+    return address_type;
+  }
 
-    private void Initialize(ErrorHandle handle, string address_str)
-    {
+  public CfdWitnessVersion GetWitnessVersion()
+  {
+    return witness_version;
+  }
+
+  public void SetAddressType(CfdAddressType addr_type)
+  {
+    address_type = addr_type;
+  }
+
+  private void Initialize(ErrorHandle handle, string address_str)
+  {
       CfdErrorCode ret = CAddress.CfdGetAddressInfo(
         handle.GetHandle(),
         address_str,
@@ -311,9 +312,10 @@ namespace Cfd
       witness_version = (CfdWitnessVersion)out_witness_version;
       locking_script = CUtil.ConvertToString(out_locking_script);
       hash = CUtil.ConvertToString(out_hash);
-    }
-
   }
+
+}
+*/
 
   internal class CAddress
   {
@@ -406,6 +408,7 @@ namespace Cfd
         [In] int network_type,
         [Out] out IntPtr address);
 
+    /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdGetAddressInfo(
         [In] IntPtr handle,
@@ -415,5 +418,6 @@ namespace Cfd
         [Out] out int witness_version,
         [Out] out IntPtr locking_script,
         [Out] out IntPtr hash);
+*/
   }
 }

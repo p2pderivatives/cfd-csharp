@@ -12,6 +12,9 @@ namespace Cfd
     EnableMax = 0xfffffffe,
   };
 
+  /// <summary>
+  /// txid data class.
+  /// </summary>
   public class Txid
   {
     private string txid;
@@ -68,11 +71,17 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// OutPoint data class.
+  /// </summary>
   public class OutPoint
   {
     private Txid txid;
     private uint vout;
 
+    /// <summary>
+    /// Constructor. (empty)
+    /// </summary>
     public OutPoint()
     {
     }
