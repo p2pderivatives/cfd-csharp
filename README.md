@@ -8,14 +8,19 @@
 
 ## Dependencies
 
-- C# (7.1 or higher)
-  - .NET Framework 4.7 or higher (Windows only)
-  - .NET Core 2.2.110 or higher
-- CMake (3.14.3 or higher)
-
 ### Windows
 
+- C# (7.1 or higher)
+  - .NET Framework 4.7 or higher
+  - .NET Core 2.2.110 or higher
+- CMake (3.14.3 or higher)
+- Build Tools for Visual Studio (2017 or higher)
+
 ### MacOS
+
+- C# (7.1 or higher)
+  - .NET Core 2.2.110 or higher
+- CMake (3.14.3 or higher)
 
 - [Homebrew](https://brew.sh/)
 
@@ -29,6 +34,10 @@ brew install cmake dotnet
 
 ### Linux(Ubuntu)
 
+- C# (7.1 or higher)
+  - .NET Core 2.2.110 or higher
+- CMake (3.14.3 or higher)
+
 ```Shell
 # install dependencies using APT package Manager
 apt-get install -y build-essential cmake dotnet
@@ -41,33 +50,20 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 ## Build
 
-### Windows
+### Windows (Visual Studio)
 
-- tools/build.bat
 ```Cmd
 # configure & build
 .\tools\build.bat
 ```
 
-- CMake Visual Studio 2019 x64
+### Windows (.NET Core only)
+
+- tools/build.bat
 ```Cmd
 # configure & build
-cmake -S . -B build -G "Visual Studio 16 2019" -A x64
-cmake -DENABLE_SHARED=on -DENABLE_JS_WRAPPER=off -DENABLE_CAPI=on -DCMAKE_BUILD_TYPE=Release --build build
-cmake --build build --parallel --config Release
-dir .\build\Release
+.\tools\build_core3.bat
 ```
-
-**CMake options**
-
-`cmake .. (CMake options) -DENABLE_JS_WRAPPER=off`
-
-- `-DENABLE_ELEMENTS`: Enable functionalies for elements sidechain. [ON/OFF] (default:ON)
-- `-DENABLE_SHARED`: Enable building a shared library. [ON/OFF] (default:ON)
-- `-DENABLE_TESTS`: Enable building a testing codes. If enables this option, builds testing framework submodules(google test) automatically. [ON/OFF] (default:ON)
-- `-DCMAKE_BUILD_TYPE=Release`: Enable release build.
-- `-DCMAKE_BUILD_TYPE=Debug`: Enable debug build.
-- `-DCFDCORE_DEBUG=on`: Enable cfd debug mode and loggings log files. [ON/OFF] (default:OFF)
 
 ### Linux & MacOSX
 
@@ -82,9 +78,14 @@ dir .\build\Release
 
 ### Test
 
-- Windows
+- Windows (Visual Studio)
 ```Cmd
 ./tools/test.bat
+```
+
+- Windows (.NET Core only)
+```Cmd
+./tools/test_core3.bat
 ```
 
 - Linux & MacOSX
@@ -95,3 +96,4 @@ dir .\build\Release
 ### Example
 
 - test/CfdTestMain.cs
+  - blind/unblind: TestBlindTx()

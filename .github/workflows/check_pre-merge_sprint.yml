@@ -18,12 +18,12 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        dotnet: [2.2.110, 3.1.100]
+        dotnet: [2.1.802, 3.1.100]
         exclude:
           - os: macos-latest
-            dotnet: 2.2.110
+            dotnet: 2.1.802
           - os: ubuntu-latest
-            dotnet: 2.2.110
+            dotnet: 2.1.802
 
     steps:
     - name: setup dotnet
