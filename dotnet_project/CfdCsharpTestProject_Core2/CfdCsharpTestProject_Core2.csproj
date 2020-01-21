@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Project Include="./CfdCsharpTestProject.csproj" />
-    <ProjectReference Include="../CfdCsharpProject/CfdCsharpProject.csproj" />
+    <Project Include="./CfdCsharpTestProject_Core2.csproj" />
+    <ProjectReference Include="../CfdCsharpProject_Core2/CfdCsharpProject_Core2.csproj" />
   </ItemGroup>
 </Project>
