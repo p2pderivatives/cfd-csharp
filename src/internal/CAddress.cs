@@ -14,7 +14,7 @@ namespace Cfd
         [In] int networkType,
         [Out] out IntPtr address,
         [Out] out IntPtr lockingScript,
-        [Out] out IntPtr p2shSegwitLockingScript;
+        [Out] out IntPtr p2shSegwitLockingScript);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdInitializeMultisigScript(
@@ -36,7 +36,7 @@ namespace Cfd
         [In] uint requireNum,
         [Out] out IntPtr address,
         [Out] out IntPtr redeemScript,
-        [Out] out IntPtr witnessScript;
+        [Out] out IntPtr witnessScript);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeMultisigScriptHandle(
