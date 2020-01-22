@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Cfd
 {
   /*
-    internal class CCoin
+    internal static class CCoin
     {
 
   CFDC_API int CfdInitializeCoinSelection(

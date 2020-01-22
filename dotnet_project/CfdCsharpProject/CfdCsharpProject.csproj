@@ -39,5 +39,6 @@
 
   <ItemGroup>
     <Compile Include="../../src/*.cs" />
+    <Compile Include="../../src/internal/*.cs" />
   </ItemGroup>
 </Project>
