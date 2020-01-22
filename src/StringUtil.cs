@@ -22,7 +22,7 @@ namespace Cfd
 
     public static string FromBytes(byte[] bytes)
     {
-      return BitConverter.ToString(bytes).Replace("-", "");
+      return BitConverter.ToString(bytes).Replace("-", "").ToLower();
     }
   }
 }

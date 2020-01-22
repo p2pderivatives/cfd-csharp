@@ -43,7 +43,7 @@ namespace Cfd
       return txid;
     }
 
-    public byte[] ToBytes()
+    public byte[] GetBytes()
     {
       var temp_txid = StringUtil.ToBytes(txid);
       return CfdCommon.ReverseBytes(temp_txid);

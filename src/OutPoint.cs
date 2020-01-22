@@ -30,6 +30,12 @@ namespace Cfd
       this.vout = vout;
     }
 
+    public OutPoint(Txid txid, uint vout)
+    {
+      this.txid = txid;
+      this.vout = vout;
+    }
+
     public Txid GetTxid()
     {
       return txid;
