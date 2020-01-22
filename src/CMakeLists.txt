@@ -128,14 +128,31 @@ add_library(${PROJECT_NAME} SHARED)
 
 target_sources(${PROJECT_NAME}
   PRIVATE
+    internal/ErrorHandle.cs
+    internal/CAddress.cs
+    internal/CCoin.cs
+    internal/CCommon.cs
+    internal/CElementsAddress.cs
+    internal/CElementsTransaction.cs
+    internal/CKey.cs
+    internal/CScript.cs
+    internal/CTransaction.cs
+    Txid.cs
+    Address.cs
+    BlindFactor.cs
     CfdCommon.cs
-    CfdScript.cs
-    CfdKey.cs
-    CfdAddress.cs
-    CfdTransaction.cs
-    CfdCoin.cs
-    CfdElementsAddress.cs
-    CfdElementsTransaction.cs
+    CMakeLists.txt
+    CoinUtil.cs
+    ConfidentialAddress.cs
+    ConfidentialTransaction.cs
+    Descriptor.cs
+    ExtPubkey.cs
+    OutPoint.cs
+    Privkey.cs
+    Pubkey.cs
+    Script.cs
+    StringUtil.cs
+    Transaction.cs
 )
 
 target_compile_options(${PROJECT_NAME}
