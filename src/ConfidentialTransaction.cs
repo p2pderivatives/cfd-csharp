@@ -13,50 +13,50 @@ namespace Cfd
   public struct AssetValueData
   {
     public readonly string asset;
-    public readonly long satoshi_value;
-    public readonly BlindFactor asset_blind_factor;
-    public readonly BlindFactor amount_blind_factor;
+    public readonly long satoshiValue;
+    public readonly BlindFactor assetBlindFactor;
+    public readonly BlindFactor amountBlindFactor;
 
     /// <summary>
     /// Constructor. (use blinded utxo)
     /// </summary>
     /// <param name="asset">asset</param>
-    /// <param name="satoshi_value">satoshi amount</param>
-    /// <param name="asset_blind_factor">asset blinder</param>
-    /// <param name="amount_blind_factor">amount blinder</param>
-    public AssetValueData(string asset, long satoshi_value, BlindFactor asset_blind_factor, BlindFactor amount_blind_factor)
+    /// <param name="satoshiValue">satoshi amount</param>
+    /// <param name="assetBlindFactor">asset blinder</param>
+    /// <param name="amountBlindFactor">amount blinder</param>
+    public AssetValueData(string asset, long satoshiValue, BlindFactor assetBlindFactor, BlindFactor amountBlindFactor)
     {
       this.asset = asset;
-      this.satoshi_value = satoshi_value;
-      this.asset_blind_factor = asset_blind_factor;
-      this.amount_blind_factor = amount_blind_factor;
+      this.satoshiValue = satoshiValue;
+      this.assetBlindFactor = assetBlindFactor;
+      this.amountBlindFactor = amountBlindFactor;
     }
 
     /// <summary>
     /// Constructor. (use unblinded utxo)
     /// </summary>
     /// <param name="asset">asset</param>
-    /// <param name="satoshi_value">satoshi amount</param>
-    public AssetValueData(string asset, long satoshi_value)
+    /// <param name="satoshiValue">satoshi amount</param>
+    public AssetValueData(string asset, long satoshiValue)
     {
       this.asset = asset;
-      this.satoshi_value = satoshi_value;
-      this.asset_blind_factor = new BlindFactor();
-      this.amount_blind_factor = new BlindFactor();
+      this.satoshiValue = satoshiValue;
+      this.assetBlindFactor = new BlindFactor();
+      this.amountBlindFactor = new BlindFactor();
     }
 
     /// <summary>
     /// Constructor. (use issue/reissue response only)
     /// </summary>
     /// <param name="asset">asset</param>
-    /// <param name="satoshi_value">satoshi amount</param>
-    /// <param name="amount_blind_factor">amount blinder</param>
-    public AssetValueData(string asset, long satoshi_value, BlindFactor amount_blind_factor)
+    /// <param name="satoshiValue">satoshi amount</param>
+    /// <param name="amountBlindFactor">amount blinder</param>
+    public AssetValueData(string asset, long satoshiValue, BlindFactor amountBlindFactor)
     {
       this.asset = asset;
-      this.satoshi_value = satoshi_value;
-      this.asset_blind_factor = new BlindFactor();
-      this.amount_blind_factor = amount_blind_factor;
+      this.satoshiValue = satoshiValue;
+      this.assetBlindFactor = new BlindFactor();
+      this.amountBlindFactor = amountBlindFactor;
     }
   }
 
@@ -65,13 +65,13 @@ namespace Cfd
   /// </summary>
   public struct UnblindIssuanceData
   {
-    public readonly AssetValueData asset_data;
-    public readonly AssetValueData token_data;
+    public readonly AssetValueData assetData;
+    public readonly AssetValueData tokenData;
 
     public UnblindIssuanceData(AssetValueData asset, AssetValueData token)
     {
-      asset_data = asset;
-      token_data = token;
+      assetData = asset;
+      tokenData = token;
     }
   }
 
@@ -80,28 +80,28 @@ namespace Cfd
   /// </summary>
   public struct IssuanceKeys
   {
-    public readonly Privkey asset_key;
-    public readonly Privkey token_key;
+    public readonly Privkey assetKey;
+    public readonly Privkey tokenKey;
 
     /// <summary>
     /// Constructor. (use issueasset)
     /// </summary>
-    /// <param name="asset_key">asset blinding key</param>
-    /// <param name="token_key">token blinding key</param>
-    public IssuanceKeys(Privkey asset_key, Privkey token_key)
+    /// <param name="assetKey">asset blinding key</param>
+    /// <param name="tokenKey">token blinding key</param>
+    public IssuanceKeys(Privkey assetKey, Privkey tokenKey)
     {
-      this.asset_key = asset_key;
-      this.token_key = token_key;
+      this.assetKey = assetKey;
+      this.tokenKey = tokenKey;
     }
 
     /// <summary>
     /// Constructor. (use reissueasset)
     /// </summary>
-    /// <param name="asset_key">asset blinding key</param>
-    public IssuanceKeys(Privkey asset_key)
+    /// <param name="assetKey">asset blinding key</param>
+    public IssuanceKeys(Privkey assetKey)
     {
-      this.asset_key = asset_key;
-      this.token_key = new Privkey();
+      this.assetKey = assetKey;
+      this.tokenKey = new Privkey();
     }
   }
 
@@ -111,15 +111,15 @@ namespace Cfd
   public class ConfidentialTransaction
   {
     private string tx;
-    private string last_getinfo_tx = "";
+    private string lastGetTx = "";
     private string txid = "";
     private string wtxid = "";
-    private string wit_hash = "";
-    private uint tx_size = 0;
-    private uint tx_vsize = 0;
-    private uint tx_weight = 0;
-    private uint tx_version = 0;
-    private uint tx_locktime = 0;
+    private string witHash = "";
+    private uint txSize = 0;
+    private uint txVsize = 0;
+    private uint txWeight = 0;
+    private uint txVersion = 0;
+    private uint txLocktime = 0;
 
     public ConfidentialTransaction(uint version, uint locktime)
     {
@@ -129,22 +129,22 @@ namespace Cfd
           handle.GetHandle(),
           version,
           locktime,
-          out IntPtr tx_string);
+          out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="tx_hex">transaction hex</param>
-    public ConfidentialTransaction(string tx_hex)
+    /// <param name="txHex">transaction hex</param>
+    public ConfidentialTransaction(string txHex)
     {
-      tx = tx_hex;
+      tx = txHex;
     }
 
     /// <summary>
@@ -161,37 +161,37 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdAddConfidentialTxIn(
-          handle.GetHandle(), tx, txid.ToHexString(), vout, sequence, out IntPtr tx_string);
+          handle.GetHandle(), tx, txid.ToHexString(), vout, sequence, out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
-    public void AddTxOut(string asset, long satoshi_value, string address)
+    public void AddTxOut(string asset, long satoshiValue, string address)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdAddConfidentialTxOut(
             handle.GetHandle(), tx,
             asset,
-            satoshi_value,
+            satoshiValue,
             "",
             address,
             "",
             "",
-            out IntPtr tx_string);
+            out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
-    public void AddTxOut(string asset, string value_commitment, string address)
+    public void AddTxOut(string asset, string valueCommitment, string address)
     {
       using (var handle = new ErrorHandle())
       {
@@ -199,58 +199,58 @@ namespace Cfd
             handle.GetHandle(), tx,
             asset,
             (long)0,
-            value_commitment,
+            valueCommitment,
             address,
             "",
             "",
-            out IntPtr tx_string);
+            out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
-    public void AddFeeTxOut(long satoshi_value)
+    public void AddFeeTxOut(long satoshiValue)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdAddConfidentialTxOut(
             handle.GetHandle(), tx,
             "",
-            satoshi_value,
+            satoshiValue,
             "",
             "",
             "",
             "",
-            out IntPtr tx_string);
+            out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
-    public void AddDestroyAmountTxOut(string asset, long satoshi_value)
+    public void AddDestroyAmountTxOut(string asset, long satoshiValue)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdAddConfidentialTxOut(
             handle.GetHandle(), tx,
             asset,
-            satoshi_value,
+            satoshiValue,
             "",
             "",
             "6a",  // OP_RETURN
             "",
-            out IntPtr tx_string);
+            out IntPtr txString);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        tx = CCommon.ConvertToString(tx_string);
+        tx = CCommon.ConvertToString(txString);
       }
     }
 
@@ -258,28 +258,28 @@ namespace Cfd
     /// Blind transction txout only.
     /// </summary>
     /// <param name="utxos">txin utxo list</param>
-    /// <param name="confidential_keys">txout confidential key list</param>
+    /// <param name="confidentialKeys">txout confidential key list</param>
     public void BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos,
-        IDictionary<uint, Pubkey> confidential_keys)
+        IDictionary<uint, Pubkey> confidentialKeys)
     {
       BlindTransaction(utxos, new Dictionary<OutPoint, IssuanceKeys>(),
-          confidential_keys);
+          confidentialKeys);
     }
 
     /// <summary>
     /// Blind transction.
     /// </summary>
     /// <param name="utxos">txin utxo list</param>
-    /// <param name="issuance_keys">issuance blinding key list</param>
-    /// <param name="confidential_keys">txout confidential key list</param>
+    /// <param name="issuanceKeys">issuance blinding key list</param>
+    /// <param name="confidentialKeys">txout confidential key list</param>
     public void BlindTransaction(IDictionary<OutPoint, AssetValueData> utxos,
-        IDictionary<OutPoint, IssuanceKeys> issuance_keys,
-        IDictionary<uint, Pubkey> confidential_keys)
+        IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
+        IDictionary<uint, Pubkey> confidentialKeys)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdInitializeBlindTx(
-          handle.GetHandle(), out IntPtr blind_handle);
+          handle.GetHandle(), out IntPtr blindHandle);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
@@ -289,35 +289,35 @@ namespace Cfd
           foreach (var outpoint in utxos.Keys)
           {
             var data = utxos[outpoint];
-            string asset_key = "";
-            string token_key = "";
-            if (issuance_keys.ContainsKey(outpoint))
+            string assetKey = "";
+            string tokenKey = "";
+            if (issuanceKeys.ContainsKey(outpoint))
             {
-              IssuanceKeys keys = issuance_keys[outpoint];
-              asset_key = keys.asset_key.ToHexString();
-              token_key = keys.token_key.ToHexString();
+              IssuanceKeys keys = issuanceKeys[outpoint];
+              assetKey = keys.assetKey.ToHexString();
+              tokenKey = keys.tokenKey.ToHexString();
             }
 
             ret = CElementsTransaction.CfdAddBlindTxInData(
-              handle.GetHandle(), blind_handle,
+              handle.GetHandle(), blindHandle,
               outpoint.GetTxid().ToHexString(), outpoint.GetVout(),
               data.asset,
-              data.asset_blind_factor.ToHexString(),
-              data.amount_blind_factor.ToHexString(),
-              data.satoshi_value,
-              asset_key,
-              token_key);
+              data.assetBlindFactor.ToHexString(),
+              data.amountBlindFactor.ToHexString(),
+              data.satoshiValue,
+              assetKey,
+              tokenKey);
             if (ret != CfdErrorCode.Success)
             {
               handle.ThrowError(ret);
             }
           }
 
-          foreach (var index in confidential_keys.Keys)
+          foreach (var index in confidentialKeys.Keys)
           {
             ret = CElementsTransaction.CfdAddBlindTxOutData(
-              handle.GetHandle(), blind_handle,
-              index, confidential_keys[index].ToHexString());
+              handle.GetHandle(), blindHandle,
+              index, confidentialKeys[index].ToHexString());
             if (ret != CfdErrorCode.Success)
             {
               handle.ThrowError(ret);
@@ -325,17 +325,17 @@ namespace Cfd
           }
 
           ret = CElementsTransaction.CfdFinalizeBlindTx(
-            handle.GetHandle(), blind_handle, tx,
-            out IntPtr tx_hex_string);
+            handle.GetHandle(), blindHandle, tx,
+            out IntPtr txHexString);
           if (ret != CfdErrorCode.Success)
           {
             handle.ThrowError(ret);
           }
-          tx = CCommon.ConvertToString(tx_hex_string);
+          tx = CCommon.ConvertToString(txHexString);
         }
         finally
         {
-          CElementsTransaction.CfdFreeBlindHandle(handle.GetHandle(), blind_handle);
+          CElementsTransaction.CfdFreeBlindHandle(handle.GetHandle(), blindHandle);
         }
       }
     }
@@ -343,74 +343,74 @@ namespace Cfd
     /// <summary>
     /// Unblind transction output.
     /// </summary>
-    /// <param name="txout_index">txout index</param>
-    /// <param name="blinding_key">blinding key</param>
+    /// <param name="txoutIndex">txout index</param>
+    /// <param name="blindingKey">blinding key</param>
     /// <returns>asset and amount data</returns>
-    public AssetValueData UnblindTxOut(uint txout_index, Privkey blinding_key)
+    public AssetValueData UnblindTxOut(uint txoutIndex, Privkey blindingKey)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdUnblindTxOut(
             handle.GetHandle(), tx,
-            txout_index,
-            blinding_key.ToHexString(),
+            txoutIndex,
+            blindingKey.ToHexString(),
             out IntPtr asset,
             out long value,
-            out IntPtr asset_blind_factor,
-            out IntPtr amount_blind_factor);
+            out IntPtr assetBlindFactor,
+            out IntPtr amountBlindFactor);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
 
-        var abf = CCommon.ConvertToString(asset_blind_factor);
-        var vbf = CCommon.ConvertToString(amount_blind_factor);
-        var asset_id = CCommon.ConvertToString(asset);
-        return new AssetValueData(asset_id, value, new BlindFactor(abf), new BlindFactor(vbf));
+        var abf = CCommon.ConvertToString(assetBlindFactor);
+        var vbf = CCommon.ConvertToString(amountBlindFactor);
+        var assetId = CCommon.ConvertToString(asset);
+        return new AssetValueData(assetId, value, new BlindFactor(abf), new BlindFactor(vbf));
       }
     }
 
     /// <summary>
     /// Unblind transction output.
     /// </summary>
-    /// <param name="txin_index">txin index</param>
-    /// <param name="asset_blinding_key">asset blinding key(issue/reissue)</param>
-    /// <param name="token_blinding_key">token blinding key(issue only)</param>
+    /// <param name="txinIndex">txin index</param>
+    /// <param name="assetBlindingKey">asset blinding key(issue/reissue)</param>
+    /// <param name="tokenBlindingKey">token blinding key(issue only)</param>
     /// <returns>issuance asset data</returns>
-    public UnblindIssuanceData UnblindIssuance(uint txin_index, Privkey asset_blinding_key, Privkey token_blinding_key)
+    public UnblindIssuanceData UnblindIssuance(uint txinIndex, Privkey assetBlindingKey, Privkey tokenBlindingKey)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdUnblindIssuance(
             handle.GetHandle(), tx,
-            txin_index,
-            asset_blinding_key.ToHexString(),
-            token_blinding_key.ToHexString(),
+            txinIndex,
+            assetBlindingKey.ToHexString(),
+            tokenBlindingKey.ToHexString(),
             out IntPtr asset,
-            out long asset_value,
-            out IntPtr asset_blind_factor,
-            out IntPtr asset_amount_blind_factor,
+            out long assetValue,
+            out IntPtr assetBlindFactor,
+            out IntPtr assetAmountBlindFactor,
             out IntPtr token,
-            out long token_value,
-            out IntPtr token_blind_factor,
-            out IntPtr token_amount_blind_factor);
+            out long tokenValue,
+            out IntPtr tokenBlindFactor,
+            out IntPtr tokenAmountBlindFactor);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
 
-        var asset_abf = CCommon.ConvertToString(asset_blind_factor);
-        var asset_vbf = CCommon.ConvertToString(asset_amount_blind_factor);
-        var token_abf = CCommon.ConvertToString(token_blind_factor);
-        var token_vbf = CCommon.ConvertToString(token_blind_factor);
-        var asset_id = CCommon.ConvertToString(asset);
-        var token_id = CCommon.ConvertToString(token);
+        var assetAbf = CCommon.ConvertToString(assetBlindFactor);
+        var assetVbf = CCommon.ConvertToString(assetAmountBlindFactor);
+        var tokenAbf = CCommon.ConvertToString(tokenBlindFactor);
+        var tokenVbf = CCommon.ConvertToString(tokenBlindFactor);
+        var assetId = CCommon.ConvertToString(asset);
+        var tokenId = CCommon.ConvertToString(token);
 
         return new UnblindIssuanceData(
-            new AssetValueData(asset_id, asset_value,
-                new BlindFactor(asset_abf), new BlindFactor(asset_vbf)),
-            new AssetValueData(token_id, token_value,
-                new BlindFactor(token_abf), new BlindFactor(token_vbf)));
+            new AssetValueData(assetId, assetValue,
+                new BlindFactor(assetAbf), new BlindFactor(assetVbf)),
+            new AssetValueData(tokenId, tokenValue,
+                new BlindFactor(tokenAbf), new BlindFactor(tokenVbf)));
       }
     }
 
@@ -475,62 +475,62 @@ namespace Cfd
     public string GetWitHash()
     {
       UpdateTxInfoCache();
-      return wit_hash;
+      return witHash;
     }
 
     public uint GetSize()
     {
       UpdateTxInfoCache();
-      return tx_size;
+      return txSize;
     }
 
     public uint GetVsize()
     {
       UpdateTxInfoCache();
-      return tx_vsize;
+      return txVsize;
     }
 
     public uint GetWeight()
     {
       UpdateTxInfoCache();
-      return tx_weight;
+      return txWeight;
     }
 
     public uint GetVersion()
     {
       UpdateTxInfoCache();
-      return tx_version;
+      return txVersion;
     }
 
     public uint GetLockTime()
     {
       UpdateTxInfoCache();
-      return tx_locktime;
+      return txLocktime;
     }
 
     public static Privkey GetIssuanceBlindingKey(
-        Privkey master_blinding_key, Txid txid, uint vout)
+        Privkey masterBlindingKey, Txid txid, uint vout)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CElementsTransaction.CfdGetIssuanceBlindingKey(
             handle.GetHandle(),
-            master_blinding_key.ToHexString(),
+            masterBlindingKey.ToHexString(),
             txid.ToHexString(),
             vout,
-            out IntPtr blinding_key);
+            out IntPtr blindingKey);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        var key = CCommon.ConvertToString(blinding_key);
+        var key = CCommon.ConvertToString(blindingKey);
         return new Privkey(key);
       }
     }
 
     private void UpdateTxInfoCache()
     {
-      if (tx == last_getinfo_tx)
+      if (tx == lastGetTx)
       {
         return;
       }
@@ -539,27 +539,27 @@ namespace Cfd
         var ret = CElementsTransaction.CfdGetConfidentialTxInfo(
             handle.GetHandle(),
             tx,
-            out IntPtr out_txid,
-            out IntPtr out_wtxid,
-            out IntPtr out_wit_hash,
-            out uint out_size,
-            out uint out_vsize,
-            out uint out_weight,
-            out uint out_version,
-            out uint out_locktime);
+            out IntPtr outputTxid,
+            out IntPtr outputWtxid,
+            out IntPtr outputWitHash,
+            out uint outputSize,
+            out uint outputVsize,
+            out uint outputWeight,
+            out uint outputVersion,
+            out uint outputLocktime);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        txid = CCommon.ConvertToString(out_txid);
-        wtxid = CCommon.ConvertToString(out_wtxid);
-        wit_hash = CCommon.ConvertToString(out_wit_hash);
-        tx_size = out_size;
-        tx_vsize = out_vsize;
-        tx_weight = out_weight;
-        tx_version = out_version;
-        tx_locktime = out_locktime;
-        last_getinfo_tx = tx;
+        txid = CCommon.ConvertToString(outputTxid);
+        wtxid = CCommon.ConvertToString(outputWtxid);
+        witHash = CCommon.ConvertToString(outputWitHash);
+        txSize = outputSize;
+        txVsize = outputVsize;
+        txWeight = outputWeight;
+        txVersion = outputVersion;
+        txLocktime = outputLocktime;
+        lastGetTx = tx;
       }
     }
   }

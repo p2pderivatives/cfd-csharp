@@ -6,51 +6,51 @@ namespace Cfd
   /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
 public class ConfidentialAddress
 {
-  private readonly string confidential_address;
+  private readonly string confidentialAddress;
   private readonly Pubkey key;
-  private readonly Address unconfidenial_address;
+  private readonly Address unconfidenialAddress;
 
-  public ConfidentialAddress(string address_str)
+  public ConfidentialAddress(string addressString)
   {
-    confidential_address = address_str;
+    confidentialAddress = addressString;
     using (var handle = new ErrorHandle())
     {
       var ret = CElementsAddress.CfdParseConfidentialAddress(
-          handle.GetHandle(), address_str,
+          handle.GetHandle(), addressString,
           out IntPtr address,
-          out IntPtr confidential_key, out int network_type);
+          out IntPtr confidentialKey, out int networkType);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      var unconfidential_address_str = CCommon.ConvertToString(address);
-      var key_str = CCommon.ConvertToString(confidential_key);
+      var unconfidenialAddressStr = CCommon.ConvertToString(address);
+      var keyStr = CCommon.ConvertToString(confidentialKey);
 
-      unconfidenial_address = new Address(unconfidential_address_str);
-      key = new Pubkey(key_str);
+      unconfidenialAddress = new Address(unconfidenialAddressStr);
+      key = new Pubkey(keyStr);
     }
   }
 
-  public ConfidentialAddress(Address address, Pubkey confidential_key)
+  public ConfidentialAddress(Address address, Pubkey confidentialKey)
   {
-    unconfidenial_address = address;
-    key = confidential_key;
+    unconfidenialAddress = address;
+    key = confidentialKey;
     using (var handle = new ErrorHandle())
     {
       var ret = CElementsAddress.CfdCreateConfidentialAddress(
-          handle.GetHandle(), address.ToAddressString(), confidential_key.ToHexString(),
-          out IntPtr confidential_addr_ptr);
+          handle.GetHandle(), address.ToAddressString(), confidentialKey.ToHexString(),
+          out IntPtr outputConfidentialAddr);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      confidential_address = CCommon.ConvertToString(confidential_addr_ptr);
+      confidentialAddress = CCommon.ConvertToString(outputConfidentialAddr);
     }
   }
 
   public string ToAddressString()
   {
-    return confidential_address;
+    return confidentialAddress;
   }
 
   public Pubkey GetConfidentialKey()
@@ -60,7 +60,7 @@ public class ConfidentialAddress
 
   public Address GetAddress()
   {
-    return unconfidenial_address;
+    return unconfidenialAddress;
   }
 }
 */

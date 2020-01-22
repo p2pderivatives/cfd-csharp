@@ -12,23 +12,23 @@ namespace Cfd
   /// </summary>
   public class BlindFactor
   {
-    private readonly string hex_data;
+    private readonly string hexString;
 
     /// <summary>
     /// Constructor. (empty blinder)
     /// </summary>
     public BlindFactor()
     {
-      hex_data = "0000000000000000000000000000000000000000000000000000000000000000";
+      hexString = "0000000000000000000000000000000000000000000000000000000000000000";
     }
 
     /// <summary>
     /// Constructor. (valid blind factor)
     /// </summary>
-    /// <param name="blind_factor_hex">blinder hex</param>
-    public BlindFactor(string blind_factor_hex)
+    /// <param name="blindFactorHex">blinder hex</param>
+    public BlindFactor(string blindFactorHex)
     {
-      hex_data = blind_factor_hex;
+      hexString = blindFactorHex;
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ namespace Cfd
     /// <returns>blinder hex string</returns>
     public string ToHexString()
     {
-      return hex_data;
+      return hexString;
     }
   }
 }

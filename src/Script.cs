@@ -9,16 +9,16 @@ namespace Cfd
     private readonly string script;
     private readonly string[] scriptItems;
 
-    public Script(string script_hex)
+    public Script(string scriptHex)
     {
-      if ((script_hex == null) || (script_hex.Length > MaxSize * 2))
+      if ((scriptHex == null) || (scriptHex.Length > MaxSize * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to script size.");
       }
-      script = script_hex;
+      script = scriptHex;
       using (var handle = new ErrorHandle())
       {
-        scriptItems = ParseScript(handle, script_hex);
+        scriptItems = ParseScript(handle, scriptHex);
       }
     }
 
@@ -35,33 +35,33 @@ namespace Cfd
       }
     }
 
-    public Script(uint require_num, Pubkey[] pubkeys)
+    public Script(uint requireNum, Pubkey[] pubkeys)
     {
       throw new NotImplementedException();  // FIXME not implements
     }
 
-    private static string[] ParseScript(ErrorHandle handle, string script_hex)
+    private static string[] ParseScript(ErrorHandle handle, string scriptHex)
     {
       var ret = CScript.CfdParseScript(
-        handle.GetHandle(), script_hex, out IntPtr script_item_handle,
-        out uint script_item_num);
+        handle.GetHandle(), scriptHex, out IntPtr scriptItemHandle,
+        out uint scriptItemNum);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
       try
       {
-        var items = new string[script_item_num];
-        for (uint index = 0; index < script_item_num; ++index)
+        var items = new string[scriptItemNum];
+        for (uint index = 0; index < scriptItemNum; ++index)
         {
           ret = CScript.CfdGetScriptItem(
-            handle.GetHandle(), script_item_handle, index,
-            out IntPtr script_item);
+            handle.GetHandle(), scriptItemHandle, index,
+            out IntPtr scriptItem);
           if (ret != CfdErrorCode.Success)
           {
             handle.ThrowError(ret);
           }
-          items[index] = CCommon.ConvertToString(script_item);
+          items[index] = CCommon.ConvertToString(scriptItem);
         }
         return items;
       }
@@ -69,7 +69,7 @@ namespace Cfd
       {
         CScript.CfdFreeScriptItemHandle(
           handle.GetHandle(),
-          script_item_handle);
+          scriptItemHandle);
       }
     }
 

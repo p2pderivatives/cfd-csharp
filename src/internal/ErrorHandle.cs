@@ -19,12 +19,12 @@ namespace Cfd
     /// </summary>
     public ErrorHandle()
     {
-      var ret = CCommon.CfdCreateSimpleHandle(out IntPtr temp_handle);
-      if ((ret != CfdErrorCode.Success) || (temp_handle == IntPtr.Zero))
+      var ret = CCommon.CfdCreateSimpleHandle(out IntPtr newHandle);
+      if ((ret != CfdErrorCode.Success) || (newHandle == IntPtr.Zero))
       {
         throw new InvalidOperationException();
       }
-      handle = temp_handle;
+      handle = newHandle;
     }
 
     public IntPtr GetHandle()
@@ -46,30 +46,30 @@ namespace Cfd
     /// <summary>
     /// Throw exception from error handle and error code.
     /// </summary>
-    /// <param name="error_code">error code</param>
+    /// <param name="errorCode">error code</param>
     /// <exception cref="System.ArgumentOutOfRangeException">argument range exception</exception>
     /// <exception cref="System.ArgumentException">argument exception</exception>
     /// <exception cref="System.InsufficientMemoryException">memory full exception</exception>
     /// <exception cref="System.InvalidOperationException">illegal exception</exception>
-    public void ThrowError(CfdErrorCode error_code)
+    public void ThrowError(CfdErrorCode errorCode)
     {
-      if ((error_code == CfdErrorCode.Success) || disposed)
+      if ((errorCode == CfdErrorCode.Success) || disposed)
       {
         return;
       }
 
-      string err_message;
-      var ret = CCommon.CfdGetLastErrorMessage(handle, out IntPtr message_address);
+      string errorMessage;
+      var ret = CCommon.CfdGetLastErrorMessage(handle, out IntPtr messageAddress);
       if (ret == CfdErrorCode.Success)
       {
-        string conv_message = CCommon.ConvertToString(message_address);
-        err_message = $"CFD error[{error_code}] message:{conv_message}";
+        string message = CCommon.ConvertToString(messageAddress);
+        errorMessage = $"CFD error[{errorCode}] message:{message}";
       }
       else
       {
-        err_message = $"CFD error[{error_code}]";
+        errorMessage = $"CFD error[{errorCode}]";
       }
-      CfdCommon.ThrowError(error_code, err_message);
+      CfdCommon.ThrowError(errorCode, errorMessage);
     }
 
     protected virtual void Dispose(bool disposing)

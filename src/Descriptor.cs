@@ -35,22 +35,22 @@ namespace Cfd
   public class Descriptor
   {
     private string descriptor;
-    // Address_type
-    // key_type
+    // AddressType
+    // keyType
 
-    public Descriptor(string descriptor_str, CfdNetworkType network)
+    public Descriptor(string descriptorString, CfdNetworkType network)
     {
-      ParseDescriptor(descriptor_str, "", network);
+      ParseDescriptor(descriptorString, "", network);
     }
 
-    public Descriptor(string descriptor_str, string derive_path, CfdNetworkType network)
+    public Descriptor(string descriptorString, string derivePath, CfdNetworkType network)
     {
-      ParseDescriptor(descriptor_str, derive_path, network);
+      ParseDescriptor(descriptorString, derivePath, network);
     }
 
-    public void ParseDescriptor(string descriptor_str, string derive_path, CfdNetworkType network)
+    public void ParseDescriptor(string descriptorString, string derivePath, CfdNetworkType network)
     {
-      descriptor = descriptor_str;
+      descriptor = descriptorString;
       throw new NotImplementedException();  // FIXME not implementss
       /*
           internal static extern CfdErrorCode CfdParseDescriptor(
