@@ -16,6 +16,7 @@ namespace Cfd.Tests
       Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
 
       Console.WriteLine("- tx    = " + tx.ToHexString());
+      Console.WriteLine("- bytes = " + Cfd.StringUtil.FromBytes(tx.GetBytes()));
       Console.WriteLine("- txid  = " + tx.GetTxid().ToHexString());
       Console.WriteLine("- size  = " + tx.GetSize());
       Console.WriteLine("- vsize = " + tx.GetVsize());
@@ -242,6 +243,45 @@ namespace Cfd.Tests
         }
     */
 
+    // [TestMethod()]
+    public void TestTxidAndOutPoint1()
+    {
+      Txid txid = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
+
+      Console.WriteLine("Txid");
+      Console.WriteLine("- hexStr => " + txid.ToHexString());
+      Console.WriteLine("- bytes  => " + Cfd.StringUtil.FromBytes(txid.GetBytes()));
+      Txid txid2 = new Txid(txid.GetBytes());
+      Console.WriteLine("- copy   => " + txid2.ToHexString());
+      Console.WriteLine();
+    }
+
+    // [TestMethod()]
+    public void TestTxidAndOutPoint2()
+    {
+      Txid txid1 = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
+      Txid txid2 = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
+      Txid txid3 = new Txid("99a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
+      Txid txid4 = null;
+      Txid txid5 = null;
+      Console.WriteLine("txid1 == txid2 => " + (txid1 == txid2));
+      Console.WriteLine("txid1 == txid3 => " + (txid1 == txid3));
+      Console.WriteLine("txid1 == txid4 => " + (txid1 == txid4));
+      Console.WriteLine("txid4 == txid5 => " + (txid4 == txid5));
+      Console.WriteLine();
+
+      OutPoint p1 = new OutPoint(txid1, 0);
+      OutPoint p2 = new OutPoint(txid2, 0);
+      OutPoint p3 = new OutPoint(txid3, 0);
+      OutPoint p4 = null;
+      OutPoint p5 = null;
+      Console.WriteLine("p1 == p2 => " + (p1 == p2));
+      Console.WriteLine("p1 == p3 => " + (p1 == p3));
+      Console.WriteLine("p1 == p4 => " + (p1 == p4));
+      Console.WriteLine("p4 == p5 => " + (p4 == p5));
+      Console.WriteLine();
+    }
+
     public static void Main()
     {
       CfdTests test_obj = new CfdTests();
@@ -254,6 +294,10 @@ namespace Cfd.Tests
             test_obj.TestAddress1();
             test_obj.TestConfidentialAddress1();
       */
+
+      test_obj.TestTxidAndOutPoint1();
+
+      test_obj.TestTxidAndOutPoint2();
 
       Console.WriteLine("Call Finish!");
     }
