@@ -1,6 +1,6 @@
-using System;
-using System.Runtime.InteropServices;
-
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4

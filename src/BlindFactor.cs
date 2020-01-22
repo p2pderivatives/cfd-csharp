@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 /// <summary>
 /// cfd library namespace.

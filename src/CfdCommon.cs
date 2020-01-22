@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.InteropServices;
+
 
 /// <summary>
 /// cfd library namespace.
@@ -35,7 +35,7 @@ namespace Cfd
     {
       if (bytes == null)
       {
-        return new byte[0];
+        return Array.Empty<byte>();
       }
       var byteArray = new byte[bytes.Length];
       Array.Copy(bytes, byteArray, bytes.Length);
