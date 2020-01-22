@@ -58,29 +58,29 @@ namespace Cfd
           internal static extern CfdErrorCode CfdParseDescriptor(
               [In] IntPtr handle,
               [In] string descriptor,
-              [In] int network_type,
-              [In] string bip32_derivation_path,
-              [Out] out IntPtr descriptor_handle,
-              [Out] out uint max_index);
+              [In] int networkType,
+              [In] string bip32DerivationPath,
+              [Out] out IntPtr descriptorHandle,
+              [Out] out uint maxIndex);
 
           internal static extern CfdErrorCode CfdGetDescriptorData(
               [In] IntPtr handle,
-              [In] IntPtr descriptor_handle,
+              [In] IntPtr descriptorHandle,
               [In] uint index,
-              [Out] out uint max_index,
+              [Out] out uint maxIndex,
               [Out] out uint depth,
-              [Out] out int script_type,
-              [Out] out IntPtr locking_script,
+              [Out] out int scriptType,
+              [Out] out IntPtr lockingScript,
               [Out] out IntPtr address,
-              [Out] out int hash_type,
-              [Out] out IntPtr redeem_script,
-              [Out] out int key_type,
+              [Out] out int hashType,
+              [Out] out IntPtr redeemScript,
+              [Out] out int keyType,
               [Out] out IntPtr pubkey,
-              [Out] out IntPtr ext_pubkey,
-              [Out] out IntPtr ext_privkey,
-              [Out] out bool is_multisig,
-              [Out] out uint max_key_num,
-              [Out] out uint req_sig_num);
+              [Out] out IntPtr extPubkey,
+              [Out] out IntPtr extPrivkey,
+              [Out] out bool isMultisig,
+              [Out] out uint maxKeyNum,
+              [Out] out uint reqSigNum);
       */
     }
 

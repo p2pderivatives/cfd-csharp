@@ -22,13 +22,13 @@ namespace Cfd
     }
 
     // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdGetSupportedFunction([Out] ulong support_flag);
+    // static extern int CfdGetSupportedFunction([Out] ulong supportFlag);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     public static extern CfdErrorCode CfdInitialize();
 
     // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdFinalize([In] bool is_finish_process);
+    // static extern int CfdFinalize([In] bool isFinishProcess);
 
     // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
     // internal static extern CfdErrorCode CfdCreateHandle([Out] out IntPtr handle);

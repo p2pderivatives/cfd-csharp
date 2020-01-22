@@ -10,46 +10,46 @@ namespace Cfd
           [In] IntPtr handle,
           [In] string privkey,
           [In] string wif,
-          [In] bool is_compressed,
+          [In] bool isCompressed,
           [Out] out IntPtr pubkey);
 
     /*
         internal static extern CfdErrorCode CfdCalculateEcSignature(
             void* handle, const char* sighash, const char* privkey, const char* wif,
-            int network_type, bool has_grind_r, char** signature);
+            int networkType, bool hasGrindR, char** signature);
 
         internal static extern CfdErrorCode CfdEncodeSignatureByDer(
-            void* handle, const char* signature, int sighash_type,
-            bool sighash_anyone_can_pay, char** der_signature);
+            void* handle, const char* signature, int sighashType,
+            bool sighashAnyoneCanPay, char** derSignature);
 
         internal static extern CfdErrorCode CfdNormalizeSignature(
-            void* handle, const char* signature, char** normalized_signature);
+            void* handle, const char* signature, char** normalizedSignature);
 
         internal static extern CfdErrorCode CfdCreateKeyPair(
-            void* handle, bool is_compressed, int network_type, char** pubkey,
+            void* handle, bool isCompressed, int networkType, char** pubkey,
             char** privkey, char** wif);
 
         internal static extern CfdErrorCode CfdGetPrivkeyFromWif(
-            void* handle, const char* wif, int network_type, char** privkey);
+            void* handle, const char* wif, int networkType, char** privkey);
 
 
         internal static extern CfdErrorCode CfdCreateExtkeyFromSeed(
-            void* handle, const char* seed_hex, int network_type, int key_type,
+            void* handle, const char* seedHex, int networkType, int keyType,
             char** extkey);
 
         internal static extern CfdErrorCode CfdCreateExtkeyFromParentPath(
-            void* handle, const char* extkey, const char* path, int network_type,
-            int key_type, char** child_extkey);
+            void* handle, const char* extkey, const char* path, int networkType,
+            int keyType, char** childExtkey);
 
         internal static extern CfdErrorCode CfdCreateExtPubkey(
-            void* handle, const char* extkey, int network_type, char** ext_pubkey);
+            void* handle, const char* extkey, int networkType, char** extPubkey);
 
         internal static extern CfdErrorCode CfdGetPrivkeyFromExtkey(
-            void* handle, const char* extkey, int network_type, char** privkey,
+            void* handle, const char* extkey, int networkType, char** privkey,
             char** wif);
 
         internal static extern CfdErrorCode CfdGetPubkeyFromExtkey(
-            void* handle, const char* extkey, int network_type, char** pubkey);
+            void* handle, const char* extkey, int networkType, char** pubkey);
     */
   }
 }
