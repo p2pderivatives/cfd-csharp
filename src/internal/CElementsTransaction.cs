@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 /// <summary>
@@ -17,49 +16,49 @@ namespace Cfd
         [In] IntPtr handle,
         [In] uint version,
         [In] uint locktime,
-        [Out] out IntPtr tx_string);
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddConfidentialTxIn(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
         [In] uint sequence,
-        [Out] out IntPtr tx_string);
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddConfidentialTxOut(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
-        [In] string asset_string,
-        [In] long value_satoshi,
-        [In] string value_commitment,
+        [In] string txHexString,
+        [In] string assetString,
+        [In] long satoshi,
+        [In] string valueCommitment,
         [In] string address,
-        [In] string direct_locking_script,
+        [In] string directLockingScript,
         [In] string nonce,
-        [Out] out IntPtr tx_string);
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdUpdateConfidentialTxOut(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] uint index,
-        [In] string asset_string,
-        [In] long value_satoshi,
-        [In] string value_commitment,
+        [In] string assetString,
+        [In] long satoshi,
+        [In] string valueCommitment,
         [In] string address,
-        [In] string direct_locking_script,
+        [In] string directLockingScript,
         [In] string nonce,
-        [Out] out IntPtr tx_string);
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxInfo(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [Out] out IntPtr txid,
         [Out] out IntPtr wtxid,
-        [Out] out IntPtr wit_hash,
+        [Out] out IntPtr witHash,
         [Out] out uint size,
         [Out] out uint vsize,
         [Out] out uint weight,
@@ -69,218 +68,218 @@ namespace Cfd
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxIn(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] uint index,
         [Out] out IntPtr txid,
         [Out] out uint vout,
         [Out] out uint sequence,
-        [Out] out IntPtr script_sig);
+        [Out] out IntPtr scriptSig);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxInWitness(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
-        [In] uint txin_index,
-        [In] uint stack_index,
-        [Out] out IntPtr stack_data);
+        [In] string txHexString,
+        [In] uint txinIndex,
+        [In] uint stackIndex,
+        [Out] out IntPtr stackData);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetTxInIssuanceInfo(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] uint index,
         [Out] out IntPtr entropy,
         [Out] out IntPtr nonce,
-        [Out] out long asset_amount,
-        [Out] out IntPtr asset_value,
-        [Out] out long token_amount,
-        [Out] out IntPtr token_value,
-        [Out] out IntPtr asset_rangeproof,
-        [Out] out IntPtr token_rangeproof);
+        [Out] out long assetAmount,
+        [Out] out IntPtr assetValue,
+        [Out] out long tokenAmount,
+        [Out] out IntPtr tokenValue,
+        [Out] out IntPtr assetRangeproof,
+        [Out] out IntPtr tokenRangeproof);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxOut(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] uint index,
-        [Out] out IntPtr asset_string,
-        [Out] out long value_satoshi,
-        [Out] out IntPtr value_commitment,
+        [Out] out IntPtr assetString,
+        [Out] out long satoshi,
+        [Out] out IntPtr valueCommitment,
         [Out] out IntPtr nonce,
-        [Out] out IntPtr locking_script,
-        [Out] out IntPtr surjection_proof,
+        [Out] out IntPtr lockingScript,
+        [Out] out IntPtr surjectionProof,
         [Out] out IntPtr rangeproof);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxInCount(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [Out] out uint count);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxInWitnessCount(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
-        [In] uint txin_index,
+        [In] string txHexString,
+        [In] uint txinIndex,
         [Out] out uint count);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxOutCount(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [Out] out uint count);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdSetRawReissueAsset(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
-        [In] long asset_amount,
-        [In] string blinding_nonce,
+        [In] long assetAmount,
+        [In] string blindingNonce,
         [In] string entropy,
         [In] string address,
-        [In] string direct_locking_script,
-        [Out] out IntPtr asset_string,
-        [Out] out IntPtr tx_string);
+        [In] string directLockingScript,
+        [Out] out IntPtr assetString,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetIssuanceBlindingKey(
         [In] IntPtr handle,
-        [In] string master_blinding_key,
+        [In] string masterBlindingKey,
         [In] string txid,
         [In] uint vout,
-        [Out] out IntPtr blinding_key);
+        [Out] out IntPtr blindingKey);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdInitializeBlindTx(
         [In] IntPtr handle,
-        [Out] out IntPtr blind_handle);
+        [Out] out IntPtr blindHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddBlindTxInData(
         [In] IntPtr handle,
-        [In] IntPtr blind_handle,
+        [In] IntPtr blindHandle,
         [In] string txid,
         [In] uint vout,
-        [In] string asset_string,
-        [In] string asset_blind_factor,
-        [In] string amount_blind_factor,
-        [In] long value_satoshi,
-        [In] string asset_key,
-        [In] string token_key);
+        [In] string assetString,
+        [In] string assetBlindFactor,
+        [In] string amountBlindFactor,
+        [In] long satoshi,
+        [In] string assetKey,
+        [In] string tokenKey);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddBlindTxOutData(
         [In] IntPtr handle,
-        [In] IntPtr blind_handle,
+        [In] IntPtr blindHandle,
         [In] uint index,
-        [In] string confidential_key);
+        [In] string confidentialKey);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFinalizeBlindTx(
         [In] IntPtr handle,
-        [In] IntPtr blind_handle,
-        [In] string tx_hex_string,
-        [Out] out IntPtr tx_string);
+        [In] IntPtr blindHandle,
+        [In] string txHexString,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeBlindHandle(
         [In] IntPtr handle,
-        [In] IntPtr blind_handle);
+        [In] IntPtr blindHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddConfidentialTxSign(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
-        [In] bool is_witness,
-        [In] string sign_data_hex,
-        [In] bool clear_stack,
-        [Out] out IntPtr tx_string);
+        [In] bool isWitness,
+        [In] string signDataHex,
+        [In] bool clearStack,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddConfidentialTxDerSign(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
-        [In] bool is_witness,
+        [In] bool isWitness,
         [In] string signature,
-        [In] int sighash_type,
-        [In] bool sighash_anyone_can_pay,
-        [In] bool clear_stack,
-        [Out] out IntPtr tx_string);
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] bool clearStack,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFinalizeElementsMultisigSign(
         [In] IntPtr handle,
-        [In] IntPtr multisign_handle,
-        [In] string tx_hex_string,
+        [In] IntPtr multisignHandle,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
-        [In] int hash_type,
-        [In] string witness_script,
-        [In] string redeem_script,
-        [In] bool clear_stack,
-        [Out] out IntPtr tx_string);
+        [In] int hashType,
+        [In] string witnessScript,
+        [In] string redeemScript,
+        [In] bool clearStack,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdCreateConfidentialSighash(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
+        [In] string txHexString,
         [In] string txid,
         [In] uint vout,
-        [In] int hash_type,
+        [In] int hashType,
         [In] string pubkey,
-        [In] string redeem_script,
-        [In] long value_satoshi,
-        [In] string value_commitment,
-        [In] int sighash_type,
-        [In] bool sighash_anyone_can_pay,
+        [In] string redeemScript,
+        [In] long satoshi,
+        [In] string valueCommitment,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
         [Out] out IntPtr sighash);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdUnblindTxOut(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
-        [In] uint tx_out_index,
-        [In] string blinding_key,
+        [In] string txHexString,
+        [In] uint txoutIndex,
+        [In] string blindingKey,
         [Out] out IntPtr asset,
         [Out] out long value,
-        [Out] out IntPtr asset_blind_factor,
-        [Out] out IntPtr amount_blind_factor);
+        [Out] out IntPtr assetBlindFactor,
+        [Out] out IntPtr amountBlindFactor);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdUnblindIssuance(
         [In] IntPtr handle,
-        [In] string tx_hex_string,
-        [In] uint tx_in_index,
-        [In] string asset_blinding_key,
-        [In] string token_blinding_key,
+        [In] string txHexString,
+        [In] uint txinIndex,
+        [In] string assetBlindingKey,
+        [In] string tokenBlindingKey,
         [Out] out IntPtr asset,
-        [Out] out long asset_value,
-        [Out] out IntPtr asset_blind_factor,
-        [Out] out IntPtr asset_amount_blind_factor,
+        [Out] out long assetValue,
+        [Out] out IntPtr assetBlindFactor,
+        [Out] out IntPtr assetAmountBlindFactor,
         [Out] out IntPtr token,
-        [Out] out long token_value,
-        [Out] out IntPtr token_blind_factor,
-        [Out] out IntPtr token_amount_blind_factor);
+        [Out] out long tokenValue,
+        [Out] out IntPtr tokenBlindFactor,
+        [Out] out IntPtr tokenAmountBlindFactor);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdVerifyConfidentialTxSignature(
         [In] IntPtr handle,
-        [In] string tx_hex,
+        [In] string txHex,
         [In] string signature,
         [In] string pubkey,
         [In] string script,
         [In] string txid,
         [In] uint vout,
-        [In] int sighash_type,
-        [In] bool sighash_anyone_can_pay,
-        [In] long value_satoshi,
-        [In] string value_commitment,
-        [In] int witness_version);
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] long satoshi,
+        [In] string valueCommitment,
+        [In] int witnessVersion);
   }
 }

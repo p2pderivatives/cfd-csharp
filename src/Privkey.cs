@@ -1,6 +1,8 @@
 using System;
-using System.Runtime.InteropServices;
 
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -10,7 +12,7 @@ namespace Cfd
   {
     public const uint Size = 32;
     private string privkey;
-    private string privkey_wif;
+    private string privkeyWif;
     private Pubkey pubkey;
 
     /// <summary>
@@ -39,14 +41,14 @@ namespace Cfd
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="privkey_hex">privkey hex string</param>
-    public Privkey(string privkey_hex)
+    /// <param name="privkeyHex">privkey hex string</param>
+    public Privkey(string privkeyHex)
     {
-      if ((privkey_hex == null) || (privkey_hex.Length != Size * 2))
+      if ((privkeyHex == null) || (privkeyHex.Length != Size * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to privkey size.");
       }
-      privkey = privkey_hex;
+      privkey = privkeyHex;
       Initialize(privkey, "", true);
     }
 
@@ -54,11 +56,11 @@ namespace Cfd
     /// Constructor. (wif)
     /// </summary>
     /// <param name="wif">pubkey wif string</param>
-    /// <param name="is_compressed">compressed flag</param>
-    public Privkey(string wif, bool is_compressed)
+    /// <param name="isCompressed">compressed flag</param>
+    public Privkey(string wif, bool isCompressed)
     {
-      privkey_wif = wif;
-      Initialize("", wif, is_compressed);
+      privkeyWif = wif;
+      Initialize("", wif, isCompressed);
     }
 
     /// <summary>
@@ -85,7 +87,7 @@ namespace Cfd
     /// <returns>privkey wif string</returns>
     public string GetWif()
     {
-      return privkey_wif;
+      return privkeyWif;
     }
 
     /// <summary>
@@ -97,18 +99,17 @@ namespace Cfd
       return pubkey;
     }
 
-    private void Initialize(string privkey_hex, string wif, bool is_compressed)
+    private void Initialize(string privkeyHex, string wif, bool isCompressed)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = CKey.CfdGetPubkeyFromPrivkey(
-          handle.GetHandle(), privkey_hex, wif, is_compressed, out IntPtr out_pubkey);
+          handle.GetHandle(), privkeyHex, wif, isCompressed, out IntPtr pubkeyHex);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        var pubkey_str = CCommon.ConvertToString(out_pubkey);
-        pubkey = new Pubkey(pubkey_str);
+        pubkey = new Pubkey(CCommon.ConvertToString(pubkeyHex));
       }
     }
   }

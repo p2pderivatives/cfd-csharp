@@ -1,6 +1,8 @@
 using System;
-using System.Runtime.InteropServices;
 
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -34,8 +36,8 @@ namespace Cfd
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to txid size.");
       }
-      var txid_bytes = CfdCommon.ReverseBytes(bytes);
-      this.txid = StringUtil.FromBytes(txid_bytes);
+      var txidBytes = CfdCommon.ReverseBytes(bytes);
+      this.txid = StringUtil.FromBytes(txidBytes);
     }
 
     public string ToHexString()
@@ -45,8 +47,8 @@ namespace Cfd
 
     public byte[] GetBytes()
     {
-      var temp_txid = StringUtil.ToBytes(txid);
-      return CfdCommon.ReverseBytes(temp_txid);
+      var txidBytes = StringUtil.ToBytes(txid);
+      return CfdCommon.ReverseBytes(txidBytes);
     }
 
     public bool Equals(Txid obj)

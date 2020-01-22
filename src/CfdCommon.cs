@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.InteropServices;
+
 
 /// <summary>
 /// cfd library namespace.
@@ -35,52 +35,52 @@ namespace Cfd
     {
       if (bytes == null)
       {
-        return new byte[0];
+        return Array.Empty<byte>();
       }
-      var temp_bytes = new byte[bytes.Length];
-      Array.Copy(bytes, temp_bytes, bytes.Length);
-      Array.Reverse(temp_bytes);
-      return temp_bytes;
+      var byteArray = new byte[bytes.Length];
+      Array.Copy(bytes, byteArray, bytes.Length);
+      Array.Reverse(byteArray);
+      return byteArray;
     }
 
     /// <summary>
     /// Throw exception from error code.
     /// </summary>
-    /// <param name="error_code">error code</param>
+    /// <param name="errorCode">error code</param>
     /// <param name="message">error message</param>
     /// <exception cref="System.ArgumentOutOfRangeException">argument range exception</exception>
     /// <exception cref="System.ArgumentException">argument exception</exception>
     /// <exception cref="System.InsufficientMemoryException">memory full exception</exception>
     /// <exception cref="System.InvalidOperationException">illegal exception</exception>
-    public static void ThrowError(CfdErrorCode error_code, string message)
+    public static void ThrowError(CfdErrorCode errorCode, string message)
     {
-      if (error_code == CfdErrorCode.Success)
+      if (errorCode == CfdErrorCode.Success)
       {
         return;
       }
 
-      var err_message = message;
-      if (String.IsNullOrEmpty(err_message))
+      var errorMessage = message;
+      if (String.IsNullOrEmpty(errorMessage))
       {
-        err_message = String.Format("CFD error[{0}]", error_code);
+        errorMessage = String.Format("CFD error[{0}]", errorCode);
       }
-      switch (error_code)
+      switch (errorCode)
       {
         case CfdErrorCode.MemoryFullError:
-          throw new InsufficientMemoryException(err_message);
+          throw new InsufficientMemoryException(errorMessage);
         case CfdErrorCode.OutOfRangeError:
-          throw new ArgumentOutOfRangeException(err_message);
+          throw new ArgumentOutOfRangeException(errorMessage);
         case CfdErrorCode.SignVerificationError:
         case CfdErrorCode.InvalidSettingError:
         case CfdErrorCode.IllegalArgumentError:
-          throw new ArgumentException(err_message);
+          throw new ArgumentException(errorMessage);
         case CfdErrorCode.ConnectionError:
         case CfdErrorCode.DiskAccessError:
         case CfdErrorCode.IllegalStateError:
         case CfdErrorCode.InternalError:
         case CfdErrorCode.UnknownError:
         default:
-          throw new InvalidOperationException(err_message);
+          throw new InvalidOperationException(errorMessage);
       }
     }
   }

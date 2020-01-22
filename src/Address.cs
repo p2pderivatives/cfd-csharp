@@ -1,6 +1,6 @@
-using System;
-using System.Runtime.InteropServices;
-
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   /**
@@ -81,23 +81,23 @@ namespace Cfd
 public class Address
 {
   private readonly string address;
-  private readonly string locking_script;
-  private readonly string p2sh_segwit_locking_script;
+  private readonly string lockingScript;
+  private readonly string p2shSegwitLockingScript;
   private readonly string hash;
   private readonly CfdNetworkType network;
-  private readonly CfdAddressType address_type;
-  private readonly CfdWitnessVersion witness_version;
+  private readonly CfdAddressType addressType;
+  private readonly CfdWitnessVersion witnessVersion;
 
   public Address()
   {
   }
 
-  public Address(string address_str)
+  public Address(string addressString)
   {
     using (var handle = new ErrorHandle())
     {
-      Initialize(handle, address_str);
-      address = address_str;
+      Initialize(handle, addressString);
+      address = addressString;
     }
   }
 
@@ -111,19 +111,19 @@ public class Address
         pubkey.ToHexString(),
         "",
         (int)network,
-        out IntPtr out_address,
-        out IntPtr out_locking_script,
-        out IntPtr out_p2sh_segwit_locking_script);
+        out IntPtr outputAddress,
+        out IntPtr outputLockingScript,
+        out IntPtr outputP2shSegwitLockingScript);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      address = CCommon.ConvertToString(out_address);
-      locking_script = CCommon.ConvertToString(out_locking_script);
-      p2sh_segwit_locking_script = CCommon.ConvertToString(out_p2sh_segwit_locking_script);
+      address = CCommon.ConvertToString(outputAddress);
+      lockingScript = CCommon.ConvertToString(outputLockingScript);
+      p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
 
       Initialize(handle, address);
-      address_type = type;
+      addressType = type;
     }
   }
 
@@ -137,37 +137,37 @@ public class Address
         "",
         script.ToHexString(),
         (int)network,
-        out IntPtr out_address,
-        out IntPtr out_locking_script,
-        out IntPtr out_p2sh_segwit_locking_script);
+        out IntPtr outputAddress,
+        out IntPtr outputLockingScript,
+        out IntPtr outputP2shSegwitLockingScript);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      address = CCommon.ConvertToString(out_address);
-      locking_script = CCommon.ConvertToString(out_locking_script);
-      p2sh_segwit_locking_script = CCommon.ConvertToString(out_p2sh_segwit_locking_script);
+      address = CCommon.ConvertToString(outputAddress);
+      lockingScript = CCommon.ConvertToString(outputLockingScript);
+      p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
 
       Initialize(handle, address);
-      address_type = type;
+      addressType = type;
     }
   }
 
-  public static Address GetAddressByLockingScript(Script in_locking_script, CfdNetworkType network)
+  public static Address GetAddressByLockingScript(Script inputLockingScript, CfdNetworkType network)
   {
     string address = "";
     using (var handle = new ErrorHandle())
     {
       var ret = CAddress.CfdGetAddressFromLockingScript(
         handle.GetHandle(),
-        in_locking_script.ToHexString(),
+        inputLockingScript.ToHexString(),
         (int)network,
-        out IntPtr out_address);
+        out IntPtr outputAddress);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      address = CCommon.ConvertToString(out_address);
+      address = CCommon.ConvertToString(outputAddress);
     }
     return new Address(address);
   }
@@ -179,7 +179,7 @@ public class Address
 
   public string GetLockingScript()
   {
-    return locking_script;
+    return lockingScript;
   }
 
   public string GetHash()
@@ -189,7 +189,7 @@ public class Address
 
   public string GetP2shLockingScript()
   {
-    return p2sh_segwit_locking_script;
+    return p2shSegwitLockingScript;
   }
 
   public CfdNetworkType GetNetwork()
@@ -199,38 +199,38 @@ public class Address
 
   public CfdAddressType GetAddressType()
   {
-    return address_type;
+    return addressType;
   }
 
   public CfdWitnessVersion GetWitnessVersion()
   {
-    return witness_version;
+    return witnessVersion;
   }
 
-  public void SetAddressType(CfdAddressType addr_type)
+  public void SetAddressType(CfdAddressType addrType)
   {
-    address_type = addr_type;
+    addressType = addrType;
   }
 
-  private void Initialize(ErrorHandle handle, string address_str)
+  private void Initialize(ErrorHandle handle, string addressString)
   {
       var ret = CAddress.CfdGetAddressInfo(
         handle.GetHandle(),
-        address_str,
-        out int out_network_type,
-        out int out_hash_type,
-        out int out_witness_version,
-        out IntPtr out_locking_script,
-        out IntPtr out_hash);
+        addressString,
+        out int networkType,
+        out int hashType,
+        out int segwitVersion,
+        out IntPtr outputLockingScript,
+        out IntPtr hashString);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      network = (CfdNetworkType)out_network_type;
-      address_type = (CfdAddressType)out_hash_type;
-      witness_version = (CfdWitnessVersion)out_witness_version;
-      locking_script = CCommon.ConvertToString(out_locking_script);
-      hash = CCommon.ConvertToString(out_hash);
+      network = (CfdNetworkType)networkType;
+      addressType = (CfdAddressType)hashType;
+      witnessVersion = (CfdWitnessVersion)segwitVersion;
+      lockingScript = CCommon.ConvertToString(outputLockingScript);
+      hash = CCommon.ConvertToString(hashString);
   }
 
 }

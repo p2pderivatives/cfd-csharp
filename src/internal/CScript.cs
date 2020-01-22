@@ -9,24 +9,24 @@ namespace Cfd
     internal static extern CfdErrorCode CfdParseScript(
         [In] IntPtr handle,
         [In] string script,
-        [Out] out IntPtr script_item_handle,
-        [Out] out uint script_item_num);
+        [Out] out IntPtr scriptItemHandle,
+        [Out] out uint scriptItemNum);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetScriptItem(
         [In] IntPtr handle,
-        [In] IntPtr script_item_handle,
+        [In] IntPtr scriptItemHandle,
         [In] uint index,
-        [Out] out IntPtr script_item);
+        [Out] out IntPtr scriptItem);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeScriptItemHandle(
-        [In] IntPtr handle, [In] IntPtr script_item_handle);
+        [In] IntPtr handle, [In] IntPtr scriptItemHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdConvertScriptAsmToHex(
         [In] IntPtr handle,
-        [In] string script_asm,
-        [Out] out IntPtr script_hex);
+        [In] string scriptAsm,
+        [Out] out IntPtr scriptHex);
   }
 }

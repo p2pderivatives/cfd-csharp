@@ -1,6 +1,6 @@
-using System;
-using System.Runtime.InteropServices;
-
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -37,14 +37,14 @@ namespace Cfd
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="pubkey_hex">pubkey hex string</param>
-    public Pubkey(string pubkey_hex)
+    /// <param name="pubkeyHex">pubkey hex string</param>
+    public Pubkey(string pubkeyHex)
     {
-      if ((pubkey_hex == null) || (pubkey_hex.Length > UncompressLength * 2))
+      if ((pubkeyHex == null) || (pubkeyHex.Length > UncompressLength * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to pubkey size.");
       }
-      pubkey = pubkey_hex;
+      pubkey = pubkeyHex;
       // FIXME check format
     }
 

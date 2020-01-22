@@ -8,90 +8,90 @@ namespace Cfd
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdCreateAddress(
         [In] IntPtr handle,
-        [In] int hash_type,
+        [In] int hashType,
         [In] string pubkey,
-        [In] string redeem_script,
-        [In] int network_type,
+        [In] string redeemScript,
+        [In] int networkType,
         [Out] out IntPtr address,
-        [Out] out IntPtr locking_script,
-        [Out] out IntPtr p2sh_segwit_locking_script);
+        [Out] out IntPtr lockingScript,
+        [Out] out IntPtr p2shSegwitLockingScript;
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdInitializeMultisigScript(
         [In] IntPtr handle,
-        [In] int network_type,
-        [In] int hash_type,
-        [Out] out IntPtr multisig_handle);
+        [In] int networkType,
+        [In] int hashType,
+        [Out] out IntPtr multisigHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdAddMultisigScriptData(
         [In] IntPtr handle,
-        [In] IntPtr multisig_handle,
+        [In] IntPtr multisigHandle,
         [In] string pubkey);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFinalizeMultisigScript(
         [In] IntPtr handle,
-        [In] IntPtr multisig_handle,
-        [In] uint require_num,
+        [In] IntPtr multisigHandle,
+        [In] uint requireNum,
         [Out] out IntPtr address,
-        [Out] out IntPtr redeem_script,
-        [Out] out IntPtr witness_script);
+        [Out] out IntPtr redeemScript,
+        [Out] out IntPtr witnessScript;
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeMultisigScriptHandle(
         [In] IntPtr handle,
-        [In] IntPtr multisig_handle);
+        [In] IntPtr multisigHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdParseDescriptor(
         [In] IntPtr handle,
         [In] string descriptor,
-        [In] int network_type,
-        [In] string bip32_derivation_path,
-        [Out] out IntPtr descriptor_handle,
-        [Out] out uint max_index);
+        [In] int networkType,
+        [In] string bip32DerivationPath,
+        [Out] out IntPtr descriptorHandle,
+        [Out] out uint maxIndex);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetDescriptorData(
         [In] IntPtr handle,
-        [In] IntPtr descriptor_handle,
+        [In] IntPtr descriptorHandle,
         [In] uint index,
-        [Out] out uint max_index,
+        [Out] out uint maxIndex,
         [Out] out uint depth,
-        [Out] out int script_type,
-        [Out] out IntPtr locking_script,
+        [Out] out int scriptType,
+        [Out] out IntPtr lockingScript,
         [Out] out IntPtr address,
-        [Out] out int hash_type,
-        [Out] out IntPtr redeem_script,
-        [Out] out int key_type,
+        [Out] out int hashType,
+        [Out] out IntPtr redeemScript,
+        [Out] out int keyType,
         [Out] out IntPtr pubkey,
-        [Out] out IntPtr ext_pubkey,
-        [Out] out IntPtr ext_privkey,
-        [Out] out bool is_multisig,
-        [Out] out uint max_key_num,
-        [Out] out uint req_sig_num);
+        [Out] out IntPtr extPubkey,
+        [Out] out IntPtr extPrivkey,
+        [Out] out bool isMultisig,
+        [Out] out uint maxKeyNum,
+        [Out] out uint reqSigNum);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetDescriptorMultisigKey(
         [In] IntPtr handle,
-        [In] IntPtr descriptor_handle,
-        [In] uint key_index,
-        [Out] out int key_type,
+        [In] IntPtr descriptorHandle,
+        [In] uint keyIndex,
+        [Out] out int keyType,
         [Out] out IntPtr pubkey,
-        [Out] out IntPtr ext_pubkey,
-        [Out] out IntPtr ext_privkey);
+        [Out] out IntPtr extPubkey,
+        [Out] out IntPtr extPrivkey);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeDescriptorHandle(
         [In] IntPtr handle,
-        [In] IntPtr descriptor_handle);
+        [In] IntPtr descriptorHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdGetAddressFromLockingScript(
         [In] IntPtr handle,
-        [In] string locking_script,
-        [In] int network_type,
+        [In] string lockingScript,
+        [In] int networkType,
         [Out] out IntPtr address);
 
     /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
@@ -99,10 +99,10 @@ namespace Cfd
     internal static extern CfdErrorCode CfdGetAddressInfo(
         [In] IntPtr handle,
         [In] string address,
-        [Out] out int network_type,
-        [Out] out int hash_type,
-        [Out] out int witness_version,
-        [Out] out IntPtr locking_script,
+        [Out] out int networkType,
+        [Out] out int hashType,
+        [Out] out int witnessVersion,
+        [Out] out IntPtr lockingScript,
         [Out] out IntPtr hash);
 */
   }

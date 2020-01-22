@@ -1,6 +1,6 @@
-using System;
-using System.Runtime.InteropServices;
-
+/// <summary>
+/// cfd library namespace.
+/// </summary>
 namespace Cfd
 {
   //! txin sequence locktime
