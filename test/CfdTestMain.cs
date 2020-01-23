@@ -111,89 +111,89 @@ namespace Cfd.Tests
           new Privkey("0473d39aa6542e0c1bb6a2343b2319c3e92063dd019af4d47dbf50c460204f32"));
 
       Console.WriteLine("- ReIssuance unblind data:");
-      Console.WriteLine("  - asset          = " + reissueData.assetData.asset);
-      Console.WriteLine("  - satoshiAmount  = " + reissueData.assetData.satoshiValue);
-      Console.WriteLine("  - asset blinder  = " + reissueData.assetData.assetBlindFactor.ToHexString());
-      Console.WriteLine("  - amount blinder = " + reissueData.assetData.amountBlindFactor.ToHexString());
-      if (reissueData.assetData.asset != "accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd")
+      Console.WriteLine("  - asset          = " + reissueData.AssetData.Asset);
+      Console.WriteLine("  - satoshiAmount  = " + reissueData.AssetData.SatoshiValue);
+      Console.WriteLine("  - asset blinder  = " + reissueData.AssetData.AssetBlindFactor.ToHexString());
+      Console.WriteLine("  - amount blinder = " + reissueData.AssetData.AmountBlindFactor.ToHexString());
+      if (reissueData.AssetData.Asset != "accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd")
       {
         throw new InvalidOperationException("**** reissue asset fail. ****");
       }
-      if (reissueData.assetData.satoshiValue != 600000000)
+      if (reissueData.AssetData.SatoshiValue != 600000000)
       {
         throw new InvalidOperationException("**** reissue satoshiValue fail. ****");
       }
-      if (reissueData.assetData.assetBlindFactor.ToHexString() != "0000000000000000000000000000000000000000000000000000000000000000")
+      if (reissueData.AssetData.AssetBlindFactor.ToHexString() != "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** reissue asset blinder fail. ****");
       }
-      if (reissueData.assetData.amountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (reissueData.AssetData.AmountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** reissue  amount blinder fail. ****");
       }
 
       Console.WriteLine("- Vout[0] unblind data:");
-      Console.WriteLine("  - asset          = " + vout0.asset);
-      Console.WriteLine("  - satoshiAmount  = " + vout0.satoshiValue);
-      Console.WriteLine("  - asset blinder  = " + vout0.assetBlindFactor.ToHexString());
-      Console.WriteLine("  - amount blinder = " + vout0.amountBlindFactor.ToHexString());
-      if (vout0.asset != "186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179")
+      Console.WriteLine("  - asset          = " + vout0.Asset);
+      Console.WriteLine("  - satoshiAmount  = " + vout0.SatoshiValue);
+      Console.WriteLine("  - asset blinder  = " + vout0.AssetBlindFactor.ToHexString());
+      Console.WriteLine("  - amount blinder = " + vout0.AmountBlindFactor.ToHexString());
+      if (vout0.Asset != "186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179")
       {
         throw new InvalidOperationException("**** vout[0] asset fail. ****");
       }
-      if (vout0.satoshiValue != 999587680)
+      if (vout0.SatoshiValue != 999587680)
       {
         throw new InvalidOperationException("**** vout[0] satoshiValue fail. ****");
       }
-      if (vout0.assetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout0.AssetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[0] asset blinder fail. ****");
       }
-      if (vout0.amountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout0.AmountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[0]  amount blinder fail. ****");
       }
 
       Console.WriteLine("- Vout[1] unblind data:");
-      Console.WriteLine("  - asset          = " + vout1.asset);
-      Console.WriteLine("  - satoshiAmount  = " + vout1.satoshiValue);
-      Console.WriteLine("  - asset blinder  = " + vout1.assetBlindFactor.ToHexString());
-      Console.WriteLine("  - amount blinder = " + vout1.amountBlindFactor.ToHexString());
-      if (vout1.asset != "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b")
+      Console.WriteLine("  - asset          = " + vout1.Asset);
+      Console.WriteLine("  - satoshiAmount  = " + vout1.SatoshiValue);
+      Console.WriteLine("  - asset blinder  = " + vout1.AssetBlindFactor.ToHexString());
+      Console.WriteLine("  - amount blinder = " + vout1.AmountBlindFactor.ToHexString());
+      if (vout1.Asset != "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b")
       {
         throw new InvalidOperationException("**** vout[1] asset fail. ****");
       }
-      if (vout1.satoshiValue != 700000000)
+      if (vout1.SatoshiValue != 700000000)
       {
         throw new InvalidOperationException("**** vout[1] satoshiValue fail. ****");
       }
-      if (vout1.assetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout1.AssetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[1] asset blinder fail. ****");
       }
-      if (vout1.amountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout1.AmountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[1]  amount blinder fail. ****");
       }
 
       Console.WriteLine("- Vout[3] unblind data:");
-      Console.WriteLine("  - asset          = " + vout3.asset);
-      Console.WriteLine("  - satoshiAmount  = " + vout3.satoshiValue);
-      Console.WriteLine("  - asset blinder  = " + vout3.assetBlindFactor.ToHexString());
-      Console.WriteLine("  - amount blinder = " + vout3.amountBlindFactor.ToHexString());
-      if (vout3.asset != "accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd")
+      Console.WriteLine("  - asset          = " + vout3.Asset);
+      Console.WriteLine("  - satoshiAmount  = " + vout3.SatoshiValue);
+      Console.WriteLine("  - asset blinder  = " + vout3.AssetBlindFactor.ToHexString());
+      Console.WriteLine("  - amount blinder = " + vout3.AmountBlindFactor.ToHexString());
+      if (vout3.Asset != "accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd")
       {
         throw new InvalidOperationException("**** vout[3] asset fail. ****");
       }
-      if (vout3.satoshiValue != 600000000)
+      if (vout3.SatoshiValue != 600000000)
       {
         throw new InvalidOperationException("**** vout[3] satoshiValue fail. ****");
       }
-      if (vout3.assetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout3.AssetBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[3] asset blinder fail. ****");
       }
-      if (vout3.amountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
+      if (vout3.AmountBlindFactor.ToHexString() == "0000000000000000000000000000000000000000000000000000000000000000")
       {
         throw new InvalidOperationException("**** vout[3]  amount blinder fail. ****");
       }

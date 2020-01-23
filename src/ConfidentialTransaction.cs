@@ -11,10 +11,10 @@ namespace Cfd
   /// </summary>
   public struct AssetValueData
   {
-    public string asset { get; private set; }
-    public long satoshiValue { get; private set; }
-    public BlindFactor assetBlindFactor { get; private set; }
-    public BlindFactor amountBlindFactor { get; private set; }
+    public string Asset { get; }
+    public long SatoshiValue { get; }
+    public BlindFactor AssetBlindFactor { get; }
+    public BlindFactor AmountBlindFactor { get; }
 
     /// <summary>
     /// Constructor. (use blinded utxo)
@@ -25,10 +25,10 @@ namespace Cfd
     /// <param name="amountBlindFactor">amount blinder</param>
     public AssetValueData(string asset, long satoshiValue, BlindFactor assetBlindFactor, BlindFactor amountBlindFactor)
     {
-      this.asset = asset;
-      this.satoshiValue = satoshiValue;
-      this.assetBlindFactor = assetBlindFactor;
-      this.amountBlindFactor = amountBlindFactor;
+      this.Asset = asset;
+      this.SatoshiValue = satoshiValue;
+      this.AssetBlindFactor = assetBlindFactor;
+      this.AmountBlindFactor = amountBlindFactor;
     }
 
     /// <summary>
@@ -38,10 +38,10 @@ namespace Cfd
     /// <param name="satoshiValue">satoshi amount</param>
     public AssetValueData(string asset, long satoshiValue)
     {
-      this.asset = asset;
-      this.satoshiValue = satoshiValue;
-      this.assetBlindFactor = new BlindFactor();
-      this.amountBlindFactor = new BlindFactor();
+      this.Asset = asset;
+      this.SatoshiValue = satoshiValue;
+      this.AssetBlindFactor = new BlindFactor();
+      this.AmountBlindFactor = new BlindFactor();
     }
 
     /// <summary>
@@ -52,10 +52,10 @@ namespace Cfd
     /// <param name="amountBlindFactor">amount blinder</param>
     public AssetValueData(string asset, long satoshiValue, BlindFactor amountBlindFactor)
     {
-      this.asset = asset;
-      this.satoshiValue = satoshiValue;
-      this.assetBlindFactor = new BlindFactor();
-      this.amountBlindFactor = amountBlindFactor;
+      this.Asset = asset;
+      this.SatoshiValue = satoshiValue;
+      this.AssetBlindFactor = new BlindFactor();
+      this.AmountBlindFactor = amountBlindFactor;
     }
   }
 
@@ -64,13 +64,13 @@ namespace Cfd
   /// </summary>
   public struct UnblindIssuanceData
   {
-    public AssetValueData assetData { get; private set; }
-    public AssetValueData tokenData { get; private set; }
+    public AssetValueData AssetData { get; }
+    public AssetValueData TokenData { get; }
 
     public UnblindIssuanceData(AssetValueData asset, AssetValueData token)
     {
-      assetData = asset;
-      tokenData = token;
+      AssetData = asset;
+      TokenData = token;
     }
   }
 
@@ -79,8 +79,8 @@ namespace Cfd
   /// </summary>
   public struct IssuanceKeys
   {
-    public Privkey assetKey { get; private set; }
-    public Privkey tokenKey { get; private set; }
+    public Privkey AssetKey { get; }
+    public Privkey TokenKey { get; }
 
     /// <summary>
     /// Constructor. (use issueasset)
@@ -89,8 +89,8 @@ namespace Cfd
     /// <param name="tokenKey">token blinding key</param>
     public IssuanceKeys(Privkey assetKey, Privkey tokenKey)
     {
-      this.assetKey = assetKey;
-      this.tokenKey = tokenKey;
+      this.AssetKey = assetKey;
+      this.TokenKey = tokenKey;
     }
 
     /// <summary>
@@ -99,8 +99,8 @@ namespace Cfd
     /// <param name="assetKey">asset blinding key</param>
     public IssuanceKeys(Privkey assetKey)
     {
-      this.assetKey = assetKey;
-      this.tokenKey = new Privkey();
+      this.AssetKey = assetKey;
+      this.TokenKey = new Privkey();
     }
   }
 
@@ -293,17 +293,17 @@ namespace Cfd
             if (issuanceKeys.ContainsKey(outpoint))
             {
               IssuanceKeys keys = issuanceKeys[outpoint];
-              assetKey = keys.assetKey.ToHexString();
-              tokenKey = keys.tokenKey.ToHexString();
+              assetKey = keys.AssetKey.ToHexString();
+              tokenKey = keys.TokenKey.ToHexString();
             }
 
             ret = CElementsTransaction.CfdAddBlindTxInData(
               handle.GetHandle(), blindHandle,
               outpoint.GetTxid().ToHexString(), outpoint.GetVout(),
-              data.asset,
-              data.assetBlindFactor.ToHexString(),
-              data.amountBlindFactor.ToHexString(),
-              data.satoshiValue,
+              data.Asset,
+              data.AssetBlindFactor.ToHexString(),
+              data.AmountBlindFactor.ToHexString(),
+              data.SatoshiValue,
               assetKey,
               tokenKey);
             if (ret != CfdErrorCode.Success)
