@@ -11,10 +11,10 @@ namespace Cfd
   /// </summary>
   public struct AssetValueData
   {
-    public readonly string asset;
-    public readonly long satoshiValue;
-    public readonly BlindFactor assetBlindFactor;
-    public readonly BlindFactor amountBlindFactor;
+    public string asset { get; private set; }
+    public long satoshiValue { get; private set; }
+    public BlindFactor assetBlindFactor { get; private set; }
+    public BlindFactor amountBlindFactor { get; private set; }
 
     /// <summary>
     /// Constructor. (use blinded utxo)
@@ -64,8 +64,8 @@ namespace Cfd
   /// </summary>
   public struct UnblindIssuanceData
   {
-    public readonly AssetValueData assetData;
-    public readonly AssetValueData tokenData;
+    public AssetValueData assetData { get; private set; }
+    public AssetValueData tokenData { get; private set; }
 
     public UnblindIssuanceData(AssetValueData asset, AssetValueData token)
     {
@@ -79,8 +79,8 @@ namespace Cfd
   /// </summary>
   public struct IssuanceKeys
   {
-    public readonly Privkey assetKey;
-    public readonly Privkey tokenKey;
+    public Privkey assetKey { get; private set; }
+    public Privkey tokenKey { get; private set; }
 
     /// <summary>
     /// Constructor. (use issueasset)
