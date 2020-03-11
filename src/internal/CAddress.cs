@@ -94,7 +94,6 @@ namespace Cfd
         [In] int networkType,
         [Out] out IntPtr address);
 
-    /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdGetAddressInfo(
         [In] IntPtr handle,
@@ -104,6 +103,5 @@ namespace Cfd
         [Out] out int witnessVersion,
         [Out] out IntPtr lockingScript,
         [Out] out IntPtr hash);
-*/
   }
 }
