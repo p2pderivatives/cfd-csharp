@@ -369,6 +369,9 @@ namespace Cfd.Tests
           Console.WriteLine("    - RangeProof   = " + convertRangeProof(txout.RangeProof));
         }
       }
+
+      string jsonStr = ConfidentialTransaction.DecodeRawTransaction(tx);
+      Console.WriteLine("  - jsonStr => " + jsonStr);
     }
 
 
