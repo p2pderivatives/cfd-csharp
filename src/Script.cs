@@ -11,6 +11,12 @@ namespace Cfd
     private readonly string script;
     private readonly string[] scriptItems;
 
+    public Script()
+    {
+      script = "";
+      scriptItems = new string[0];
+    }
+
     public Script(string scriptHex)
     {
       if ((scriptHex == null) || (scriptHex.Length > MaxSize * 2))
@@ -75,6 +81,11 @@ namespace Cfd
       }
     }
 
+    public bool IsEmpty()
+    {
+      return String.IsNullOrEmpty(script);
+    }
+
     public string ToHexString()
     {
       return script;
@@ -88,6 +99,11 @@ namespace Cfd
     public string[] GetScriptItems()
     {
       return scriptItems;
+    }
+
+    public string GetAsm()
+    {
+      return string.Join(" ", scriptItems);
     }
   }
 }

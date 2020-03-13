@@ -55,5 +55,12 @@ namespace Cfd
     internal static extern CfdErrorCode CfdGetLastErrorMessage(
         [In] IntPtr handle,
         [Out] out IntPtr message);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdRequestExecuteJson(
+        [In] IntPtr handle,
+        [In] string requestName,
+        [In] string requestJsonString,
+        [Out] out IntPtr responseJsonString);
   }
 }

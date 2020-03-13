@@ -1,3 +1,5 @@
+using System;
+
 /// <summary>
 /// cfd library namespace.
 /// </summary>
@@ -77,162 +79,178 @@ namespace Cfd
     Single = 0x03  //!< SIGHASH_SINGLE
   };
 
-  /* for cfd cg-v0.0.11 or p2pderivatives-v0.0.4
-public class Address
-{
-  private readonly string address;
-  private readonly string lockingScript;
-  private readonly string p2shSegwitLockingScript;
-  private readonly string hash;
-  private readonly CfdNetworkType network;
-  private readonly CfdAddressType addressType;
-  private readonly CfdWitnessVersion witnessVersion;
-
-  public Address()
+  public class Address
   {
-  }
+    private readonly string address;
+    private string lockingScript;
+    private readonly string p2shSegwitLockingScript;
+    private readonly string hash;
+    private CfdNetworkType network;
+    private CfdAddressType addressType;
+    private CfdWitnessVersion witnessVersion;
 
-  public Address(string addressString)
-  {
-    using (var handle = new ErrorHandle())
+    public Address()
     {
-      Initialize(handle, addressString);
-      address = addressString;
     }
-  }
 
-  public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
-  {
-    using (var handle = new ErrorHandle())
+    public Address(string addressString)
     {
-      var ret = CAddress.CfdCreateAddress(
-        handle.GetHandle(),
-        (int)type,
-        pubkey.ToHexString(),
-        "",
-        (int)network,
-        out IntPtr outputAddress,
-        out IntPtr outputLockingScript,
-        out IntPtr outputP2shSegwitLockingScript);
-      if (ret != CfdErrorCode.Success)
+      using (var handle = new ErrorHandle())
       {
-        handle.ThrowError(ret);
+        Initialize(handle, addressString, out CfdNetworkType outputNetwork,
+            out CfdWitnessVersion outputWitnessVersion, out string outputLockingScript,
+            out string outputHash);
+        witnessVersion = outputWitnessVersion;
+        hash = outputHash;
+        network = outputNetwork;
+        lockingScript = outputLockingScript;
+        address = addressString;
       }
-      address = CCommon.ConvertToString(outputAddress);
-      lockingScript = CCommon.ConvertToString(outputLockingScript);
-      p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
-
-      Initialize(handle, address);
-      addressType = type;
     }
-  }
 
-  public Address(Script script, CfdAddressType type, CfdNetworkType network)
-  {
-    using (var handle = new ErrorHandle())
+    public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
     {
-      var ret = CAddress.CfdCreateAddress(
-        handle.GetHandle(),
-        (int)type,
-        "",
-        script.ToHexString(),
-        (int)network,
-        out IntPtr outputAddress,
-        out IntPtr outputLockingScript,
-        out IntPtr outputP2shSegwitLockingScript);
-      if (ret != CfdErrorCode.Success)
+      using (var handle = new ErrorHandle())
       {
-        handle.ThrowError(ret);
+        var ret = CAddress.CfdCreateAddress(
+          handle.GetHandle(),
+          (int)type,
+          pubkey.ToHexString(),
+          "",
+          (int)network,
+          out IntPtr outputAddress,
+          out IntPtr outputLockingScript,
+          out IntPtr outputP2shSegwitLockingScript);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        address = CCommon.ConvertToString(outputAddress);
+        lockingScript = CCommon.ConvertToString(outputLockingScript);
+        p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
+
+        Initialize(handle, address, out CfdNetworkType outputNetwork,
+            out CfdWitnessVersion outputWitnessVersion, out string tempLockingScript,
+            out string outputHash);
+        witnessVersion = outputWitnessVersion;
+        hash = outputHash;
+        network = outputNetwork;
+
+        addressType = type;
       }
-      address = CCommon.ConvertToString(outputAddress);
-      lockingScript = CCommon.ConvertToString(outputLockingScript);
-      p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
-
-      Initialize(handle, address);
-      addressType = type;
     }
-  }
 
-  public static Address GetAddressByLockingScript(Script inputLockingScript, CfdNetworkType network)
-  {
-    string address = "";
-    using (var handle = new ErrorHandle())
+    public Address(Script script, CfdAddressType type, CfdNetworkType networkType)
     {
-      var ret = CAddress.CfdGetAddressFromLockingScript(
-        handle.GetHandle(),
-        inputLockingScript.ToHexString(),
-        (int)network,
-        out IntPtr outputAddress);
-      if (ret != CfdErrorCode.Success)
+      using (var handle = new ErrorHandle())
       {
-        handle.ThrowError(ret);
+        var ret = CAddress.CfdCreateAddress(
+          handle.GetHandle(),
+          (int)type,
+          "",
+          script.ToHexString(),
+          (int)networkType,
+          out IntPtr outputAddress,
+          out IntPtr outputLockingScript,
+          out IntPtr outputP2shSegwitLockingScript);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        address = CCommon.ConvertToString(outputAddress);
+        lockingScript = CCommon.ConvertToString(outputLockingScript);
+        p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
+
+        Initialize(handle, address, out CfdNetworkType outputNetwork,
+            out CfdWitnessVersion outputWitnessVersion, out string tempLockingScript,
+            out string outputHash);
+        witnessVersion = outputWitnessVersion;
+        hash = outputHash;
+
+        network = networkType;
+        addressType = type;
       }
-      address = CCommon.ConvertToString(outputAddress);
     }
-    return new Address(address);
-  }
 
-  public string ToAddressString()
-  {
-    return address;
-  }
+    public static Address GetAddressByLockingScript(Script inputLockingScript, CfdNetworkType network)
+    {
+      string address = "";
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CAddress.CfdGetAddressFromLockingScript(
+          handle.GetHandle(),
+          inputLockingScript.ToHexString(),
+          (int)network,
+          out IntPtr outputAddress);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        address = CCommon.ConvertToString(outputAddress);
+      }
+      return new Address(address);
+    }
 
-  public string GetLockingScript()
-  {
-    return lockingScript;
-  }
+    public string ToAddressString()
+    {
+      return address;
+    }
 
-  public string GetHash()
-  {
-    return hash;
-  }
+    public string GetLockingScript()
+    {
+      return lockingScript;
+    }
 
-  public string GetP2shLockingScript()
-  {
-    return p2shSegwitLockingScript;
-  }
+    public string GetHash()
+    {
+      return hash;
+    }
 
-  public CfdNetworkType GetNetwork()
-  {
-    return network;
-  }
+    public string GetP2shLockingScript()
+    {
+      return p2shSegwitLockingScript;
+    }
 
-  public CfdAddressType GetAddressType()
-  {
-    return addressType;
-  }
+    public CfdNetworkType GetNetwork()
+    {
+      return network;
+    }
 
-  public CfdWitnessVersion GetWitnessVersion()
-  {
-    return witnessVersion;
-  }
+    public CfdAddressType GetAddressType()
+    {
+      return addressType;
+    }
 
-  public void SetAddressType(CfdAddressType addrType)
-  {
-    addressType = addrType;
-  }
+    public CfdWitnessVersion GetWitnessVersion()
+    {
+      return witnessVersion;
+    }
 
-  private void Initialize(ErrorHandle handle, string addressString)
-  {
+    public void SetAddressType(CfdAddressType addrType)
+    {
+      addressType = addrType;
+    }
+
+    private void Initialize(ErrorHandle handle, string addressString, out CfdNetworkType outputNetwork,
+        out CfdWitnessVersion outputWitnessVersion, out string outputLockingScript, out string outputHash)
+    {
       var ret = CAddress.CfdGetAddressInfo(
         handle.GetHandle(),
         addressString,
         out int networkType,
         out int hashType,
         out int segwitVersion,
-        out IntPtr outputLockingScript,
+        out IntPtr lockingScript,
         out IntPtr hashString);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      network = (CfdNetworkType)networkType;
+      outputNetwork = (CfdNetworkType)networkType;
       addressType = (CfdAddressType)hashType;
-      witnessVersion = (CfdWitnessVersion)segwitVersion;
-      lockingScript = CCommon.ConvertToString(outputLockingScript);
-      hash = CCommon.ConvertToString(hashString);
+      outputWitnessVersion = (CfdWitnessVersion)segwitVersion;
+      outputLockingScript = CCommon.ConvertToString(lockingScript);
+      outputHash = CCommon.ConvertToString(hashString);
+    }
   }
-
-}
-*/
 }

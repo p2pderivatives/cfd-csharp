@@ -84,6 +84,14 @@ namespace Cfd
         [Out] out IntPtr stackData);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdGetConfidentialTxInPeginWitness(
+        [In] IntPtr handle,
+        [In] string txHexString,
+        [In] uint txinIndex,
+        [In] uint stackIndex,
+        [Out] out IntPtr stackData);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetTxInIssuanceInfo(
         [In] IntPtr handle,
         [In] string txHexString,
@@ -124,10 +132,33 @@ namespace Cfd
         [Out] out uint count);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdGetConfidentialTxInPeginWitnessCount(
+        [In] IntPtr handle,
+        [In] string txHexString,
+        [In] uint txinIndex,
+        [Out] out uint count);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdGetConfidentialTxOutCount(
         [In] IntPtr handle,
         [In] string txHexString,
         [Out] out uint count);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdGetConfidentialTxInIndex(
+        [In] IntPtr handle,
+        [In] string txHexString,
+        [In] string txid,
+        [In] uint vout,
+        [Out] out uint index);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdGetConfidentialTxOutIndex(
+        [In] IntPtr handle,
+        [In] string txHexString,
+        [In] string address,
+        [In] string directLockingScript,
+        [Out] out uint index);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdSetRawReissueAsset(
