@@ -144,13 +144,16 @@ target_sources(${PROJECT_NAME}
     CMakeLists.txt
     CoinUtil.cs
     ConfidentialAddress.cs
+    ConfidentialAsset.cs
     ConfidentialTransaction.cs
+    ConfidentialValue.cs
     Descriptor.cs
     ExtPubkey.cs
     OutPoint.cs
     Privkey.cs
     Pubkey.cs
     Script.cs
+    ScriptWitness.cs
     StringUtil.cs
     Transaction.cs
 )

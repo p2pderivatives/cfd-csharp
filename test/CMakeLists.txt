@@ -152,7 +152,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION 
 
 # Setup the default assembly references.
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DOTNET_REFERENCES
-	"System"
+    "System"
     "System.Core"
 )
 
