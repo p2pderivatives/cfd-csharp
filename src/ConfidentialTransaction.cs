@@ -105,6 +105,127 @@ namespace Cfd
   }
 
   /// <summary>
+  /// issuance blinding key pairs.
+  /// </summary>
+  public struct IssuanceData
+  {
+    public byte[] BlindingNonce { get; }
+    public byte[] AssetEntropy { get; }
+    public ConfidentialValue IssuanceAmount { get; }
+    public ConfidentialValue InflationKeys { get; }
+    public byte[] IssuanceAmountRangeproof { get; }
+    public byte[] InflationKeysRangeproof { get; }
+
+    /// <summary>
+    /// Constructor. (use issueasset)
+    /// </summary>
+    /// <param name="assetKey">asset blinding key</param>
+    /// <param name="tokenKey">token blinding key</param>
+    public IssuanceData(byte[] blindingNonce, byte[] assetEntropy,
+        ConfidentialValue issuanceAmount, ConfidentialValue tokenAmount,
+        byte[] issuanceRangeproof, byte[] tokenRangeproof)
+    {
+      this.BlindingNonce = blindingNonce;
+      this.AssetEntropy = assetEntropy;
+      this.IssuanceAmount = issuanceAmount;
+      this.InflationKeys = tokenAmount;
+      this.IssuanceAmountRangeproof = issuanceRangeproof;
+      this.InflationKeysRangeproof = tokenRangeproof;
+    }
+  }
+
+  /// <summary>
+  /// Transaction input class.
+  /// </summary>
+  public struct ConfidentialTxIn
+  {
+    public OutPoint OutPoint { get; }
+    public Script ScriptSig { get; }
+    public ScriptWitness WitnessStack { get; }
+    public ScriptWitness PeginWitness { get; }
+    public IssuanceData Issuance { get; }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="outPoint">outpoint</param>
+    public ConfidentialTxIn(OutPoint outPoint)
+    {
+      this.OutPoint = outPoint;
+      this.ScriptSig = new Script();
+      this.WitnessStack = new ScriptWitness();
+      this.PeginWitness = new ScriptWitness();
+      this.Issuance = new IssuanceData(new byte[0], new byte[0],
+          new ConfidentialValue(), new ConfidentialValue(),
+          new byte[0], new byte[0]);
+    }
+
+    public ConfidentialTxIn(OutPoint outPoint, ScriptWitness scriptWitness)
+    {
+      this.OutPoint = outPoint;
+      this.ScriptSig = new Script();
+      this.WitnessStack = scriptWitness;
+      this.PeginWitness = new ScriptWitness();
+      this.Issuance = new IssuanceData(new byte[0], new byte[0],
+          new ConfidentialValue(), new ConfidentialValue(),
+          new byte[0], new byte[0]);
+    }
+
+    public ConfidentialTxIn(OutPoint outPoint, Script scriptSig, ScriptWitness witnessStack, ScriptWitness peginWitness, IssuanceData issuance)
+    {
+      this.OutPoint = outPoint;
+      this.ScriptSig = scriptSig;
+      this.WitnessStack = witnessStack;
+      this.PeginWitness = peginWitness;
+      this.Issuance = issuance;
+    }
+  };
+
+  /// <summary>
+  /// Transaction output class.
+  /// </summary>
+  public struct ConfidentialTxOut
+  {
+    public ConfidentialAsset Asset { get; }
+    public ConfidentialValue Value { get; }
+    public byte[] Nonce { get; }
+    public Script ScriptPubkey { get; }
+    public byte[] SurjectionProof { get; }
+    public byte[] RangeProof { get; }
+
+    public ConfidentialTxOut(ConfidentialAsset asset, long value)
+    {
+      this.Asset = asset;
+      this.Value = new ConfidentialValue(value);
+      this.ScriptPubkey = new Script();
+      this.Nonce = new byte[0];
+      this.SurjectionProof = new byte[0];
+      this.RangeProof = new byte[0];
+    }
+
+    public ConfidentialTxOut(ConfidentialAsset asset, ConfidentialValue value, Script scriptPubkey)
+    {
+      this.Asset = asset;
+      this.Value = value;
+      this.ScriptPubkey = scriptPubkey;
+      this.Nonce = new byte[0];
+      this.SurjectionProof = new byte[0];
+      this.RangeProof = new byte[0];
+    }
+
+    public ConfidentialTxOut(ConfidentialAsset asset, ConfidentialValue value,
+        Script scriptPubkey, byte[] nonce, byte[] surjectionProof, byte[] rangeProof)
+    {
+      this.Asset = asset;
+      this.Value = value;
+      this.ScriptPubkey = scriptPubkey;
+      this.Nonce = nonce;
+      this.SurjectionProof = surjectionProof;
+      this.RangeProof = rangeProof;
+    }
+  };
+
+  /// <summary>
   /// Confidential transaction class.
   /// </summary>
   public class ConfidentialTransaction
@@ -120,6 +241,48 @@ namespace Cfd
     private uint txVersion = 0;
     private uint txLocktime = 0;
 
+    /// <summary>
+    /// Convert tx to decoderawtransaction json string.
+    /// </summary>
+    /// <param name="tx">transaction object.</param>
+    /// <param name="network">network type.</param>
+    /// <param name="mainchainNetwork">mainchain network type.</param>
+    /// <returns>json string</returns>
+    public static string DecodeRawTransaction(
+        ConfidentialTransaction tx,
+        CfdNetworkType network = CfdNetworkType.Liquidv1,
+        CfdNetworkType mainchainNetwork = CfdNetworkType.Mainnet)
+    {
+      string networkStr = "regtest";
+      string mainchainNetworkStr = "regtest";
+      if (network == CfdNetworkType.Liquidv1)
+      {
+        networkStr = "liquidv1";
+      }
+      if (mainchainNetwork == CfdNetworkType.Mainnet)
+      {
+        mainchainNetworkStr = "mainnet";
+      }
+      string request = String.Format(
+          "{{\"hex\":\"{0}\",\"network\":\"{1}\",\"mainchainNetwork\":\"{2}\"}}",
+          tx.ToHexString(), networkStr, mainchainNetworkStr);
+
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CCommon.CfdRequestExecuteJson(
+            handle.GetHandle(),
+            "ElementsDecodeRawTransaction",
+            request,
+            out IntPtr responseJsonString);
+        return CCommon.ConvertToString(responseJsonString);
+      }
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="version">transaction version</param>
+    /// <param name="locktime">transaction locktime</param>
     public ConfidentialTransaction(uint version, uint locktime)
     {
       using (var handle = new ErrorHandle())
@@ -413,6 +576,145 @@ namespace Cfd
       }
     }
 
+    public ConfidentialTxIn GetTxIn(OutPoint outpoint)
+    {
+      uint index = GetTxInIndex(outpoint);
+      using (var handle = new ErrorHandle())
+      {
+        return GetInputByIndex(handle, index);
+      }
+    }
+
+    public ConfidentialTxIn GetTxIn(uint index)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        return GetInputByIndex(handle, index);
+      }
+    }
+
+    public ConfidentialTxIn[] GetTxInList()
+    {
+      using (var handle = new ErrorHandle())
+      {
+        uint count = GetInputCount(handle);
+        ConfidentialTxIn[] result = new ConfidentialTxIn[count];
+
+        for (uint index = 0; index < count; ++index)
+        {
+          result[index] = GetInputByIndex(handle, index);
+        }
+        return result;
+      }
+    }
+
+    public uint GetTxInCount()
+    {
+      using (var handle = new ErrorHandle())
+      {
+        return GetInputCount(handle);
+      }
+    }
+
+    public ConfidentialTxOut GetTxOut(uint index)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        return GetOutputByIndex(handle, index);
+      }
+    }
+
+    public ConfidentialTxOut[] GetTxOutList()
+    {
+      using (var handle = new ErrorHandle())
+      {
+        uint count = GetOutputCount(handle);
+        ConfidentialTxOut[] result = new ConfidentialTxOut[count];
+
+        for (uint index = 0; index < count; ++index)
+        {
+          result[index] = GetOutputByIndex(handle, index);
+        }
+        return result;
+      }
+    }
+
+    public uint GetTxOutCount()
+    {
+      using (var handle = new ErrorHandle())
+      {
+        return GetOutputCount(handle);
+      }
+    }
+
+    public uint GetTxInIndex(OutPoint outpoint)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxInIndex(
+            handle.GetHandle(), tx,
+            outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(),
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(Address address)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            address.ToAddressString(),
+            "",
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(ConfidentialAddress address)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            address.ToAddressString(),
+            "",
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(Script script)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            "",
+            script.ToHexString(),
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
     public void GetSignatureHash()
     {
       throw new NotImplementedException();  // FIXME not implements
@@ -432,22 +734,6 @@ namespace Cfd
     {
       throw new NotImplementedException();  // FIXME not implements
     }
-
-    /*
-    public TxIn GetTxIn() {
-      // witness, issuanceも
-    }
-
-    public TxIn GetTxIns() {
-      // witness, issuanceも
-    }
-
-    public TxOut GetTxOut() {
-    }
-
-    public TxOut GetTxOuts() {
-    }
-    */
 
     public string ToHexString()
     {
@@ -561,5 +847,151 @@ namespace Cfd
         lastGetTx = tx;
       }
     }
+
+    private ConfidentialTxIn GetInputByIndex(ErrorHandle handle, uint index)
+    {
+      var ret = CElementsTransaction.CfdGetConfidentialTxIn(
+          handle.GetHandle(), tx, index,
+          out IntPtr outTxid,
+          out uint vout,
+          out uint sequence,
+          out IntPtr outScriptSig);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      var txid = CCommon.ConvertToString(outTxid);
+      var scriptSig = CCommon.ConvertToString(outScriptSig);
+
+      ret = CElementsTransaction.CfdGetConfidentialTxInWitnessCount(
+          handle.GetHandle(), tx, index,
+          out uint witnessCount);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      string[] witnessArray = new string[witnessCount];
+
+      for (uint witnessIndex = 0; witnessIndex < witnessCount; ++witnessIndex)
+      {
+        ret = CElementsTransaction.CfdGetConfidentialTxInWitness(
+            handle.GetHandle(), tx, index, witnessIndex,
+            out IntPtr stackData);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        witnessArray[witnessIndex] = CCommon.ConvertToString(stackData);
+      }
+
+      ret = CElementsTransaction.CfdGetTxInIssuanceInfo(
+          handle.GetHandle(), tx, index,
+          out IntPtr outEntropy,
+          out IntPtr outNonce,
+          out long assetAmount,
+          out IntPtr outAssetValue,
+          out long tokenAmount,
+          out IntPtr outTokenValue,
+          out IntPtr outAssetRangeproof,
+          out IntPtr outTokenRangeproof);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      var entropy = CCommon.ConvertToString(outEntropy);
+      var nonce = CCommon.ConvertToString(outNonce);
+      var assetValue = CCommon.ConvertToString(outAssetValue);
+      var tokenValue = CCommon.ConvertToString(outTokenValue);
+      var assetRangeproof = CCommon.ConvertToString(outAssetRangeproof);
+      var tokenRangeproof = CCommon.ConvertToString(outTokenRangeproof);
+
+      var entropyBytes = StringUtil.ToBytes(entropy);
+      entropyBytes = CfdCommon.ReverseBytes(entropyBytes);
+      var nonceBytes = StringUtil.ToBytes(nonce);
+      nonceBytes = CfdCommon.ReverseBytes(nonceBytes);
+
+      ret = CElementsTransaction.CfdGetConfidentialTxInPeginWitnessCount(
+          handle.GetHandle(), tx, index,
+          out uint peginCount);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      string[] peginWitness = new string[peginCount];
+
+      for (uint witnessIndex = 0; witnessIndex < peginCount; ++witnessIndex)
+      {
+        ret = CElementsTransaction.CfdGetConfidentialTxInPeginWitness(
+            handle.GetHandle(), tx, index, witnessIndex,
+            out IntPtr stackData);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        peginWitness[witnessIndex] = CCommon.ConvertToString(stackData);
+      }
+
+      return new ConfidentialTxIn(
+          new OutPoint(txid, vout), new Script(scriptSig),
+          new ScriptWitness(witnessArray), new ScriptWitness(peginWitness),
+          new IssuanceData(nonceBytes, entropyBytes,
+              new ConfidentialValue(assetValue, assetAmount),
+              new ConfidentialValue(tokenValue, tokenAmount),
+              StringUtil.ToBytes(assetRangeproof),
+              StringUtil.ToBytes(tokenRangeproof)));
+    }
+
+    private uint GetInputCount(ErrorHandle handle)
+    {
+      var ret = CElementsTransaction.CfdGetConfidentialTxInCount(
+          handle.GetHandle(), tx, out uint count);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return count;
+    }
+
+    private ConfidentialTxOut GetOutputByIndex(ErrorHandle handle, uint index)
+    {
+      var ret = CElementsTransaction.CfdGetConfidentialTxOut(
+          handle.GetHandle(), tx, index,
+          out IntPtr assetString,
+          out long satoshi,
+          out IntPtr valueCommitment,
+          out IntPtr outNonce,
+          out IntPtr lockingScript,
+          out IntPtr outSurjectionProof,
+          out IntPtr outRangeproof);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      var asset = CCommon.ConvertToString(assetString);
+      var nonce = CCommon.ConvertToString(outNonce);
+      var value = CCommon.ConvertToString(valueCommitment);
+      var scriptPubkey = CCommon.ConvertToString(lockingScript);
+      var surjectionProof = CCommon.ConvertToString(outSurjectionProof);
+      var rangeProof = CCommon.ConvertToString(outRangeproof);
+
+      return new ConfidentialTxOut(
+          new ConfidentialAsset(asset), new ConfidentialValue(value, satoshi),
+          new Script(scriptPubkey),
+          StringUtil.ToBytes(nonce),
+          StringUtil.ToBytes(surjectionProof),
+          StringUtil.ToBytes(rangeProof));
+    }
+
+    private uint GetOutputCount(ErrorHandle handle)
+    {
+      var ret = CElementsTransaction.CfdGetConfidentialTxOutCount(
+          handle.GetHandle(), tx, out uint count);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return count;
+    }
+
   }
 }
