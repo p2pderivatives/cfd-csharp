@@ -249,18 +249,40 @@ namespace Cfd
     /// <param name="mainchainNetwork">mainchain network type.</param>
     /// <returns>json string</returns>
     public static string DecodeRawTransaction(
-        ref ConfidentialTransaction tx,
+        ConfidentialTransaction tx,
         CfdNetworkType network = CfdNetworkType.Liquidv1,
         CfdNetworkType mainchainNetwork = CfdNetworkType.Mainnet)
     {
+      string networkStr = "regtest";
+      string mainchainNetworkStr = "regtest";
+      if (network == CfdNetworkType.Liquidv1)
+      {
+        networkStr = "liquidv1";
+      }
+      if (mainchainNetwork == CfdNetworkType.Mainnet)
+      {
+        mainchainNetworkStr = "mainnet";
+      }
+      string request = String.Format(
+          "{{\"hex\":\"{0}\",\"network\":\"{1}\",\"mainchainNetwork\":\"{2}\"}}",
+          tx.ToHexString(), networkStr, mainchainNetworkStr);
 
       using (var handle = new ErrorHandle())
       {
-        // FIXME call Json API
-        return "{}";
+        var ret = CCommon.CfdRequestExecuteJson(
+            handle.GetHandle(),
+            "ElementsDecodeRawTransaction",
+            request,
+            out IntPtr responseJsonString);
+        return CCommon.ConvertToString(responseJsonString);
       }
     }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="version">transaction version</param>
+    /// <param name="locktime">transaction locktime</param>
     public ConfidentialTransaction(uint version, uint locktime)
     {
       using (var handle = new ErrorHandle())
@@ -554,14 +576,14 @@ namespace Cfd
       }
     }
 
-    /*
-    public ConfidentialTxIn GetTxIn(OutPoint outpoint) {
+    public ConfidentialTxIn GetTxIn(OutPoint outpoint)
+    {
+      uint index = GetTxInIndex(outpoint);
       using (var handle = new ErrorHandle())
       {
         return GetInputByIndex(handle, index);
       }
     }
-    */
 
     public ConfidentialTxIn GetTxIn(uint index)
     {
@@ -622,6 +644,74 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         return GetOutputCount(handle);
+      }
+    }
+
+    public uint GetTxInIndex(OutPoint outpoint)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxInIndex(
+            handle.GetHandle(), tx,
+            outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(),
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(Address address)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            address.ToAddressString(),
+            "",
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(ConfidentialAddress address)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            address.ToAddressString(),
+            "",
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
+      }
+    }
+
+    public uint GetTxOutIndex(Script script)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdGetConfidentialTxOutIndex(
+            handle.GetHandle(), tx,
+            "",
+            script.ToHexString(),
+            out uint index);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return index;
       }
     }
 
@@ -820,7 +910,26 @@ namespace Cfd
       var nonceBytes = StringUtil.ToBytes(nonce);
       nonceBytes = CfdCommon.ReverseBytes(nonceBytes);
 
-      string[] peginWitness = new string[0];  // TODO cfd not implement.
+      ret = CElementsTransaction.CfdGetConfidentialTxInPeginWitnessCount(
+          handle.GetHandle(), tx, index,
+          out uint peginCount);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      string[] peginWitness = new string[peginCount];
+
+      for (uint witnessIndex = 0; witnessIndex < peginCount; ++witnessIndex)
+      {
+        ret = CElementsTransaction.CfdGetConfidentialTxInPeginWitness(
+            handle.GetHandle(), tx, index, witnessIndex,
+            out IntPtr stackData);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        peginWitness[witnessIndex] = CCommon.ConvertToString(stackData);
+      }
 
       return new ConfidentialTxIn(
           new OutPoint(txid, vout), new Script(scriptSig),

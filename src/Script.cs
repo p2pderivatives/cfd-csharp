@@ -103,16 +103,7 @@ namespace Cfd
 
     public string GetAsm()
     {
-      string result = "";
-      for (int index = 0; index < scriptItems.Length; ++index)
-      {
-        if (index != 0)
-        {
-          result += " ";
-        }
-        result += scriptItems[index];
-      }
-      return result;
+      return string.Join(" ", scriptItems);
     }
   }
 }
