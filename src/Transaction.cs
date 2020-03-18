@@ -13,7 +13,27 @@ namespace Cfd
   };
 
   /// <summary>
-  /// Transaction input class.
+  /// Transaction signature hash type.
+  /// </summary>
+  public struct SignatureHashType
+  {
+    public CfdSighashType SighashType { get; }
+    public bool IsSighashAnyoneCanPay { get; }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="sighashType">sighash type.</param>
+    /// <param name="sighashAnyoneCanPay">sighash anyone can pay.</param>
+    public SignatureHashType(CfdSighashType sighashType, bool sighashAnyoneCanPay)
+    {
+      this.SighashType = sighashType;
+      this.IsSighashAnyoneCanPay = sighashAnyoneCanPay;
+    }
+  }
+
+  /// <summary>
+  /// Transaction input struct.
   /// </summary>
   public struct TxIn
   {
@@ -48,7 +68,7 @@ namespace Cfd
   };
 
   /// <summary>
-  /// Transaction output class.
+  /// Transaction output struct.
   /// </summary>
   public struct TxOut
   {

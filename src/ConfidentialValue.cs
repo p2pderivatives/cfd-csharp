@@ -54,7 +54,7 @@ namespace Cfd
       return commitmentValue;
     }
 
-    public string ToString()
+    public override string ToString()
     {
       if (HasBlinding())
       {

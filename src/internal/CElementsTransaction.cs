@@ -243,6 +243,7 @@ namespace Cfd
         [In] bool clearStack,
         [Out] out IntPtr txString);
 
+    /*
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFinalizeElementsMultisigSign(
         [In] IntPtr handle,
@@ -254,6 +255,23 @@ namespace Cfd
         [In] string witnessScript,
         [In] string redeemScript,
         [In] bool clearStack,
+        [Out] out IntPtr txString);
+    */
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddConfidentialTxSignWithPrivkeySimple(
+        [In] IntPtr handle,
+        [In] string txHexString,
+        [In] string txid,
+        [In] uint vout,
+        [In] int hashType,
+        [In] string pubkey,
+        [In] string privkey,
+        [In] Int64 valueSatoshi,
+        [In] string valueCommitment,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] bool hasGrindR,
         [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
@@ -312,5 +330,17 @@ namespace Cfd
         [In] long satoshi,
         [In] string valueCommitment,
         [In] int witnessVersion);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdVerifyConfidentialTxSign(
+        [In] IntPtr handle,
+        [In] string txHex,
+        [In] string txid,
+        [In] uint vout,
+        [In] string address,
+        [In] int addressType,
+        [In] string directLockingScript,
+        [In] long satoshi,
+        [In] string valueCommitment);
   }
 }

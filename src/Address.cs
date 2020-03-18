@@ -8,7 +8,7 @@ namespace Cfd
   /**
    * @brief network type
    */
-  public enum CfdNetworkType
+  public enum CfdNetworkType : int
   {
     Mainnet = 0,      //!< btc mainnet
     Testnet,          //!< btc testnet
@@ -21,7 +21,7 @@ namespace Cfd
   /**
    * @brief address type
    */
-  public enum CfdAddressType
+  public enum CfdAddressType : int
   {
     P2sh = 1,   //!< Legacy address (Script Hash)
     P2pkh,      //!< Legacy address (PublicKey Hash)
@@ -34,7 +34,7 @@ namespace Cfd
   /**
    * @brief hash type
    */
-  public enum CfdHashType
+  public enum CfdHashType : int
   {
     P2sh = 1,   //!< Script Hash
     P2pkh,      //!< PublicKey Hash
@@ -47,7 +47,7 @@ namespace Cfd
   /**
    * @brief witness version
    */
-  public enum CfdWitnessVersion
+  public enum CfdWitnessVersion : int
   {
     VersionNone = -1,  //!< Missing WitnessVersion
     Version0 = 0,      //!< version 0
