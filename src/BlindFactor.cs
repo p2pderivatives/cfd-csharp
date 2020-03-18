@@ -10,6 +10,7 @@ namespace Cfd
   /// </summary>
   public class BlindFactor
   {
+    public const uint Size = 32;
     private readonly string hexString;
 
     /// <summary>
@@ -26,7 +27,29 @@ namespace Cfd
     /// <param name="blindFactorHex">blinder hex</param>
     public BlindFactor(string blindFactorHex)
     {
+      if (string.IsNullOrEmpty(blindFactorHex))
+      {
+        hexString = "0000000000000000000000000000000000000000000000000000000000000000";
+      }
+      else if ((blindFactorHex == null) || (blindFactorHex.Length != Size * 2))
+      {
+        CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
+      }
       hexString = blindFactorHex;
+    }
+
+    /// <summary>
+    /// Constructor. (valid blind factor)
+    /// </summary>
+    /// <param name="blindFactorHex">blinder</param>
+    public BlindFactor(byte[] bytes)
+    {
+      if ((bytes == null) || (bytes.Length != Size))
+      {
+        CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
+      }
+      var blindFactorBytes = CfdCommon.ReverseBytes(bytes);
+      this.hexString = StringUtil.FromBytes(blindFactorBytes);
     }
 
     /// <summary>
@@ -36,6 +59,16 @@ namespace Cfd
     public string ToHexString()
     {
       return hexString;
+    }
+
+    /// <summary>
+    /// blinder byte array.
+    /// </summary>
+    /// <returns>blinder byte array</returns>
+    public byte[] GetBytes()
+    {
+      var blindFactorBytes = StringUtil.ToBytes(hexString);
+      return CfdCommon.ReverseBytes(blindFactorBytes);
     }
   }
 }

@@ -140,6 +140,7 @@ target_sources(${PROJECT_NAME}
     Txid.cs
     Address.cs
     BlindFactor.cs
+    ByteData.cs
     CfdCommon.cs
     CMakeLists.txt
     CoinUtil.cs
@@ -153,9 +154,12 @@ target_sources(${PROJECT_NAME}
     Privkey.cs
     Pubkey.cs
     Script.cs
+    ScriptUtil.cs
     ScriptWitness.cs
+    SignParameter.cs
     StringUtil.cs
     Transaction.cs
+    UtxoData.cs
 )
 
 target_compile_options(${PROJECT_NAME}

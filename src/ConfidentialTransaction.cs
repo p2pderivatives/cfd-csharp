@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Cfd
 {
   /// <summary>
-  /// asset and amountValue data class.
+  /// asset and amountValue data struct.
   /// </summary>
   public struct AssetValueData
   {
@@ -105,7 +105,7 @@ namespace Cfd
   }
 
   /// <summary>
-  /// issuance blinding key pairs.
+  /// issuance data.
   /// </summary>
   public struct IssuanceData
   {
@@ -135,7 +135,7 @@ namespace Cfd
   }
 
   /// <summary>
-  /// Transaction input class.
+  /// Transaction input struct.
   /// </summary>
   public struct ConfidentialTxIn
   {
@@ -182,7 +182,7 @@ namespace Cfd
   };
 
   /// <summary>
-  /// Transaction output class.
+  /// Transaction output struct.
   /// </summary>
   public struct ConfidentialTxOut
   {
@@ -318,7 +318,13 @@ namespace Cfd
       tx = StringUtil.FromBytes(bytes);
     }
 
-    public void AddTxIn(Txid txid, uint vout, uint sequence)
+    /// <summary>
+    /// Add transction input.
+    /// </summary>
+    /// <param name="txid">utxo txid.</param>
+    /// <param name="vout">utxo vout.</param>
+    /// <param name="sequence">sequence number. (default: 0xffffffff)</param>
+    public void AddTxIn(Txid txid, uint vout, uint sequence = 0xffffffff)
     {
       using (var handle = new ErrorHandle())
       {
@@ -332,7 +338,34 @@ namespace Cfd
       }
     }
 
-    public void AddTxOut(string asset, long satoshiValue, string address)
+    /// <summary>
+    /// Add transction input.
+    /// </summary>
+    /// <param name="txid">utxo txid.</param>
+    /// <param name="vout">utxo vout.</param>
+    /// <param name="sequence">sequence number. (default: 0xffffffff)</param>
+    public void AddTxIn(OutPoint outpoint, uint sequence = 0xffffffff)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdAddConfidentialTxIn(
+          handle.GetHandle(), tx, outpoint.GetTxid().ToHexString(), outpoint.GetVout(),
+          sequence, out IntPtr txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    /// <summary>
+    /// Add transction output.
+    /// </summary>
+    /// <param name="asset">txout asset.</param>
+    /// <param name="satoshiValue">txout satoshi value.</param>
+    /// <param name="address">txout address.</param>
+    public void AddTxOut(string asset, long satoshiValue, Address address)
     {
       using (var handle = new ErrorHandle())
       {
@@ -341,7 +374,7 @@ namespace Cfd
             asset,
             satoshiValue,
             "",
-            address,
+            address.ToAddressString(),
             "",
             "",
             out IntPtr txString);
@@ -353,7 +386,13 @@ namespace Cfd
       }
     }
 
-    public void AddTxOut(string asset, string valueCommitment, string address)
+    /// <summary>
+    /// Add transction output.
+    /// </summary>
+    /// <param name="asset">txout asset.</param>
+    /// <param name="valueCommitment">txout commitment value.</param>
+    /// <param name="address">txout address.</param>
+    public void AddTxOut(string asset, ConfidentialValue valueCommitment, Address address)
     {
       using (var handle = new ErrorHandle())
       {
@@ -361,8 +400,8 @@ namespace Cfd
             handle.GetHandle(), tx,
             asset,
             (long)0,
-            valueCommitment,
-            address,
+            valueCommitment.ToHexString(),
+            address.ToAddressString(),
             "",
             "",
             out IntPtr txString);
@@ -576,6 +615,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction input data.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint(txid and vout)</param>
+    /// <returns>transaction input data.</returns>
     public ConfidentialTxIn GetTxIn(OutPoint outpoint)
     {
       uint index = GetTxInIndex(outpoint);
@@ -585,6 +629,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction input data.
+    /// </summary>
+    /// <param name="index">txin index.</param>
+    /// <returns>transaction input data.</returns>
     public ConfidentialTxIn GetTxIn(uint index)
     {
       using (var handle = new ErrorHandle())
@@ -593,6 +642,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction input list.
+    /// </summary>
+    /// <returns>transaction input list.</returns>
     public ConfidentialTxIn[] GetTxInList()
     {
       using (var handle = new ErrorHandle())
@@ -608,6 +661,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction input count.
+    /// </summary>
+    /// <returns>transaction input count.</returns>
     public uint GetTxInCount()
     {
       using (var handle = new ErrorHandle())
@@ -616,6 +673,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output data.
+    /// </summary>
+    /// <param name="index">txout index.</param>
+    /// <returns>transaction output data.</returns>
     public ConfidentialTxOut GetTxOut(uint index)
     {
       using (var handle = new ErrorHandle())
@@ -624,6 +686,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output list.
+    /// </summary>
+    /// <returns>transaction output list.</returns>
     public ConfidentialTxOut[] GetTxOutList()
     {
       using (var handle = new ErrorHandle())
@@ -639,6 +705,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output count.
+    /// </summary>
+    /// <returns>transaction output count.</returns>
     public uint GetTxOutCount()
     {
       using (var handle = new ErrorHandle())
@@ -647,6 +717,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction input index.
+    /// </summary>
+    /// <param name="outpoint">txin outpoint(txid and vout).</param>
+    /// <returns>transaction input index.</returns>
     public uint GetTxInIndex(OutPoint outpoint)
     {
       using (var handle = new ErrorHandle())
@@ -664,6 +739,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output index.
+    /// </summary>
+    /// <param name="address">txout address.</param>
+    /// <returns>transaction output index.</returns>
     public uint GetTxOutIndex(Address address)
     {
       using (var handle = new ErrorHandle())
@@ -681,6 +761,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output index.
+    /// </summary>
+    /// <param name="address">txout confidential address.</param>
+    /// <returns>transaction output index.</returns>
     public uint GetTxOutIndex(ConfidentialAddress address)
     {
       using (var handle = new ErrorHandle())
@@ -698,6 +783,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction output index.
+    /// </summary>
+    /// <param name="script">txout locking script. (fee is empty string)</param>
+    /// <returns>transaction output index.</returns>
     public uint GetTxOutIndex(Script script)
     {
       using (var handle = new ErrorHandle())
@@ -715,24 +805,308 @@ namespace Cfd
       }
     }
 
-    public void GetSignatureHash()
+    public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
+        Pubkey pubkey, ConfidentialValue value, SignatureHashType sighashType)
     {
-      throw new NotImplementedException();  // FIXME not implements
+      return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, value, sighashType);
     }
 
-    public void AddSign()
+    public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
+        Pubkey pubkey, ConfidentialValue value, SignatureHashType sighashType)
     {
-      throw new NotImplementedException();  // FIXME not implements
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdCreateConfidentialSighash(
+            handle.GetHandle(), tx, txid.ToHexString(), vout, (int)hashType,
+            pubkey.ToHexString(), "",
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString(),
+            (int)sighashType.SighashType,
+            sighashType.IsSighashAnyoneCanPay,
+            out IntPtr sighash);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return new ByteData(CCommon.ConvertToString(sighash));
+      }
     }
 
-    public void AddMultisigSign()
+    public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
+        Script redeemScript, ConfidentialValue value, SignatureHashType sighashType)
     {
-      throw new NotImplementedException();  // FIXME not implements
+      return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, redeemScript, value, sighashType);
     }
 
-    public void VerifySignature()
+    public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
+        Script redeemScript, ConfidentialValue value, SignatureHashType sighashType)
     {
-      throw new NotImplementedException();  // FIXME not implements
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdCreateConfidentialSighash(
+            handle.GetHandle(), tx, txid.ToHexString(), vout, (int)hashType,
+            "", redeemScript.ToHexString(),
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString(),
+            (int)sighashType.SighashType,
+            sighashType.IsSighashAnyoneCanPay,
+            out IntPtr sighash);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return new ByteData(CCommon.ConvertToString(sighash));
+      }
+    }
+
+    public void AddSignWithPrivkeySimple(OutPoint outpoint, CfdHashType hashType,
+        Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR = true)
+    {
+      AddSignWithPrivkeySimple(outpoint.GetTxid(), outpoint.GetVout(), hashType, privkey.GetPubkey(),
+        privkey, value, sighashType, hasGrindR);
+    }
+
+    public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType,
+        Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR = true)
+    {
+      AddSignWithPrivkeySimple(txid, vout, hashType, privkey.GetPubkey(), privkey, value, sighashType, hasGrindR);
+    }
+
+    public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey,
+        Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR = true)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdAddConfidentialTxSignWithPrivkeySimple(
+            handle.GetHandle(), tx, txid.ToHexString(), vout, (int)hashType,
+            pubkey.ToHexString(),
+            (privkey.ToHexString().Length > 0) ? privkey.ToHexString() : privkey.GetWif(),
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString(),
+            (int)sighashType.SighashType,
+            sighashType.IsSighashAnyoneCanPay,
+            hasGrindR, out IntPtr txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    public void AddPubkeySign(OutPoint outpoint, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
+    {
+      AddPubkeySign(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, signature);
+    }
+
+    public void AddPubkeySign(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CTransaction.CfdAddPubkeyHashSign(
+            handle.GetHandle(), (int)CfdNetworkType.Liquidv1,
+            tx, txid.ToHexString(), vout, (int)hashType,
+            pubkey.ToHexString(), signature.ToHexString(),
+            signature.IsDerEncode(),
+            (int)signature.GetSignatureHashType().SighashType,
+            signature.GetSignatureHashType().IsSighashAnyoneCanPay,
+            out IntPtr txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    public void AddMultisigSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
+    {
+      AddMultisigSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
+    }
+
+    public void AddMultisigSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CTransaction.CfdInitializeMultisigSign(
+            handle.GetHandle(), out IntPtr multiSignHandle);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        try
+        {
+          for (uint index = 0; index < signList.Length; ++index)
+          {
+            if (signList[index].IsDerEncode())
+            {
+              ret = CTransaction.CfdAddMultisigSignDataToDer(
+                handle.GetHandle(), multiSignHandle,
+                signList[index].ToHexString(),
+                (int)signList[index].GetSignatureHashType().SighashType,
+                signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
+                signList[index].GetRelatedPubkey().ToHexString());
+            }
+            else
+            {
+              ret = CTransaction.CfdAddMultisigSignData(
+                handle.GetHandle(), multiSignHandle,
+                signList[index].ToHexString(),
+                signList[index].GetRelatedPubkey().ToHexString());
+            }
+          }
+
+          ret = CTransaction.CfdFinalizeMultisigSign(
+              handle.GetHandle(), multiSignHandle, (int)CfdNetworkType.Liquidv1,
+              tx, txid.ToHexString(), vout, (int)hashType,
+              redeemScript.ToHexString(), out IntPtr txString);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          tx = CCommon.ConvertToString(txString);
+        }
+        finally
+        {
+          CTransaction.CfdFreeMultisigSignHandle(handle.GetHandle(), multiSignHandle);
+        }
+      }
+    }
+
+    public void AddScriptSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
+    {
+      AddScriptSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
+    }
+
+    public void AddScriptSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        CfdErrorCode ret;
+        IntPtr txString;
+        bool clearStack = true;
+        string tempTx = tx;
+        for (uint index = 0; index < signList.Length; ++index)
+        {
+          ret = CTransaction.CfdAddTxSign(
+              handle.GetHandle(), (int)CfdNetworkType.Liquidv1,
+              tempTx, txid.ToHexString(), vout, (int)hashType,
+              signList[index].ToHexString(),
+              signList[index].IsDerEncode(),
+              (int)signList[index].GetSignatureHashType().SighashType,
+              signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
+              clearStack, out txString);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          tempTx = CCommon.ConvertToString(txString);
+          clearStack = false;
+        }
+
+        ret = CTransaction.CfdAddScriptHashSign(
+            handle.GetHandle(), (int)CfdNetworkType.Liquidv1,
+            tempTx, txid.ToHexString(), vout, (int)hashType,
+            redeemScript.ToHexString(), false, out txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    public void AddSign(Txid txid, uint vout, CfdHashType hashType, SignParameter signData, bool clearStack)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CTransaction.CfdAddTxSign(
+            handle.GetHandle(), (int)CfdNetworkType.Liquidv1,
+            tx, txid.ToHexString(), vout, (int)hashType,
+            signData.ToHexString(), signData.IsDerEncode(),
+            (int)signData.GetSignatureHashType().SighashType,
+            signData.GetSignatureHashType().IsSighashAnyoneCanPay,
+            clearStack, out IntPtr txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    public void VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, ConfidentialValue value)
+    {
+      VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, value);
+    }
+
+    public bool VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, ConfidentialValue value)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdVerifyConfidentialTxSign(
+            handle.GetHandle(), tx, txid.ToHexString(), vout,
+            address.ToAddressString(), (int)addressType, "",
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString());
+        if (ret == CfdErrorCode.Success)
+        {
+          return true;
+        }
+        else if (ret != CfdErrorCode.SignVerificationError)
+        {
+          handle.ThrowError(ret);
+        }
+      }
+      return false;
+    }
+
+    public bool VerifySignature(Txid txid, uint vout, CfdHashType hashType,
+        ByteData signature, Pubkey pubkey, SignatureHashType sighashType, ConfidentialValue value)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdVerifyConfidentialTxSignature(
+            handle.GetHandle(), tx, signature.ToHexString(), pubkey.ToHexString(), "",
+            txid.ToHexString(), vout,
+            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString(),
+            (int)((hashType == CfdHashType.P2pkh) ? CfdWitnessVersion.VersionNone : CfdWitnessVersion.Version0));
+        if (ret == CfdErrorCode.Success)
+        {
+          return true;
+        }
+        else if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+      }
+      return false;
+    }
+
+    public bool VerifySignature(Txid txid, uint vout, CfdHashType hashType,
+        ByteData signature, Script redeemScript, SignatureHashType sighashType, ConfidentialValue value)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = CElementsTransaction.CfdVerifyConfidentialTxSignature(
+            handle.GetHandle(), tx, signature.ToHexString(), "", redeemScript.ToHexString(),
+            txid.ToHexString(), vout,
+            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            value.GetSatoshiValue(),
+            (value.IsEmpty()) ? "" : value.ToHexString(),
+            (int)((hashType == CfdHashType.P2sh) ? CfdWitnessVersion.VersionNone : CfdWitnessVersion.Version0));
+        if (ret == CfdErrorCode.Success)
+        {
+          return true;
+        }
+        else if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+      }
+      return false;
     }
 
     public string ToHexString()

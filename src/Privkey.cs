@@ -13,6 +13,7 @@ namespace Cfd
     public const uint Size = 32;
     private string privkey;
     private string privkeyWif;
+    private CfdNetworkType networkType;
     private Pubkey pubkey;
 
     /// <summary>
@@ -21,6 +22,8 @@ namespace Cfd
     public Privkey()
     {
       privkey = "";
+      networkType = CfdNetworkType.Mainnet;
+      privkeyWif = "";
       pubkey = new Pubkey();
     }
 
@@ -35,6 +38,8 @@ namespace Cfd
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to privkey size.");
       }
       privkey = StringUtil.FromBytes(bytes);
+      networkType = CfdNetworkType.Mainnet;
+      privkeyWif = "";
       Initialize(privkey, "", true);
     }
 
@@ -44,11 +49,17 @@ namespace Cfd
     /// <param name="privkeyHex">privkey hex string</param>
     public Privkey(string privkeyHex)
     {
-      if ((privkeyHex == null) || (privkeyHex.Length != Size * 2))
+      if (string.IsNullOrEmpty(privkeyHex))
+      {
+        privkeyHex = "";
+      }
+      else if ((privkeyHex == null) || (privkeyHex.Length != Size * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to privkey size.");
       }
       privkey = privkeyHex;
+      networkType = CfdNetworkType.Mainnet;
+      privkeyWif = "";
       Initialize(privkey, "", true);
     }
 
@@ -60,6 +71,8 @@ namespace Cfd
     public Privkey(string wif, bool isCompressed)
     {
       privkeyWif = wif;
+      networkType = CfdNetworkType.Mainnet;
+      privkey = "";
       Initialize("", wif, isCompressed);
     }
 
@@ -99,12 +112,49 @@ namespace Cfd
       return pubkey;
     }
 
-    private void Initialize(string privkeyHex, string wif, bool isCompressed)
+    public SignParameter CalculateEcSignature(ByteData sighash, bool hasGrindR = true)
     {
       using (var handle = new ErrorHandle())
       {
-        var ret = CKey.CfdGetPubkeyFromPrivkey(
-          handle.GetHandle(), privkeyHex, wif, isCompressed, out IntPtr pubkeyHex);
+        var ret = CKey.CfdCalculateEcSignature(
+            handle.GetHandle(), sighash.ToHexString(),
+            privkey, privkeyWif, (int)networkType, hasGrindR,
+            out IntPtr signatureHex);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        SignParameter signature = new SignParameter(CCommon.ConvertToString(signatureHex));
+        SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
+        signature.SetDerEncode(sighashType);
+        return signature;
+      }
+    }
+
+    private void Initialize(string privkeyHex, string wif, bool isCompressed)
+    {
+      bool isCompressPubkey = isCompressed;
+      using (var handle = new ErrorHandle())
+      {
+        CfdErrorCode ret;
+        if (!String.IsNullOrEmpty(wif))
+        {
+          ret = CKey.CfdParsePrivkeyWif(
+            handle.GetHandle(), wif,
+            out IntPtr tempPrivkeyHex,
+            out int tempNetworkType,
+            out isCompressPubkey);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          privkey = CCommon.ConvertToString(tempPrivkeyHex);
+          networkType = (CfdNetworkType)tempNetworkType;
+        }
+
+        ret = CKey.CfdGetPubkeyFromPrivkey(
+          handle.GetHandle(), privkeyHex, wif, isCompressPubkey,
+          out IntPtr pubkeyHex);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
