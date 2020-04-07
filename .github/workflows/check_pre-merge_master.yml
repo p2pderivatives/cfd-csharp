@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        dotnet: [2.1.802, 3.1.100]
+        dotnet: [2.1.804, 3.1.200]
 
     steps:
     - name: setup dotnet
@@ -33,6 +33,7 @@ jobs:
       with:
         path: cache/cmake
         key: ${{ runner.os }}-cmake-3.15.5-x64
+        restore-keys: ${{ runner.os }}-cmake-3.15.5-x64
     - name: cmake-download-ubuntu
       if: matrix.os == 'ubuntu-latest' && steps.cache.outputs.cache-hit != 'true'
       run: |
