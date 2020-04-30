@@ -128,28 +128,23 @@ add_library(${PROJECT_NAME} SHARED)
 
 target_sources(${PROJECT_NAME}
   PRIVATE
-    internal/ErrorHandle.cs
-    internal/CAddress.cs
-    internal/CCoin.cs
     internal/CCommon.cs
-    internal/CElementsAddress.cs
-    internal/CElementsTransaction.cs
-    internal/CKey.cs
-    internal/CScript.cs
-    internal/CTransaction.cs
-    Txid.cs
+    internal/ErrorHandle.cs
+    internal/NativeMethods.cs
     Address.cs
     BlindFactor.cs
     ByteData.cs
     CfdCommon.cs
-    CMakeLists.txt
+    UtxoData.cs
     CoinUtil.cs
     ConfidentialAddress.cs
     ConfidentialAsset.cs
     ConfidentialTransaction.cs
     ConfidentialValue.cs
     Descriptor.cs
+    ExtPrivkey.cs
     ExtPubkey.cs
+    HDWallet.cs
     OutPoint.cs
     Privkey.cs
     Pubkey.cs
@@ -159,7 +154,7 @@ target_sources(${PROJECT_NAME}
     SignParameter.cs
     StringUtil.cs
     Transaction.cs
-    UtxoData.cs
+    Txid.cs
 )
 
 target_compile_options(${PROJECT_NAME}

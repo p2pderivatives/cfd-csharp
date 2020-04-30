@@ -6,3 +6,16 @@ indent_size = 2
 insert_final_newline = true
 end_of_line = lf
 charset = utf-8
+
+# IDE0063:
+csharp_prefer_simple_using_statement = false:suggestion
+
+# CA2101: P/Invoke
+dotnet_diagnostic.CA2101.severity = none
+# (need ansi only)
+
+# CA1303:
+dotnet_diagnostic.CA1303.severity = silent
+
+# CA1308:
+dotnet_diagnostic.CA1308.severity = silent

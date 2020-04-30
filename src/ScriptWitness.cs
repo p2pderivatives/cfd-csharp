@@ -11,14 +11,14 @@ namespace Cfd
 
     public ScriptWitness()
     {
-      hexArray = new string[0];
+      hexArray = Array.Empty<string>();
     }
 
     public ScriptWitness(string[] hexArray)
     {
-      if (hexArray == null)
+      if (hexArray is null)
       {
-        CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to script size.");
+        throw new ArgumentNullException(nameof(hexArray));
       }
       this.hexArray = hexArray;
       for (uint index = 0; index < hexArray.Length; ++index)

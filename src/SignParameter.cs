@@ -1,8 +1,5 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -15,11 +12,34 @@ namespace Cfd
     private SignatureHashType signatureHashType;
     private Pubkey pubkey;
 
-    public static ByteData EncodeToDer(ByteData signature, SignatureHashType sighashType)
+    public static ByteData NormalizeSignature(ByteData signature)
     {
+      if (signature is null)
+      {
+        throw new ArgumentNullException(nameof(signature));
+      }
       using (var handle = new ErrorHandle())
       {
-        var ret = CKey.CfdEncodeSignatureByDer(
+        var ret = NativeMethods.CfdNormalizeSignature(
+            handle.GetHandle(), signature.ToHexString(),
+            out IntPtr normalizedSignature);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return new ByteData(CCommon.ConvertToString(normalizedSignature));
+      }
+    }
+
+    public static ByteData EncodeToDer(ByteData signature, SignatureHashType sighashType)
+    {
+      if (signature is null)
+      {
+        throw new ArgumentNullException(nameof(signature));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdEncodeSignatureByDer(
             handle.GetHandle(), signature.ToHexString(),
             (int)sighashType.SighashType,
             sighashType.IsSighashAnyoneCanPay,
@@ -32,11 +52,15 @@ namespace Cfd
       }
     }
 
-    public static ByteData DecodeFromDer(ByteData derSignature, out SignatureHashType sighashType)
+    public static SignParameter DecodeFromDer(ByteData derSignature)
     {
+      if (derSignature is null)
+      {
+        throw new ArgumentNullException(nameof(derSignature));
+      }
       using (var handle = new ErrorHandle())
       {
-        var ret = CKey.CfdDecodeSignatureFromDer(
+        var ret = NativeMethods.CfdDecodeSignatureFromDer(
             handle.GetHandle(), derSignature.ToHexString(),
             out IntPtr signature,
             out int signatureHashType,
@@ -46,8 +70,10 @@ namespace Cfd
           handle.ThrowError(ret);
         }
         string signatureStr = CCommon.ConvertToString(signature);
-        sighashType = new SignatureHashType((CfdSighashType)signatureHashType, sighashAnyoneCanPay);
-        return new ByteData(signatureStr);
+        SignatureHashType sighashType = new SignatureHashType((CfdSighashType)signatureHashType, sighashAnyoneCanPay);
+        SignParameter signParam = new SignParameter(signatureStr);
+        signParam.SetDerEncode(sighashType);
+        return signParam;
       }
     }
 
@@ -86,10 +112,29 @@ namespace Cfd
       isSetDerEncode = false;
     }
 
+    public ByteData ToDerEncode()
+    {
+      if (!isSetDerEncode)
+      {
+        CfdCommon.ThrowError(CfdErrorCode.IllegalStateError, "Failed to unset der encode flag.");
+      }
+      return ToDerEncode(signatureHashType);
+    }
+
+    public ByteData ToDerEncode(SignatureHashType sighashType)
+    {
+      return EncodeToDer(new ByteData(data), sighashType);
+    }
+
     public void SetDerEncode(SignatureHashType signatureHashType)
     {
-      this.signatureHashType = signatureHashType;
+      SetSignatureHashType(signatureHashType);
       isSetDerEncode = true;
+    }
+
+    public void SetSignatureHashType(SignatureHashType signatureHashType)
+    {
+      this.signatureHashType = signatureHashType;
     }
 
     public void SetRelatedPubkey(Pubkey relatedPubkey)

@@ -48,23 +48,31 @@ namespace Cfd
       return vout;
     }
 
-    public bool Equals(OutPoint obj)
+    public bool Equals(OutPoint other)
     {
-      if (Object.ReferenceEquals(obj, null))
+      if (other is null)
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, obj))
+      if (Object.ReferenceEquals(this, other))
       {
         return true;
       }
 
-      return txid.Equals(obj.txid) && (vout == obj.vout);
+      return txid.Equals(other.txid) && (vout == other.vout);
     }
 
     public override bool Equals(object obj)
     {
-      return this.Equals(obj as OutPoint);
+      if (obj is null)
+      {
+        return false;
+      }
+      if ((obj as OutPoint) != null)
+      {
+        return this.Equals((OutPoint)obj);
+      }
+      return false;
     }
 
     public override int GetHashCode()
@@ -74,9 +82,9 @@ namespace Cfd
 
     public static bool operator ==(OutPoint lhs, OutPoint rhs)
     {
-      if (Object.ReferenceEquals(lhs, null))
+      if (lhs is null)
       {
-        if (Object.ReferenceEquals(rhs, null))
+        if (rhs is null)
         {
           return true;
         }

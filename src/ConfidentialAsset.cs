@@ -7,6 +7,8 @@ namespace Cfd
 {
   public class ConfidentialAsset
   {
+    const UInt32 Size = 32;
+    const UInt32 CommitmentSize = 33;
     private readonly string commitment;
 
     public ConfidentialAsset()
@@ -16,7 +18,11 @@ namespace Cfd
 
     public ConfidentialAsset(string asset)
     {
-      if ((asset == null) || ((asset.Length != 64) && (asset.Length != 66)))
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if ((asset.Length != Size * 2) && (asset.Length != CommitmentSize * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to asset size.");
       }
@@ -25,11 +31,15 @@ namespace Cfd
 
     public ConfidentialAsset(byte[] asset)
     {
-      if ((asset == null) || ((asset.Length != 32) && (asset.Length != 33)))
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if ((asset.Length != Size) && (asset.Length != CommitmentSize))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to asset size.");
       }
-      if (asset.Length == 32)
+      if (asset.Length == Size)
       {
         var assetBytes = CfdCommon.ReverseBytes(asset);
         this.commitment = StringUtil.FromBytes(assetBytes);
@@ -42,7 +52,7 @@ namespace Cfd
 
     public bool HasBlinding()
     {
-      return commitment.Length == 66;
+      return commitment.Length == (CommitmentSize * 2);
     }
 
     public string ToHexString()
@@ -52,7 +62,7 @@ namespace Cfd
 
     public byte[] ToBytes()
     {
-      if (commitment.Length == 64)
+      if (commitment.Length == (Size * 2))
       {
         var assetBytes = StringUtil.ToBytes(commitment);
         return CfdCommon.ReverseBytes(assetBytes);

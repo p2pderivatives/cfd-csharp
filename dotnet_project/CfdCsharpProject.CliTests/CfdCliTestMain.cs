@@ -4,13 +4,13 @@ using System.Collections.Generic;
 // using System.Runtime.InteropServices;
 using Cfd;
 
-namespace Cfd.Tests
+namespace Cfd.Tests.Cli
 {
   // [TestClass()]
-  public class CfdTests
+  public static class CfdCliTestMain
   {
     // [TestMethod()]
-    public void TestConfidentialTx()
+    public static void TestConfidentialTx()
     {
       Console.WriteLine("ConfidentialTransaction");
       Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
@@ -24,7 +24,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestBlindTx()
+    public static void TestBlindTx()
     {
       Console.WriteLine("BlindTransaction");
       Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
@@ -69,6 +69,7 @@ namespace Cfd.Tests
       confidentialKeys.Add(
         3, new Pubkey("03ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed879"));
 
+      Console.WriteLine("call BlindTransaction");
       tx.BlindTransaction(utxos, issuanceKeys, confidentialKeys);
       Console.WriteLine("- Blind tx data:");
       Console.WriteLine("  - txid     = " + tx.GetTxid().ToHexString());
@@ -202,7 +203,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestAddress1()
+    public static void TestAddress1()
     {
       Console.WriteLine("Address from text");
       Cfd.Address addr = new Cfd.Address("bcrt1q576jgpgewxwu205cpjq4s4j5tprxlq38l7kd85");
@@ -221,7 +222,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestConfidentialAddress1()
+    public static void TestConfidentialAddress1()
     {
       Console.WriteLine("ConfidentialAddress from text");
       Cfd.ConfidentialAddress caddr = new Cfd.ConfidentialAddress("VTpvKKc1SNmLG4H8CnR1fGJdHdyWGEQEvdP9gfeneJR7n81S5kiwNtgF7vrZjC8mp63HvwxM81nEbTxU");
@@ -241,7 +242,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestTxidAndOutPoint1()
+    public static void TestTxidAndOutPoint1()
     {
       Txid txid = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
 
@@ -254,7 +255,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestTxidAndOutPoint2()
+    public static void TestTxidAndOutPoint2()
     {
       Txid txid1 = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
       Txid txid2 = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
@@ -279,19 +280,19 @@ namespace Cfd.Tests
       Console.WriteLine();
     }
 
-    private string convertRangeProof(byte[] data)
+    private static string ConvertRangeProof(ByteData data)
     {
-      if (data.Length < 256)
+      if (data.GetSize() < 256)
       {
         return StringUtil.FromBytes(data);
       }
       else
       {
-        return "( byte[] length: " + data.Length + " )";
+        return "( byte[] length: " + data.GetSize() + " )";
       }
     }
 
-    public void DumpDecodeTxData(string txHex)
+    public static void DumpDecodeTxData(string txHex)
     {
       Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction(txHex);
 
@@ -337,11 +338,11 @@ namespace Cfd.Tests
           }
           if (!txin.Issuance.IssuanceAmount.IsEmpty())
           {
-            Console.WriteLine("      - issueProof = " + convertRangeProof(txin.Issuance.IssuanceAmountRangeproof));
+            Console.WriteLine("      - issueProof = " + ConvertRangeProof(txin.Issuance.IssuanceAmountRangeproof));
           }
           if (!txin.Issuance.InflationKeys.IsEmpty())
           {
-            Console.WriteLine("      - tokenProof = " + convertRangeProof(txin.Issuance.InflationKeysRangeproof));
+            Console.WriteLine("      - tokenProof = " + ConvertRangeProof(txin.Issuance.InflationKeysRangeproof));
           }
         }
         Console.WriteLine("    - PeginWitness[" + txin.PeginWitness.GetCount() + "]");
@@ -363,10 +364,10 @@ namespace Cfd.Tests
           Console.WriteLine("    - scriptPubkey = " + txout.ScriptPubkey.ToHexString());
           Console.WriteLine("      - asm        = " + txout.ScriptPubkey.GetAsm());
         }
-        if ((txout.SurjectionProof.Length != 0) || (txout.RangeProof.Length != 0))
+        if ((txout.SurjectionProof.GetSize() != 0) || (txout.RangeProof.GetSize() != 0))
         {
           Console.WriteLine("    - SurjProof    = " + StringUtil.FromBytes(txout.SurjectionProof));
-          Console.WriteLine("    - RangeProof   = " + convertRangeProof(txout.RangeProof));
+          Console.WriteLine("    - RangeProof   = " + ConvertRangeProof(txout.RangeProof));
         }
       }
 
@@ -375,7 +376,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestDecodeTxData()
+    public static void TestDecodeTxData()
     {
       Console.WriteLine("TestDecodeTxData - normal elements transaction.");
       DumpDecodeTxData("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
@@ -391,7 +392,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestAddPubkeySign()
+    public static void TestAddPubkeySign()
     {
       string txHex = "0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000";
       ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
@@ -401,7 +402,7 @@ namespace Cfd.Tests
       Txid txid = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
       uint vout = 0;
       Pubkey pubkey = new Pubkey("03f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d6");
-      Privkey privkey = new Privkey("cU4KjNUT7GjHm7CkjRjG46SzLrXHXoH3ekXmqa2jTCFPMkQ64sw1", true);
+      Privkey privkey = new Privkey("cU4KjNUT7GjHm7CkjRjG46SzLrXHXoH3ekXmqa2jTCFPMkQ64sw1");
       CfdHashType hashType = CfdHashType.P2wpkh;
       SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
 
@@ -437,7 +438,7 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestAddSignWithPrivkeySimple()
+    public static void TestAddSignWithPrivkeySimple()
     {
       string txHex = "0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000";
       ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
@@ -446,7 +447,7 @@ namespace Cfd.Tests
       Txid txid = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
       uint vout = 0;
       Pubkey pubkey = new Pubkey("03f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d6");
-      Privkey privkey = new Privkey("cU4KjNUT7GjHm7CkjRjG46SzLrXHXoH3ekXmqa2jTCFPMkQ64sw1", true);
+      Privkey privkey = new Privkey("cU4KjNUT7GjHm7CkjRjG46SzLrXHXoH3ekXmqa2jTCFPMkQ64sw1");
       CfdHashType hashType = CfdHashType.P2wpkh;
       SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
       tx.AddSignWithPrivkeySimple(txid, vout, hashType, privkey, value, sighashType);
@@ -465,15 +466,15 @@ namespace Cfd.Tests
     }
 
     // [TestMethod()]
-    public void TestAddMultisigSign()
+    public static void TestAddMultisigSign()
     {
       string txHex = "0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000";
       ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
 
       Pubkey pubkey1 = new Pubkey("02715ed9a5f16153c5216a6751b7d84eba32076f0b607550a58b209077ab7c30ad");
-      Privkey privkey1 = new Privkey("cRVLMWHogUo51WECRykTbeLNbm5c57iEpSegjdxco3oef6o5dbFi", true);
+      Privkey privkey1 = new Privkey("cRVLMWHogUo51WECRykTbeLNbm5c57iEpSegjdxco3oef6o5dbFi");
       Pubkey pubkey2 = new Pubkey("02bfd7daa5d113fcbd8c2f374ae58cbb89cbed9570e898f1af5ff989457e2d4d71");
-      Privkey privkey2 = new Privkey("cQUTZ8VbWNYBEtrB7xwe41kqiKMQPRZshTvBHmkoJGaUfmS5pxzR", true);
+      Privkey privkey2 = new Privkey("cQUTZ8VbWNYBEtrB7xwe41kqiKMQPRZshTvBHmkoJGaUfmS5pxzR");
       Pubkey[] pubkeyList = { pubkey2, pubkey1 };
 
       long satoshiValue = 13000000000000;
@@ -481,7 +482,7 @@ namespace Cfd.Tests
       Txid txid = new Txid("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f");
       uint vout = 0;
 
-      Script redeemScript = ScriptUtil.CreateMultisig(pubkeyList, 2);
+      Script redeemScript = Script.CreateMultisigScript(2, pubkeyList);
 
       CfdHashType hashType = CfdHashType.P2wsh;
       SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
@@ -526,26 +527,39 @@ namespace Cfd.Tests
       // }
     }
 
+    public static void DescriptorTest()
+    {
+      string desc = "sh(wpkh(03fff97bd5755eeea420453a14355235d382f6472f8568a18b2f057a1460297556))";
+      Console.WriteLine("call descriptor.");
+      Descriptor descriptor = new Descriptor(desc, CfdNetworkType.Mainnet);
+      Console.WriteLine("descriptor: " + descriptor.ToString());
+      Console.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      Console.WriteLine("hashType: " + descriptor.GetHashType());
+      Console.WriteLine("scriptListLen: " + descriptor.GetList().Length);
+      Console.WriteLine("scriptList[1].Pubkey: " + descriptor.GetList()[1].KeyData.Pubkey.ToHexString());
+      Console.WriteLine("HasKeyHash: " + descriptor.HasKeyHash());
+      Console.WriteLine("GetKeyData.Pubkey: " + descriptor.GetKeyData().Pubkey.ToHexString());
+    }
+
     public static void Main()
     {
-      CfdTests testObj = new CfdTests();
+      CfdCliTestMain.TestConfidentialTx();
 
-      testObj.TestConfidentialTx();
+      CfdCliTestMain.TestBlindTx();
 
-      testObj.TestBlindTx();
+      CfdCliTestMain.TestAddress1();
+      CfdCliTestMain.TestConfidentialAddress1();
 
-      testObj.TestAddress1();
-      testObj.TestConfidentialAddress1();
+      CfdCliTestMain.TestTxidAndOutPoint1();
 
-      testObj.TestTxidAndOutPoint1();
+      CfdCliTestMain.TestTxidAndOutPoint2();
 
-      testObj.TestTxidAndOutPoint2();
+      CfdCliTestMain.TestDecodeTxData();
 
-      testObj.TestDecodeTxData();
-
-      testObj.TestAddPubkeySign();
-      testObj.TestAddSignWithPrivkeySimple();
-      testObj.TestAddMultisigSign();
+      CfdCliTestMain.TestAddPubkeySign();
+      CfdCliTestMain.TestAddSignWithPrivkeySimple();
+      CfdCliTestMain.TestAddMultisigSign();
+      DescriptorTest();
 
       Console.WriteLine("Call Finish!");
     }

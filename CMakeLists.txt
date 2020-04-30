@@ -12,7 +12,7 @@ option(ENABLE_TESTS "enable code tests (ON or OFF. default:ON)" ON)
 option(ENABLE_SHARED "enable shared library (ON or OFF. default:ON)" ON)
 option(ENABLE_ELEMENTS "enable elements code (ON or OFF. default:ON)" ON)
 option(ENABLE_CAPI  "enable c-api (ON or OFF. default:ON)" ON)
-option(ENABLE_CSHARP  "enable c-api (ON or OFF. default:ON)" ON)
+option(ENABLE_CSHARP  "enable csharp build for .NET Framework (ON or OFF. default:OFF)" OFF)
 
 if(NOT WIN32)
 #option(TARGET_RPATH "target rpath list (separator is ';') (default:)" "")
@@ -60,35 +60,16 @@ endfunction()
 
 
 ####################
-# test
-####################
-project(cfd_all_test CXX)
-if(ENABLE_TESTS)
-enable_testing()
-endif()		# ENABLE_TESTS
-
-####################
 # subdirectories
 ####################
+project(cfd_all_test CXX)
 if(NOT CFD_SINGLE_BUILD)
 add_subdirectory(external)
 endif()
 
-if(${ENABLE_CSHARP})
-add_subdirectory(src)
-endif()
-
-
-####################
-# test subdirectories
-####################
-if(ENABLE_TESTS)
-include(CTest)
-
-if(${ENABLE_CSHARP})
-add_subdirectory(test)
-endif()
-endif()		# ENABLE_TESTS
+# if(${ENABLE_CSHARP})
+# add_subdirectory(src)
+# endif()
 
 
 ####################

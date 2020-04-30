@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 
 /// <summary>
@@ -27,9 +28,9 @@ namespace Cfd
   public static class CfdCommon
   {
     /// <summary>
-    /// Get string from cfd's pointer address, and free address buffer.
+    /// Get reversed buffer.
     /// </summary>
-    /// <param name="address">pointer address</param>
+    /// <param name="bytes">byte data</param>
     /// <returns>string</returns>
     public static byte[] ReverseBytes(byte[] bytes)
     {
@@ -62,7 +63,7 @@ namespace Cfd
       var errorMessage = message;
       if (String.IsNullOrEmpty(errorMessage))
       {
-        errorMessage = String.Format("CFD error[{0}]", errorCode);
+        errorMessage = String.Format(CultureInfo.InvariantCulture, "CFD error[{0}]", errorCode);
       }
       switch (errorCode)
       {

@@ -16,7 +16,7 @@ namespace Cfd
       confidentialAddress = addressString;
       using (var handle = new ErrorHandle())
       {
-        var ret = CElementsAddress.CfdParseConfidentialAddress(
+        var ret = NativeMethods.CfdParseConfidentialAddress(
             handle.GetHandle(), addressString,
             out IntPtr address,
             out IntPtr confidentialKey, out int networkType);
@@ -34,11 +34,19 @@ namespace Cfd
 
     public ConfidentialAddress(Address address, Pubkey confidentialKey)
     {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      if (confidentialKey is null)
+      {
+        throw new ArgumentNullException(nameof(confidentialKey));
+      }
       unconfidenialAddress = address;
       key = confidentialKey;
       using (var handle = new ErrorHandle())
       {
-        var ret = CElementsAddress.CfdCreateConfidentialAddress(
+        var ret = NativeMethods.CfdCreateConfidentialAddress(
             handle.GetHandle(), address.ToAddressString(), confidentialKey.ToHexString(),
             out IntPtr outputConfidentialAddr);
         if (ret != CfdErrorCode.Success)

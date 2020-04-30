@@ -8,6 +8,6 @@ cd dotnet_project/CfdCsharpProject
 dotnet build -c Release
 cd ../..
 
-cd dotnet_project/CfdCsharpTestProject
+cd dotnet_project/CfdCsharpProject.xTests
 dotnet build -c Release
 cd ../..

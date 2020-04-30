@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 /// <summary>
 /// cfd library namespace.
@@ -9,6 +10,10 @@ namespace Cfd
   {
     public static byte[] ToBytes(string hex)
     {
+      if (hex is null)
+      {
+        throw new ArgumentNullException(nameof(hex));
+      }
       var buffer = new byte[hex.Length / 2];
       for (int i = 0; i < hex.Length / 2; ++i)
       {
@@ -19,7 +24,21 @@ namespace Cfd
 
     public static string FromBytes(byte[] bytes)
     {
-      return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+      if (bytes is null)
+      {
+        throw new ArgumentNullException(nameof(bytes));
+      }
+      return BitConverter.ToString(bytes).Replace(
+        "-", "", StringComparison.Ordinal)
+        .ToLower(CultureInfo.InvariantCulture);
+    }
+    public static string FromBytes(ByteData bytes)
+    {
+      if (bytes is null)
+      {
+        throw new ArgumentNullException(nameof(bytes));
+      }
+      return FromBytes(bytes.ToBytes());
     }
   }
 }

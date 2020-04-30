@@ -11,7 +11,7 @@ namespace Cfd
   internal class ErrorHandle : IDisposable
   {
     private readonly IntPtr handle;
-    private bool disposed = false;
+    private bool disposed;
 
     /// <summary>
     /// constructor.
