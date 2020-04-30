@@ -22,8 +22,10 @@ jobs:
         exclude:
           - os: macos-latest
             dotnet: 2.1.804
-          - os: ubuntu-latest
+          - os: windows-latest
             dotnet: 2.1.804
+          - os: ubuntu-latest
+            dotnet: 3.1.200
 
     steps:
     - name: setup dotnet
@@ -56,18 +58,21 @@ jobs:
         export CURRENT_DIR=$(pwd)
         echo ::add-path::$CURRENT_DIR/$cmake_file_name/bin
         cd ../..
-    - name: build
-      if: matrix.os != 'windows-latest'
-      run: ./tools/build.sh
-    - name: test
-      if: matrix.os != 'windows-latest'
-      run: ./tools/test.sh
-    - name: build-windows
+    - name: build and test on ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        ./tools/build_core2.sh
+        ./tools/test_core2.sh
+    - name: build and test on mac
+      if: matrix.os == 'macos-latest'
+      run: |
+        ./tools/build.sh
+        ./tools/test.sh
+    - name: build and test on windows
       if: matrix.os == 'windows-latest'
-      run: .\tools\build.bat
-    - name: test-windows
-      if: matrix.os == 'windows-latest'
-      run: .\tools\test.bat
+      run: |
+        .\tools\build.bat
+        .\tools\test.bat
     - name: ubuntu-after
       if: matrix.os == 'ubuntu-latest'
       run: rm -rf cache/cmake/cmake-$CMAKE_VERSION-Linux-x86_64

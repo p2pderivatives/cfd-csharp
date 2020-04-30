@@ -16,51 +16,50 @@ namespace Cfd
       if (address != IntPtr.Zero)
       {
         result = Marshal.PtrToStringAnsi(address);
-        CfdFreeBuffer(address);
+        NativeMethods.CfdFreeBuffer(address);
       }
       return result;
     }
 
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdGetSupportedFunction([Out] ulong supportFlag);
+    public static CfdErrorCode CfdInitialize()
+    {
+      return NativeMethods.CfdInitialize();
+    }
 
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
-    public static extern CfdErrorCode CfdInitialize();
+    internal static CfdErrorCode CfdCreateSimpleHandle(
+        [Out] out IntPtr handle)
+    {
+      return NativeMethods.CfdCreateSimpleHandle(out handle);
+    }
 
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdFinalize([In] bool isFinishProcess);
+    internal static CfdErrorCode CfdFreeHandle([In] IntPtr handle)
+    {
+      return NativeMethods.CfdFreeHandle(handle);
+    }
 
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // internal static extern CfdErrorCode CfdCreateHandle([Out] out IntPtr handle);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
-    internal static extern CfdErrorCode CfdCreateSimpleHandle([Out] out IntPtr handle);
-
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdCloneHandle([In] IntPtr source, [Out] IntPtr handle);
-
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdCopyErrorState([In] IntPtr source, [In] IntPtr destination);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
-    internal static extern CfdErrorCode CfdFreeHandle([In] IntPtr handle);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    static extern CfdErrorCode CfdFreeBuffer([In] IntPtr address);
-
-    // [DllImport("cfd", CallingConvention = CallingConvention.Cdecl)]
-    // static extern int CfdGetLastErrorCode([In] IntPtr handle);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
-    internal static extern CfdErrorCode CfdGetLastErrorMessage(
+    internal static CfdErrorCode CfdGetLastErrorMessage(
         [In] IntPtr handle,
-        [Out] out IntPtr message);
+        [Out] out IntPtr message)
+    {
+      return NativeMethods.CfdGetLastErrorMessage(handle, out message);
+    }
 
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
-    internal static extern CfdErrorCode CfdRequestExecuteJson(
+    internal static CfdErrorCode CfdRequestExecuteJson(
         [In] IntPtr handle,
         [In] string requestName,
         [In] string requestJsonString,
-        [Out] out IntPtr responseJsonString);
+        [Out] out IntPtr responseJsonString)
+    {
+      return NativeMethods.CfdRequestExecuteJson(handle, requestName,
+          requestJsonString, out responseJsonString);
+    }
+
+    internal static CfdErrorCode CfdSerializeByteData(
+        [In] IntPtr handle,
+        [In] string buffer,
+        [Out] out IntPtr output)
+    {
+      return NativeMethods.CfdSerializeByteData(handle, buffer, out output);
+    }
   }
 }

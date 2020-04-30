@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 
 /// <summary>
 /// cfd library namespace.
@@ -10,7 +10,7 @@ namespace Cfd
   /// </summary>
   public class BlindFactor
   {
-    public const uint Size = 32;
+    public static readonly uint Size = 32;
     private readonly string hexString;
 
     /// <summary>
@@ -31,7 +31,7 @@ namespace Cfd
       {
         hexString = "0000000000000000000000000000000000000000000000000000000000000000";
       }
-      else if ((blindFactorHex == null) || (blindFactorHex.Length != Size * 2))
+      else if (blindFactorHex.Length != Size * 2)
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
       }
@@ -41,10 +41,14 @@ namespace Cfd
     /// <summary>
     /// Constructor. (valid blind factor)
     /// </summary>
-    /// <param name="blindFactorHex">blinder</param>
+    /// <param name="bytes">blinder</param>
     public BlindFactor(byte[] bytes)
     {
-      if ((bytes == null) || (bytes.Length != Size))
+      if (bytes is null)
+      {
+        throw new ArgumentNullException(nameof(bytes));
+      }
+      if (bytes.Length != Size)
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
       }

@@ -51,24 +51,26 @@ jobs:
         export CURRENT_DIR=$(pwd)
         echo ::add-path::$CURRENT_DIR/$cmake_file_name/bin
         cd ../..
-    - name: build - 3.1.100
-      if: matrix.os != 'windows-latest' && matrix.dotnet != '2.1.802'
-      run: ./tools/build.sh
-    - name: test - 3.1.100
-      if: matrix.os != 'windows-latest' && matrix.dotnet != '2.1.802'
-      run: ./tools/test.sh
-    - name: build - 2.1.802
-      if: matrix.os != 'windows-latest' && matrix.dotnet == '2.1.802'
-      run: ./tools/build_core2.sh
-    - name: test - 2.1.802
-      if: matrix.os != 'windows-latest' && matrix.dotnet == '2.1.802'
-      run: ./tools/test_core2.sh
-    - name: build-windows
-      if: matrix.os == 'windows-latest'
-      run: .\tools\build.bat
-    - name: test-windows
-      if: matrix.os == 'windows-latest'
-      run: .\tools\test.bat
+    - name: build and test - 3.1.200
+      if: matrix.os != 'windows-latest' && matrix.dotnet != '2.1.804'
+      run: |
+        ./tools/build.sh
+        ./tools/test.sh
+    - name: build and test - 2.1.804
+      if: matrix.os != 'windows-latest' && matrix.dotnet == '2.1.804'
+      run: |
+        ./tools/build_core2.sh
+        ./tools/test_core2.sh
+    - name: build and test on win - 3.1.200
+      if: matrix.os == 'windows-latest' && matrix.dotnet != '2.1.804'
+      run: |
+        ./tools/build_core3.bat
+        ./tools/test_core3.bat
+    - name: build and test on win - 2.1.804
+      if: matrix.os == 'windows-latest' && matrix.dotnet == '2.1.804'
+      run: |
+        ./tools/build_core2.bat
+        ./tools/test_core2.bat
     - name: ubuntu-after
       if: matrix.os == 'ubuntu-latest'
       run: rm -rf cache/cmake/cmake-$CMAKE_VERSION-Linux-x86_64

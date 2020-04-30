@@ -2,12 +2,23 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <StartupObject>Cfd.Tests.CfdTests</StartupObject>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <StartupObject>Cfd.Tests.Cli.CfdCliTestMain</StartupObject>
     <OutputName>cfdcs_test</OutputName>
     <AssemblyName>cfdcs_test</AssemblyName>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin/Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -18,6 +29,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>bin/Release</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
@@ -41,11 +58,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../test/*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Project Include="./CfdCsharpTestProject_Core2.csproj" />
-    <ProjectReference Include="../CfdCsharpProject_Core2/CfdCsharpProject_Core2.csproj" />
+    <ProjectReference Include="../CfdCsharpProject/CfdCsharpProject.csproj" />
   </ItemGroup>
 </Project>

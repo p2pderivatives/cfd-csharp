@@ -1,3 +1,4 @@
+using System;
 /// <summary>
 /// cfd library namespace.
 /// </summary>
@@ -8,7 +9,7 @@ namespace Cfd
   /// </summary>
   public class ByteData
   {
-    private string data;
+    private readonly string data;
 
     /// <summary>
     /// Constructor. (empty)
@@ -24,9 +25,9 @@ namespace Cfd
     /// <param name="bytes">byte array</param>
     public ByteData(byte[] bytes)
     {
-      if (bytes == null)
+      if (bytes is null)
       {
-        CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to bytes is null.");
+        throw new ArgumentNullException(nameof(bytes));
       }
       data = StringUtil.FromBytes(bytes);
     }
@@ -37,9 +38,9 @@ namespace Cfd
     /// <param name="hex">hex string</param>
     public ByteData(string hex)
     {
-      if (hex == null)
+      if (hex is null)
       {
-        CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to hex is null.");
+        throw new ArgumentNullException(nameof(hex));
       }
       data = hex;
     }
@@ -60,6 +61,21 @@ namespace Cfd
     public byte[] ToBytes()
     {
       return StringUtil.ToBytes(data);
+    }
+
+    public uint GetSize()
+    {
+      return (uint)data.Length / 2;
+    }
+
+    public uint GetLength()
+    {
+      return GetSize();
+    }
+
+    public bool IsEmpty()
+    {
+      return data.Length == 0;
     }
   }
 }

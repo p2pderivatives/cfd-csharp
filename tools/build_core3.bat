@@ -25,7 +25,7 @@ if not %ERRORLEVEL% == 0 (
 )
 cd ../..
 
-cd dotnet_project/CfdCsharpTestProject
+cd dotnet_project/CfdCsharpProject.xTests
 CALL dotnet build -c Release
 if not %ERRORLEVEL% == 0 (
     cd ../..

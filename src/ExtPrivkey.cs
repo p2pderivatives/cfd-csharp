@@ -4,19 +4,11 @@ using System;
 /// </summary>
 namespace Cfd
 {
-  /// <summary>
-  /// extend key type.
-  /// </summary>
-  public enum CfdExtKeyType
+  public class ExtPrivkey : IEquatable<ExtPrivkey>
   {
-    Privkey = 0,  //!< extended privkey
-    Pubkey        //!< extended pubkey
-  };
-
-  public class ExtPubkey : IEquatable<ExtPubkey>
-  {
-    public static readonly string VersionMainnet = "0488b21e";
-    public static readonly string VersionTestnet = "043587cf";
+    public static readonly uint Hardened = 0x80000000;
+    public static readonly string VersionMainnet = "0488ade4";
+    public static readonly string VersionTestnet = "04358394";
 
     private readonly string extkey;
     private readonly ByteData version;
@@ -25,14 +17,36 @@ namespace Cfd
     private readonly uint depth;
     private readonly uint childNumber;
     private readonly CfdNetworkType networkType;
-    private readonly Pubkey pubkey;
+    private readonly Privkey privkey;
 
-    public ExtPubkey()
+    public ExtPrivkey()
     {
       extkey = "";
-
     }
-    public ExtPubkey(string base58String)
+    public ExtPrivkey(ByteData seed, CfdNetworkType networkType)
+    {
+      if (seed is null)
+      {
+        throw new ArgumentNullException(nameof(seed));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdCreateExtkeyFromSeed(
+          handle.GetHandle(), seed.ToHexString(), (int)networkType,
+          (int)CfdExtKeyType.Privkey, out IntPtr tempExtkey);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        extkey = CCommon.ConvertToString(tempExtkey);
+        GetExtkeyInformation(handle, extkey,
+          out version, out fingerprint,
+          out chainCode, out depth, out childNumber, out _);
+        privkey = GetPrivkeyFromExtKey(handle, extkey, networkType);
+      }
+    }
+
+    public ExtPrivkey(string base58String)
     {
       if (base58String is null)
       {
@@ -43,101 +57,28 @@ namespace Cfd
       {
         GetExtkeyInformation(handle, extkey, out version, out fingerprint,
           out chainCode, out depth, out childNumber, out networkType);
-        pubkey = GetPubkeyFromExtKey(handle, extkey, networkType);
+        privkey = GetPrivkeyFromExtKey(handle, extkey, networkType);
       }
     }
 
-    public ExtPubkey(CfdNetworkType networkType, Pubkey parentPubkey,
-      Pubkey pubkey, ByteData chainCode, uint depth, uint childNumber)
-    {
-      if (parentPubkey is null)
-      {
-        throw new ArgumentNullException(nameof(parentPubkey));
-      }
-      if (pubkey is null)
-      {
-        throw new ArgumentNullException(nameof(pubkey));
-      }
-      if (chainCode is null)
-      {
-        throw new ArgumentNullException(nameof(chainCode));
-      }
-      using (var handle = new ErrorHandle())
-      {
-        var ret = NativeMethods.CfdCreateExtkey(
-          handle.GetHandle(), (int)networkType, (int)CfdExtKeyType.Pubkey,
-          parentPubkey.ToHexString(), "", pubkey.ToHexString(),
-          chainCode.ToHexString(), (byte)depth, childNumber, out IntPtr tempExtkey);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        extkey = CCommon.ConvertToString(tempExtkey);
-        this.networkType = networkType;
-        this.pubkey = pubkey;
-        this.chainCode = chainCode;
-        this.depth = depth;
-        this.childNumber = childNumber;
-        GetExtkeyInformation(handle, extkey, out version, out fingerprint,
-          out _, out _, out _, out _);
-      }
-    }
-
-    public ExtPubkey(CfdNetworkType networkType, ByteData fingerprint,
-      Pubkey pubkey, ByteData chainCode, uint depth, uint childNumber)
-    {
-      if (fingerprint is null)
-      {
-        throw new ArgumentNullException(nameof(fingerprint));
-      }
-      if (pubkey is null)
-      {
-        throw new ArgumentNullException(nameof(pubkey));
-      }
-      if (chainCode is null)
-      {
-        throw new ArgumentNullException(nameof(chainCode));
-      }
-      using (var handle = new ErrorHandle())
-      {
-        var ret = NativeMethods.CfdCreateExtkey(
-          handle.GetHandle(), (int)networkType, (int)CfdExtKeyType.Pubkey, "",
-          fingerprint.ToHexString(), pubkey.ToHexString(), chainCode.ToHexString(),
-          (byte)depth, childNumber, out IntPtr tempExtkey);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        extkey = CCommon.ConvertToString(tempExtkey);
-        this.networkType = networkType;
-        this.fingerprint = fingerprint;
-        this.pubkey = pubkey;
-        this.chainCode = chainCode;
-        this.depth = depth;
-        this.childNumber = childNumber;
-        GetExtkeyInformation(handle, extkey, out version, out _,
-          out _, out _, out _, out _);
-      }
-    }
-
-    public ExtPubkey DerivePubkey(uint childNumber)
+    public ExtPrivkey DerivePrivkey(uint childNumber)
     {
       using (var handle = new ErrorHandle())
       {
         var ret = NativeMethods.CfdCreateExtkeyFromParent(
           handle.GetHandle(), extkey, childNumber, false,
           (int)networkType,
-          (int)CfdExtKeyType.Pubkey, out IntPtr tempExtkey);
+          (int)CfdExtKeyType.Privkey, out IntPtr tempExtkey);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
         string childExtkey = CCommon.ConvertToString(tempExtkey);
-        return new ExtPubkey(childExtkey);
+        return new ExtPrivkey(childExtkey);
       }
     }
 
-    public ExtPubkey DerivePubkey(uint[] path)
+    public ExtPrivkey DerivePrivkey(uint[] path)
     {
       if (path is null)
       {
@@ -151,7 +92,7 @@ namespace Cfd
           IntPtr tempExtkey = IntPtr.Zero;
           var ret = NativeMethods.CfdCreateExtkeyFromParent(
             handle.GetHandle(), childExtkey, childNum, false,
-            (int)networkType, (int)CfdExtKeyType.Pubkey,
+            (int)networkType, (int)CfdExtKeyType.Privkey,
             out tempExtkey);
           if (ret != CfdErrorCode.Success)
           {
@@ -159,11 +100,11 @@ namespace Cfd
           }
           childExtkey = CCommon.ConvertToString(tempExtkey);
         }
-        return new ExtPubkey(childExtkey);
+        return new ExtPrivkey(childExtkey);
       }
     }
 
-    public ExtPubkey DerivePubkey(string path)
+    public ExtPrivkey DerivePrivkey(string path)
     {
       if (path is null)
       {
@@ -173,7 +114,22 @@ namespace Cfd
       {
         var ret = NativeMethods.CfdCreateExtkeyFromParentPath(
           handle.GetHandle(), extkey, path, (int)networkType,
-          (int)CfdExtKeyType.Pubkey, out IntPtr tempExtkey);
+          (int)CfdExtKeyType.Privkey, out IntPtr tempExtkey);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        string childExtkey = CCommon.ConvertToString(tempExtkey);
+        return new ExtPrivkey(childExtkey);
+      }
+    }
+
+    public ExtPubkey GetExtPubkey()
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdCreateExtPubkey(
+          handle.GetHandle(), extkey, (int)networkType, out IntPtr tempExtkey);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
@@ -183,15 +139,39 @@ namespace Cfd
       }
     }
 
+    public ExtPubkey DerivePubkey(uint childNumber)
+    {
+      return DerivePrivkey(childNumber).GetExtPubkey();
+    }
+
+    public ExtPubkey DerivePubkey(uint[] path)
+    {
+      if (path is null)
+      {
+        throw new ArgumentNullException(nameof(path));
+      }
+      return DerivePrivkey(path).GetExtPubkey();
+    }
+
+    public ExtPubkey DerivePubkey(string path)
+    {
+      if (path is null)
+      {
+        throw new ArgumentNullException(nameof(path));
+      }
+      return DerivePrivkey(path).GetExtPubkey();
+    }
+
     public override string ToString()
     {
       return extkey;
     }
 
-    public Pubkey GetPubkey()
+    public Privkey GetPrivkey()
     {
-      return pubkey;
+      return privkey;
     }
+
     public bool IsValid()
     {
       return extkey.Length != 0;
@@ -259,21 +239,22 @@ namespace Cfd
       }
     }
 
-    private static Pubkey GetPubkeyFromExtKey(ErrorHandle handle, string extPubkey,
+    private static Privkey GetPrivkeyFromExtKey(ErrorHandle handle, string extPrivkey,
       CfdNetworkType networkType)
     {
-      var ret = NativeMethods.CfdGetPubkeyFromExtkey(
-        handle.GetHandle(), extPubkey, (int)networkType,
-        out IntPtr tempPubkey);
+      var ret = NativeMethods.CfdGetPrivkeyFromExtkey(
+        handle.GetHandle(), extPrivkey, (int)networkType,
+        out IntPtr privkeyHex, out IntPtr wif);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
-      string pubkeyHex = CCommon.ConvertToString(tempPubkey);
-      return new Pubkey(pubkeyHex);
+      CCommon.ConvertToString(privkeyHex);
+      string privkeyWif = CCommon.ConvertToString(wif);
+      return new Privkey(privkeyWif);
     }
 
-    public bool Equals(ExtPubkey other)
+    public bool Equals(ExtPrivkey other)
     {
       if (other is null)
       {
@@ -291,9 +272,9 @@ namespace Cfd
       {
         return false;
       }
-      if ((obj as ExtPubkey) != null)
+      if ((obj as ExtPrivkey) != null)
       {
-        return this.Equals((ExtPubkey)obj);
+        return this.Equals((ExtPrivkey)obj);
       }
       return false;
     }
