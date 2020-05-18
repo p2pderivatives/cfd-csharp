@@ -1,8 +1,3 @@
-using System;
-
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -35,7 +30,10 @@ namespace Cfd
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
       }
-      hexString = blindFactorHex;
+      else
+      {
+        hexString = blindFactorHex;
+      }
     }
 
     /// <summary>
@@ -44,16 +42,19 @@ namespace Cfd
     /// <param name="bytes">blinder</param>
     public BlindFactor(byte[] bytes)
     {
-      if (bytes is null)
+      if ((bytes is null) || (bytes.Length == 0))
       {
-        throw new ArgumentNullException(nameof(bytes));
+        hexString = "0000000000000000000000000000000000000000000000000000000000000000";
       }
-      if (bytes.Length != Size)
+      else if (bytes.Length != Size)
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to blindFactor size.");
       }
-      var blindFactorBytes = CfdCommon.ReverseBytes(bytes);
-      this.hexString = StringUtil.FromBytes(blindFactorBytes);
+      else
+      {
+        var blindFactorBytes = CfdCommon.ReverseBytes(bytes);
+        hexString = StringUtil.FromBytes(blindFactorBytes);
+      }
     }
 
     /// <summary>
@@ -73,6 +74,15 @@ namespace Cfd
     {
       var blindFactorBytes = StringUtil.ToBytes(hexString);
       return CfdCommon.ReverseBytes(blindFactorBytes);
+    }
+
+    /// <summary>
+    /// blinder byte data.
+    /// </summary>
+    /// <returns>blinder byte data</returns>
+    public ByteData GetData()
+    {
+      return new ByteData(hexString, true);
     }
   }
 }

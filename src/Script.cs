@@ -1,10 +1,6 @@
 using System;
-using System.Net.NetworkInformation;
 using System.Text;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   public class Script : IEquatable<Script>
@@ -41,9 +37,9 @@ namespace Cfd
         StringBuilder builder = new StringBuilder();
         foreach (string asm in asmList)
         {
-#pragma warning disable IDE0059 // 値の不必要な代入
+#pragma warning disable IDE0059 // Unnecessary value assignment
           IntPtr hexString = IntPtr.Zero;
-#pragma warning restore IDE0059 // 値の不必要な代入
+#pragma warning restore IDE0059 // Unnecessary value assignment
           var ret = NativeMethods.CfdConvertScriptAsmToHex(handle.GetHandle(), asm, out hexString);
           if (ret != CfdErrorCode.Success)
           {
@@ -228,7 +224,7 @@ namespace Cfd
 
     public bool IsEmpty()
     {
-      return String.IsNullOrEmpty(script);
+      return string.IsNullOrEmpty(script);
     }
 
     public string ToHexString()
@@ -257,7 +253,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -272,7 +268,7 @@ namespace Cfd
       }
       if ((obj as Script) != null)
       {
-        return this.Equals((Script)obj);
+        return Equals((Script)obj);
       }
       return false;
     }

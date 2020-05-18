@@ -3,11 +3,11 @@ using Xunit.Abstractions;
 
 namespace Cfd.xTests
 {
-  public class CfdScriptTest
+  public class ScriptTest
   {
     private readonly ITestOutputHelper output;
 
-    public CfdScriptTest(ITestOutputHelper output)
+    public ScriptTest(ITestOutputHelper output)
     {
       this.output = output;
     }
@@ -38,6 +38,14 @@ namespace Cfd.xTests
     }
 
     [Fact]
+    public void CreateFromAsmTest()
+    {
+      Script script = Script.CreateFromAsm("OP_TRUE");
+      Assert.Equal("OP_1", script.GetAsm());
+      Assert.Equal("51", script.ToHexString());
+    }
+
+    [Fact]
     public void GetMultisigAddressesTest()
     {
       Script multisigScript = new Script("522102522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0210340b52ae45bc1be5de083f1730fe537374e219c4836400623741d2a874e60590c21024a3477bc8b933a320eb5667ee72c35a81aa155c8e20cc51c65fb666de3a43b8253ae");
@@ -52,7 +60,7 @@ namespace Cfd.xTests
     }
 
     [Fact]
-    public void ScriptTest()
+    public void ScriptHashTest()
     {
       Script multisigScript = new Script("522102522952c3fc2a53a8651b08ce10988b7506a3b40a5c26f9648a911be33e73e1a0210340b52ae45bc1be5de083f1730fe537374e219c4836400623741d2a874e60590c21024a3477bc8b933a320eb5667ee72c35a81aa155c8e20cc51c65fb666de3a43b8253ae");
       output.WriteLine("script: " + multisigScript.GetAsm());

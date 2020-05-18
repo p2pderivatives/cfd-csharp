@@ -1,8 +1,5 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -18,6 +15,7 @@ namespace Cfd
     /// </summary>
     public OutPoint()
     {
+      txid = new Txid();
     }
 
     public OutPoint(string txid, uint vout)
@@ -34,6 +32,10 @@ namespace Cfd
 
     public OutPoint(Txid txid, uint vout)
     {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
       this.txid = txid;
       this.vout = vout;
     }
@@ -54,7 +56,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -70,7 +72,7 @@ namespace Cfd
       }
       if ((obj as OutPoint) != null)
       {
-        return this.Equals((OutPoint)obj);
+        return Equals((OutPoint)obj);
       }
       return false;
     }

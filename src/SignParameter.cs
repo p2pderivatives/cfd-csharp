@@ -106,7 +106,7 @@ namespace Cfd
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to txid size.");
       }
-      this.data = StringUtil.FromBytes(bytes);
+      data = StringUtil.FromBytes(bytes);
       signatureHashType = new SignatureHashType(CfdSighashType.All, false);
       pubkey = new Pubkey();
       isSetDerEncode = false;
@@ -139,7 +139,7 @@ namespace Cfd
 
     public void SetRelatedPubkey(Pubkey relatedPubkey)
     {
-      this.pubkey = relatedPubkey;
+      pubkey = relatedPubkey;
     }
 
     public string ToHexString()
@@ -150,6 +150,11 @@ namespace Cfd
     public byte[] GetBytes()
     {
       return StringUtil.ToBytes(data);
+    }
+
+    public ByteData GetData()
+    {
+      return new ByteData(data);
     }
 
     public bool IsDerEncode()

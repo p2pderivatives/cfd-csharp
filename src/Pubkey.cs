@@ -5,7 +5,7 @@ namespace Cfd
   /// <summary>
   /// public key data class.
   /// </summary>
-  public class Pubkey
+  public class Pubkey : IEquatable<Pubkey>
   {
     public static readonly uint UncompressLength = 65;
     public static readonly uint CompressLength = 33;
@@ -220,6 +220,15 @@ namespace Cfd
       return StringUtil.ToBytes(pubkey);
     }
 
+    /// <summary>
+    /// pubkey data.
+    /// </summary>
+    /// <returns>pubkey byte array</returns>
+    public ByteData GetData()
+    {
+      return new ByteData(pubkey);
+    }
+
     public bool IsValid()
     {
       if ((pubkey.Length == CompressLength * 2) || (pubkey.Length == UncompressLength * 2))
@@ -242,6 +251,55 @@ namespace Cfd
         }
         CCommon.ConvertToString(compressedPubkey);
       }
+    }
+
+    public bool Equals(Pubkey other)
+    {
+      if (other is null)
+      {
+        return false;
+      }
+      if (ReferenceEquals(this, other))
+      {
+        return true;
+      }
+      return pubkey.Equals(other.pubkey, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if ((obj as Pubkey) != null)
+      {
+        return Equals((Pubkey)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return pubkey.GetHashCode(StringComparison.Ordinal);
+    }
+
+    public static bool operator ==(Pubkey lhs, Pubkey rhs)
+    {
+      if (lhs is null)
+      {
+        if (rhs is null)
+        {
+          return true;
+        }
+        return false;
+      }
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Pubkey lhs, Pubkey rhs)
+    {
+      return !(lhs == rhs);
     }
   }
 }

@@ -3,11 +3,11 @@ using Xunit.Abstractions;
 
 namespace Cfd.xTests
 {
-  public class CfdDescriptorTest
+  public class DescriptorTest
   {
     private readonly ITestOutputHelper output;
 
-    public CfdDescriptorTest(ITestOutputHelper output)
+    public DescriptorTest(ITestOutputHelper output)
     {
       this.output = output;
     }
@@ -181,7 +181,6 @@ namespace Cfd.xTests
       Assert.True(descriptor.GetAddress().IsValid());
     }
 
-
     [Fact]
     public void DescriptorRawTest()
     {
@@ -270,6 +269,28 @@ namespace Cfd.xTests
       Assert.Equal(CfdDescriptorKeyType.Bip32,
         descriptor.GetKeyData().KeyType);
       Assert.Equal("xpub6D4BDPcEgbv6wqbZ5Vfp1MUpa5tieyHKAoJCFjcUJpzSc9BV92TpCM85m3jfth6jfKA7LWFiip8zp8RuARjoLjkD13Z8cb9VdyMm3MMdTcA",
+        descriptor.GetKeyData().ExtPubkey.ToString());
+    }
+
+    [Fact]
+    public void DescriptorPkhExtPubkeyDeriveTest()
+    {
+      string desc = "pkh(xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw/1/*)";
+      string derivePath = "2/3";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Mainnet);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      output.WriteLine("key : " + descriptor.GetKeyData().ExtPubkey.ToString());
+      Assert.Equal(desc + "#8nhtvxel", descriptor.ToString());
+      Assert.Equal(CfdHashType.P2pkh, descriptor.GetHashType());
+      Assert.Equal("1Jh92Cjae6Kt8JXnkonohX36EWK7Du5ZMP", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_DUP OP_HASH160 c21178dfb721039b6936b167657cd31ab60b1bbd OP_EQUALVERIFY OP_CHECKSIG",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Single(descriptor.GetList());
+      Assert.Equal(CfdDescriptorKeyType.Bip32,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("xpub6FMiTLEY5GgpKy1f9Vr2x5w25cs9eBtCMq6xJYPo8bWaFD11MrPxmBPoxqWTL2wninua6fwXuRyc5nAcg7RU3DebapJhaW8xXJWoFNpRN6s",
         descriptor.GetKeyData().ExtPubkey.ToString());
     }
   }

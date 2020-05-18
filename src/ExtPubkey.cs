@@ -1,7 +1,5 @@
 using System;
-/// <summary>
-/// cfd library namespace.
-/// </summary>
+
 namespace Cfd
 {
   /// <summary>
@@ -279,7 +277,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -293,7 +291,7 @@ namespace Cfd
       }
       if ((obj as ExtPubkey) != null)
       {
-        return this.Equals((ExtPubkey)obj);
+        return Equals((ExtPubkey)obj);
       }
       return false;
     }

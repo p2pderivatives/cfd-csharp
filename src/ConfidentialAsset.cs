@@ -1,14 +1,11 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
-  public class ConfidentialAsset
+  public class ConfidentialAsset : IEquatable<ConfidentialAsset>
   {
-    const UInt32 Size = 32;
-    const UInt32 CommitmentSize = 33;
+    const uint Size = 32;
+    const uint CommitmentSize = 33;
     private readonly string commitment;
 
     public ConfidentialAsset()
@@ -26,7 +23,7 @@ namespace Cfd
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to asset size.");
       }
-      this.commitment = asset;
+      commitment = asset;
     }
 
     public ConfidentialAsset(byte[] asset)
@@ -42,11 +39,11 @@ namespace Cfd
       if (asset.Length == Size)
       {
         var assetBytes = CfdCommon.ReverseBytes(asset);
-        this.commitment = StringUtil.FromBytes(assetBytes);
+        commitment = StringUtil.FromBytes(assetBytes);
       }
       else
       {
-        this.commitment = StringUtil.FromBytes(asset);
+        commitment = StringUtil.FromBytes(asset);
       }
     }
 
@@ -68,6 +65,55 @@ namespace Cfd
         return CfdCommon.ReverseBytes(assetBytes);
       }
       return StringUtil.ToBytes(commitment);
+    }
+
+    public bool Equals(ConfidentialAsset other)
+    {
+      if (other is null)
+      {
+        return false;
+      }
+      if (ReferenceEquals(this, other))
+      {
+        return true;
+      }
+      return commitment == other.commitment;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if ((obj as ConfidentialAsset) != null)
+      {
+        return Equals((ConfidentialAsset)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return commitment.GetHashCode(StringComparison.Ordinal);
+    }
+
+    public static bool operator ==(ConfidentialAsset lhs, ConfidentialAsset rhs)
+    {
+      if (lhs is null)
+      {
+        if (rhs is null)
+        {
+          return true;
+        }
+        return false;
+      }
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(ConfidentialAsset lhs, ConfidentialAsset rhs)
+    {
+      return !(lhs == rhs);
     }
   }
 }

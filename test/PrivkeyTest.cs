@@ -1,24 +1,19 @@
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-// using System.Runtime.InteropServices;
-using Cfd;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Cfd.xTests
 {
-  public class CfdPrivkeyTest
+  public class PrivkeyTest
   {
     private readonly ITestOutputHelper output;
 
-    public CfdPrivkeyTest(ITestOutputHelper output)
+    public PrivkeyTest(ITestOutputHelper output)
     {
       this.output = output;
     }
 
     [Fact]
-    public void PrivkeyTest()
+    public void ConstructorTest()
     {
       Privkey emptyKey = new Privkey("");
       Assert.False(emptyKey.IsValid());

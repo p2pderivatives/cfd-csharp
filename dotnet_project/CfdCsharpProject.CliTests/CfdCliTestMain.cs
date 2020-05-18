@@ -1,8 +1,5 @@
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-// using System.Runtime.InteropServices;
-using Cfd;
 
 namespace Cfd.Tests.Cli
 {
@@ -13,10 +10,10 @@ namespace Cfd.Tests.Cli
     public static void TestConfidentialTx()
     {
       Console.WriteLine("ConfidentialTransaction");
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
 
       Console.WriteLine("- tx    = " + tx.ToHexString());
-      Console.WriteLine("- bytes = " + Cfd.StringUtil.FromBytes(tx.GetBytes()));
+      Console.WriteLine("- bytes = " + StringUtil.FromBytes(tx.GetBytes()));
       Console.WriteLine("- txid  = " + tx.GetTxid().ToHexString());
       Console.WriteLine("- size  = " + tx.GetSize());
       Console.WriteLine("- vsize = " + tx.GetVsize());
@@ -27,7 +24,7 @@ namespace Cfd.Tests.Cli
     public static void TestBlindTx()
     {
       Console.WriteLine("BlindTransaction");
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
 
       IDictionary<OutPoint, AssetValueData> utxos = new Dictionary<OutPoint, AssetValueData>();
       IDictionary<OutPoint, IssuanceKeys> issuanceKeys = new Dictionary<OutPoint, IssuanceKeys>();
@@ -206,15 +203,15 @@ namespace Cfd.Tests.Cli
     public static void TestAddress1()
     {
       Console.WriteLine("Address from text");
-      Cfd.Address addr = new Cfd.Address("bcrt1q576jgpgewxwu205cpjq4s4j5tprxlq38l7kd85");
+      Address addr = new Address("bcrt1q576jgpgewxwu205cpjq4s4j5tprxlq38l7kd85");
       Console.WriteLine("- Address = " + addr.ToAddressString());
       Console.WriteLine("- LockingScript = " + addr.GetLockingScript());
       Console.WriteLine("- Hash = " + addr.GetHash());
       Console.WriteLine();
 
       Console.WriteLine("Address from Pubkey");
-      Cfd.Pubkey pubkey = new Cfd.Pubkey("031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1");
-      addr = new Cfd.Address(pubkey, Cfd.CfdAddressType.P2wpkh, Cfd.CfdNetworkType.ElementsRegtest);
+      Pubkey pubkey = new Pubkey("031d7463018f867de51a27db866f869ceaf52abab71827a6051bab8a0fd020f4c1");
+      addr = new Address(pubkey, CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
       Console.WriteLine("- Address = " + addr.ToAddressString());
       Console.WriteLine("- LockingScript = " + addr.GetLockingScript());
       Console.WriteLine("- Hash = " + addr.GetHash());
@@ -225,16 +222,16 @@ namespace Cfd.Tests.Cli
     public static void TestConfidentialAddress1()
     {
       Console.WriteLine("ConfidentialAddress from text");
-      Cfd.ConfidentialAddress caddr = new Cfd.ConfidentialAddress("VTpvKKc1SNmLG4H8CnR1fGJdHdyWGEQEvdP9gfeneJR7n81S5kiwNtgF7vrZjC8mp63HvwxM81nEbTxU");
+      ConfidentialAddress caddr = new ConfidentialAddress("VTpvKKc1SNmLG4H8CnR1fGJdHdyWGEQEvdP9gfeneJR7n81S5kiwNtgF7vrZjC8mp63HvwxM81nEbTxU");
       Console.WriteLine("- ConfidentialAddress = " + caddr.ToAddressString());
       Console.WriteLine("- Address = " + caddr.GetAddress().ToAddressString());
       Console.WriteLine("- ConfidentialKey = " + caddr.GetConfidentialKey().ToHexString());
       Console.WriteLine();
 
       Console.WriteLine("ConfidentialAddress from address");
-      Cfd.Address addr = new Cfd.Address("Q7wegLt2qMGhm28vch6VTzvpzs8KXvs4X7");
-      Cfd.Pubkey pubkey = new Cfd.Pubkey("025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253f62fc70f07aeee6357");
-      caddr = new Cfd.ConfidentialAddress(addr, pubkey);
+      Address addr = new Address("Q7wegLt2qMGhm28vch6VTzvpzs8KXvs4X7");
+      Pubkey pubkey = new Pubkey("025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253f62fc70f07aeee6357");
+      caddr = new ConfidentialAddress(addr, pubkey);
       Console.WriteLine("- ConfidentialAddress = " + caddr.ToAddressString());
       Console.WriteLine("- Address = " + caddr.GetAddress().ToAddressString());
       Console.WriteLine("- ConfidentialKey = " + caddr.GetConfidentialKey().ToHexString());
@@ -248,7 +245,7 @@ namespace Cfd.Tests.Cli
 
       Console.WriteLine("Txid");
       Console.WriteLine("- hexStr => " + txid.ToHexString());
-      Console.WriteLine("- bytes  => " + Cfd.StringUtil.FromBytes(txid.GetBytes()));
+      Console.WriteLine("- bytes  => " + StringUtil.FromBytes(txid.GetBytes()));
       Txid txid2 = new Txid(txid.GetBytes());
       Console.WriteLine("- copy   => " + txid2.ToHexString());
       Console.WriteLine();
@@ -294,7 +291,7 @@ namespace Cfd.Tests.Cli
 
     public static void DumpDecodeTxData(string txHex)
     {
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction(txHex);
+      ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
 
       Console.WriteLine("  - txin cout      = " + tx.GetTxInCount());
       Console.WriteLine("  - txout cout     = " + tx.GetTxOutCount());
@@ -543,22 +540,22 @@ namespace Cfd.Tests.Cli
 
     public static void Main()
     {
-      CfdCliTestMain.TestConfidentialTx();
+      TestConfidentialTx();
 
-      CfdCliTestMain.TestBlindTx();
+      TestBlindTx();
 
-      CfdCliTestMain.TestAddress1();
-      CfdCliTestMain.TestConfidentialAddress1();
+      TestAddress1();
+      TestConfidentialAddress1();
 
-      CfdCliTestMain.TestTxidAndOutPoint1();
+      TestTxidAndOutPoint1();
 
-      CfdCliTestMain.TestTxidAndOutPoint2();
+      TestTxidAndOutPoint2();
 
-      CfdCliTestMain.TestDecodeTxData();
+      TestDecodeTxData();
 
-      CfdCliTestMain.TestAddPubkeySign();
-      CfdCliTestMain.TestAddSignWithPrivkeySimple();
-      CfdCliTestMain.TestAddMultisigSign();
+      TestAddPubkeySign();
+      TestAddSignWithPrivkeySimple();
+      TestAddMultisigSign();
       DescriptorTest();
 
       Console.WriteLine("Call Finish!");

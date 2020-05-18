@@ -1,8 +1,5 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /**
@@ -76,12 +73,12 @@ namespace Cfd
   {
     All = 0x01,    //!< SIGHASH_ALL
     None = 0x02,   //!< SIGHASH_NONE
-#pragma warning disable CA1720 // 識別子に型名が含まれます
+#pragma warning disable CA1720 // Identifier contains type name
     Single = 0x03  //!< SIGHASH_SINGLE
-#pragma warning restore CA1720 // 識別子に型名が含まれます
+#pragma warning restore CA1720 // Identifier contains type name
   };
 
-  public class Address
+  public class Address : IEquatable<Address>
   {
     private readonly string address;
     private readonly string lockingScript;
@@ -265,6 +262,55 @@ namespace Cfd
     public bool IsValid()
     {
       return address.Length != 0;
+    }
+
+    public bool Equals(Address other)
+    {
+      if (other is null)
+      {
+        return false;
+      }
+      if (ReferenceEquals(this, other))
+      {
+        return true;
+      }
+      return address.Equals(other.address, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if ((obj as Address) != null)
+      {
+        return Equals((Address)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return address.GetHashCode(StringComparison.Ordinal);
+    }
+
+    public static bool operator ==(Address lhs, Address rhs)
+    {
+      if (lhs is null)
+      {
+        if (rhs is null)
+        {
+          return true;
+        }
+        return false;
+      }
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Address lhs, Address rhs)
+    {
+      return !(lhs == rhs);
     }
   }
 }
