@@ -1,9 +1,5 @@
 using System;
-using System.Numerics;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /**
@@ -45,35 +41,35 @@ namespace Cfd
 
     public CfdKeyData(Pubkey pubkey)
     {
-      this.KeyType = CfdDescriptorKeyType.Public;
-      this.Pubkey = pubkey;
-      this.ExtPubkey = new ExtPubkey();
-      this.ExtPrivkey = new ExtPrivkey();
+      KeyType = CfdDescriptorKeyType.Public;
+      Pubkey = pubkey;
+      ExtPubkey = new ExtPubkey();
+      ExtPrivkey = new ExtPrivkey();
     }
 
     public CfdKeyData(ExtPubkey extPubkey)
     {
-      this.KeyType = CfdDescriptorKeyType.Bip32;
-      this.Pubkey = new Pubkey();
-      this.ExtPubkey = extPubkey;
-      this.ExtPrivkey = new ExtPrivkey();
+      KeyType = CfdDescriptorKeyType.Bip32;
+      Pubkey = new Pubkey();
+      ExtPubkey = extPubkey;
+      ExtPrivkey = new ExtPrivkey();
     }
 
     public CfdKeyData(ExtPrivkey extPrivkey)
     {
-      this.KeyType = CfdDescriptorKeyType.Bip32Priv;
-      this.Pubkey = new Pubkey();
-      this.ExtPubkey = new ExtPubkey();
-      this.ExtPrivkey = extPrivkey;
+      KeyType = CfdDescriptorKeyType.Bip32Priv;
+      Pubkey = new Pubkey();
+      ExtPubkey = new ExtPubkey();
+      ExtPrivkey = extPrivkey;
     }
 
     public CfdKeyData(CfdDescriptorKeyType keyType, Pubkey pubkey,
         ExtPubkey extPubkey, ExtPrivkey extPrivkey)
     {
-      this.KeyType = keyType;
-      this.Pubkey = pubkey;
-      this.ExtPubkey = extPubkey;
-      this.ExtPrivkey = extPrivkey;
+      KeyType = keyType;
+      Pubkey = pubkey;
+      ExtPubkey = extPubkey;
+      ExtPrivkey = extPrivkey;
     }
 
     public bool Equals(CfdKeyData other)
@@ -108,7 +104,7 @@ namespace Cfd
       }
       if (obj is CfdKeyData)
       {
-        return this.Equals((CfdKeyData)obj);
+        return Equals((CfdKeyData)obj);
       }
       return false;
     }
@@ -158,81 +154,81 @@ namespace Cfd
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         Script redeemScript)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = CfdHashType.P2sh;
-      this.Address = new Address();
-      this.RedeemScript = redeemScript;
-      this.KeyData = new CfdKeyData();
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>();
-      this.MultisigRequireNum = 0;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = CfdHashType.P2sh;
+      Address = new Address();
+      RedeemScript = redeemScript;
+      KeyData = new CfdKeyData();
+      MultisigKeyList = new ArraySegment<CfdKeyData>();
+      MultisigRequireNum = 0;
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         CfdHashType hashType, Address address)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = hashType;
-      this.Address = address;
-      this.RedeemScript = new Script();
-      this.KeyData = new CfdKeyData();
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>();
-      this.MultisigRequireNum = 0;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = new Script();
+      KeyData = new CfdKeyData();
+      MultisigKeyList = new ArraySegment<CfdKeyData>();
+      MultisigRequireNum = 0;
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         CfdHashType hashType, Address address, CfdKeyData keyData)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = hashType;
-      this.Address = address;
-      this.RedeemScript = new Script();
-      this.KeyData = keyData;
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>();
-      this.MultisigRequireNum = 0;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = new Script();
+      KeyData = keyData;
+      MultisigKeyList = new ArraySegment<CfdKeyData>();
+      MultisigRequireNum = 0;
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
     CfdHashType hashType, Address address, Script redeemScript)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = hashType;
-      this.Address = address;
-      this.RedeemScript = redeemScript;
-      this.KeyData = new CfdKeyData();
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>();
-      this.MultisigRequireNum = 0;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = redeemScript;
+      KeyData = new CfdKeyData();
+      MultisigKeyList = new ArraySegment<CfdKeyData>();
+      MultisigRequireNum = 0;
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         CfdHashType hashType, Address address, Script redeemScript,
         CfdKeyData[] multisigKeyList, uint multisigRequireNum)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = hashType;
-      this.Address = address;
-      this.RedeemScript = redeemScript;
-      this.KeyData = new CfdKeyData();
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
-      this.MultisigRequireNum = multisigRequireNum;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = redeemScript;
+      KeyData = new CfdKeyData();
+      MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
+      MultisigRequireNum = multisigRequireNum;
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         CfdHashType hashType, Address address, Script redeemScript,
         CfdKeyData keyData, CfdKeyData[] multisigKeyList, uint multisigRequireNum)
     {
-      this.ScriptType = scriptType;
-      this.Depth = depth;
-      this.HashType = hashType;
-      this.Address = address;
-      this.RedeemScript = redeemScript;
-      this.KeyData = keyData;
-      this.MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
-      this.MultisigRequireNum = multisigRequireNum;
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = redeemScript;
+      KeyData = keyData;
+      MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
+      MultisigRequireNum = multisigRequireNum;
     }
 
     public bool Equals(CfdDescriptorScriptData other)
@@ -269,7 +265,7 @@ namespace Cfd
       }
       if (obj is CfdDescriptorScriptData)
       {
-        return this.Equals((CfdDescriptorScriptData)obj);
+        return Equals((CfdDescriptorScriptData)obj);
       }
       return false;
     }

@@ -1,44 +1,192 @@
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Cfd.xTests
 {
-  public class CfdConfidentialTransactionTest
+  public class ConfidentialTransactionTest
   {
     private readonly ITestOutputHelper output;
 
-    public CfdConfidentialTransactionTest(ITestOutputHelper output)
+    public ConfidentialTransactionTest(ITestOutputHelper output)
     {
       this.output = output;
     }
 
     [Fact]
-    public void ConfidentialTransactionTest()
+    public void ConfidentialTxTest()
     {
       string txHex = "0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000";
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction(txHex);
+      ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
 
       Assert.Equal(txHex, tx.ToHexString());
       Assert.Equal(txHex, StringUtil.FromBytes(tx.GetBytes()));
       Assert.Equal("cf7783b2b1de646e35186df988a219a17f0317b5c3f3c47fa4ab2d7463ea3992", tx.GetTxid().ToHexString());
       Assert.Equal("cf7783b2b1de646e35186df988a219a17f0317b5c3f3c47fa4ab2d7463ea3992", tx.GetWtxid().ToHexString());
       Assert.Equal("938e3a9b5bac410e812d08db74c4ef2bc58d1ed99d94b637cab0ac2e9eb59df8", tx.GetWitHash());
-      Assert.Equal<UInt32>(2, tx.GetVersion());
-      Assert.Equal<UInt32>(0, tx.GetLockTime());
-      Assert.Equal<UInt32>(512, tx.GetSize());
-      Assert.Equal<UInt32>(512, tx.GetVsize());
-      Assert.Equal<UInt32>(2048, tx.GetWeight());
+      Assert.Equal<uint>(2, tx.GetVersion());
+      Assert.Equal<uint>(0, tx.GetLockTime());
+      Assert.Equal<uint>(512, tx.GetSize());
+      Assert.Equal<uint>(512, tx.GetVsize());
+      Assert.Equal<uint>(2048, tx.GetWeight());
+    }
+
+    [Fact]
+    public void CreateRawTransactionTest()
+    {
+      ExtPrivkey privkey = new ExtPrivkey("xprv9zt1onyw8BdEf7SQ6wUVH3bQQdGD9iy9QzXveQQRhX7i5iUN7jZgLbqFEe491LfjozztYa6bJAGZ65GmDCNcbjMdjZcgmdisPJwVjcfcDhV");
+      ExtPubkey key = privkey.GetExtPubkey();
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr3 = new Address(key.DerivePubkey(13).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Pubkey confidentialKey3 = key.DerivePubkey(103).GetPubkey();
+      ConfidentialAddress ctAddr3 = new ConfidentialAddress(setAddr3, confidentialKey3);
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0);
+      tx.AddTxInList(new[] {
+        new ConfidentialTxIn(new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0)),
+        new ConfidentialTxIn(new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0)),
+      });
+      tx.AddTxOutList(new[] {
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), 1000),
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
+        new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(5000000), setAddr2.GetLockingScript()),
+      });
+      tx.AddTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(3000000), ctAddr3);
+      tx.UpdateFee(2000, new ConfidentialAsset(assetA));
+
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000000020a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff040100000000000000000000000000000000000000000000000000000000000000aa0100000000000007d000000100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600142c9337c6875705dc8ead1d42b961ffeb2e9ac1790100000000000000000000000000000000000000000000000000000000000000bb0100000000004c4b4000160014265cb61e5c017c02270d7fe385ba08836616c1180100000000000000000000000000000000000000000000000000000000000000bb0100000000002dc6c000160014964d1721318c8bc7b016d0eb9374a620e8b88a9800000000",
+        tx.ToHexString());
+
+      // AddScriptSign
+      Pubkey pubkey1 = key.DerivePubkey(1).GetPubkey();
+      Privkey privkey1 = privkey.DerivePrivkey(1).GetPrivkey();
+      string desc = string.Format("wsh(pkh({0}))", pubkey1.ToHexString());
+      Descriptor descriptor = new Descriptor(desc, CfdNetworkType.Liquidv1);
+      OutPoint outpoint1 = new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0);
+      ConfidentialValue value1 = new ConfidentialValue(10000000);
+      SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
+      ByteData sighash = tx.GetSignatureHash(outpoint1, descriptor.GetHashType(), descriptor.GetRedeemScript(), value1,
+        sighashType);
+      SignParameter signParam = privkey1.CalculateEcSignature(sighash);
+
+      tx.AddScriptSign(outpoint1,
+        descriptor.GetHashType(), new[] {
+          signParam,
+        }, descriptor.GetRedeemScript());
+
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000001020a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff040100000000000000000000000000000000000000000000000000000000000000aa0100000000000007d000000100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600142c9337c6875705dc8ead1d42b961ffeb2e9ac1790100000000000000000000000000000000000000000000000000000000000000bb0100000000004c4b4000160014265cb61e5c017c02270d7fe385ba08836616c1180100000000000000000000000000000000000000000000000000000000000000bb0100000000002dc6c000160014964d1721318c8bc7b016d0eb9374a620e8b88a98000000000000024730440220205c9d0314ddd2a60e63e525e2452d360d9a485325a76ce359ab015bfbffa63102201da43d23a1cb397252d354cd07f0954ed5406b1cef74b5f2dc06c20897c8046a011976a9148b756cbd98f4f55e985f80437a619d47f0732a9488ac00000000000000000000000000",
+        tx.ToHexString());
+
+      OutPoint outpoint2 = new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0);
+      tx.AddSignWithPrivkeySimple(outpoint2.GetTxid(), outpoint2.GetVout(), CfdHashType.P2wpkh, pubkey1, privkey1, value1, sighashType);
+
+      uint outIndex1 = tx.GetTxOutFeeIndex();
+      Assert.Equal((uint)0, outIndex1);
+      uint outIndex2 = tx.GetTxOutIndex(setAddr1);
+      Assert.Equal((uint)1, outIndex2);
+      uint outIndex3 = tx.GetTxOutIndex(setAddr2.GetLockingScript());
+      Assert.Equal((uint)2, outIndex3);
+      uint outIndex4 = tx.GetTxOutIndex(ctAddr3);
+      Assert.Equal((uint)3, outIndex4);
+
+      ConfidentialTxIn txin1 = tx.GetTxIn(0);
+      Assert.Equal(descriptor.GetRedeemScript().ToHexString(), txin1.WitnessStack.ToHexString(1));
+      ConfidentialTxIn txin2 = tx.GetTxIn(outpoint2);
+      Assert.Equal(pubkey1.ToHexString(), txin2.WitnessStack.ToHexString(1));
+      Assert.Equal(pubkey1.ToHexString(), txin2.WitnessStack.GetHexStringArray()[1]);
+      Assert.Equal(StringUtil.FromBytes(pubkey1.ToBytes()), StringUtil.FromBytes(txin2.WitnessStack.GetBytes(1)));
+      ConfidentialTxOut txout2 = tx.GetTxOut(1);
+      Assert.Equal(setAddr1.GetLockingScript().ToHexString(), txout2.ScriptPubkey.ToHexString());
+    }
+
+    [Fact]
+    public void CreateRawTransactionTest2()
+    {
+      ExtPrivkey privkey = new ExtPrivkey("xprv9zt1onyw8BdEf7SQ6wUVH3bQQdGD9iy9QzXveQQRhX7i5iUN7jZgLbqFEe491LfjozztYa6bJAGZ65GmDCNcbjMdjZcgmdisPJwVjcfcDhV");
+      ExtPubkey key = privkey.GetExtPubkey();
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr3 = new Address(key.DerivePubkey(13).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Pubkey confidentialKey3 = key.DerivePubkey(103).GetPubkey();
+      ConfidentialAddress ctAddr3 = new ConfidentialAddress(setAddr3, confidentialKey3);
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0);
+      tx.AddTxIn(new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0));
+      tx.AddTxIn(new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0));
+      tx.AddTxIn(new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0));
+      tx.AddFeeTxOut(assetA, 1000);
+      tx.AddTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1);
+      tx.AddTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(5000000), setAddr2);
+      tx.AddTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(3000000), ctAddr3);
+      tx.AddDestroyAmountTxOut(assetB, 10000);
+      tx.UpdateFee(2000, new ConfidentialAsset(assetA));
+
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000000030a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff050100000000000000000000000000000000000000000000000000000000000000aa0100000000000007d000000100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600142c9337c6875705dc8ead1d42b961ffeb2e9ac1790100000000000000000000000000000000000000000000000000000000000000bb0100000000004c4b4000160014265cb61e5c017c02270d7fe385ba08836616c1180100000000000000000000000000000000000000000000000000000000000000bb0100000000002dc6c000160014964d1721318c8bc7b016d0eb9374a620e8b88a980100000000000000000000000000000000000000000000000000000000000000bb01000000000000271000016a00000000",
+        tx.ToHexString());
+    }
+
+    [Fact]
+    public void AddSignTest()
+    {
+      ExtPrivkey privkey = new ExtPrivkey("xprv9zt1onyw8BdEf7SQ6wUVH3bQQdGD9iy9QzXveQQRhX7i5iUN7jZgLbqFEe491LfjozztYa6bJAGZ65GmDCNcbjMdjZcgmdisPJwVjcfcDhV");
+      ExtPubkey key = privkey.GetExtPubkey();
+
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff040100000000000000000000000000000000000000000000000000000000000000aa0100000000000007d000000100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600142c9337c6875705dc8ead1d42b961ffeb2e9ac1790100000000000000000000000000000000000000000000000000000000000000bb0100000000004c4b4000160014265cb61e5c017c02270d7fe385ba08836616c1180100000000000000000000000000000000000000000000000000000000000000bb0100000000002dc6c000160014964d1721318c8bc7b016d0eb9374a620e8b88a9800000000");
+
+      // AddScriptSign
+      Pubkey pubkey1 = key.DerivePubkey(1).GetPubkey();
+      Privkey privkey1 = privkey.DerivePrivkey(1).GetPrivkey();
+      string desc = string.Format("wsh(pkh({0}))", pubkey1.ToHexString());
+      Descriptor descriptor = new Descriptor(desc, CfdNetworkType.Liquidv1);
+      OutPoint outpoint1 = new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0);
+      ConfidentialValue value1 = new ConfidentialValue(10000000);
+      SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
+      ByteData sighash = tx.GetSignatureHash(outpoint1, descriptor.GetHashType(), descriptor.GetRedeemScript(), value1,
+        sighashType);
+      SignParameter signParam = privkey1.CalculateEcSignature(sighash);
+
+      tx.AddSign(outpoint1.GetTxid(), outpoint1.GetVout(), descriptor.GetHashType(), signParam, true);
+      SignParameter script = new SignParameter(descriptor.GetRedeemScript().ToHexString());
+      tx.AddSign(outpoint1.GetTxid(), outpoint1.GetVout(), descriptor.GetHashType(), script, false);
+
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000001020a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff040100000000000000000000000000000000000000000000000000000000000000aa0100000000000007d000000100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600142c9337c6875705dc8ead1d42b961ffeb2e9ac1790100000000000000000000000000000000000000000000000000000000000000bb0100000000004c4b4000160014265cb61e5c017c02270d7fe385ba08836616c1180100000000000000000000000000000000000000000000000000000000000000bb0100000000002dc6c000160014964d1721318c8bc7b016d0eb9374a620e8b88a98000000000000024730440220205c9d0314ddd2a60e63e525e2452d360d9a485325a76ce359ab015bfbffa63102201da43d23a1cb397252d354cd07f0954ed5406b1cef74b5f2dc06c20897c8046a011976a9148b756cbd98f4f55e985f80437a619d47f0732a9488ac00000000000000000000000000",
+        tx.ToHexString());
+    }
+
+    [Fact]
+    public void GetIssuanceBlindingKeyTest()
+    {
+      Privkey masterBlindingKey = new Privkey("a0cd219833629db30c5210716c7b2e22fb8dd10aa231692f1f53acd8e662de01");
+      OutPoint outpoint = new OutPoint("21fe3fc8e38256ec747fa8d8ea96319fd00cbcf318c2586b9b8e9e27a5afe9aa", 0);
+      Privkey blindingKey = ConfidentialTransaction.GetIssuanceBlindingKey(masterBlindingKey, outpoint);
+      Assert.Equal("24c10c3b128f220e3b4253cec39ea3b75d2f6000033508c8deeadc1b6eefc4a1", blindingKey.ToHexString());
+    }
+
+    [Fact]
+    public void GetDefaultBlindingKeyTest()
+    {
+      Privkey masterBlindingKey = new Privkey("881a1ab07e99ab0626b4d93b3dddfd16cbc04342ee71aab4da7093e7b853fd80");
+      Script lockingScript = new Script("001478bf37fbe762374026b2b884f7eb47fa61e3420d");
+      Address address = new Address("ert1q0zln07l8vgm5qf4jhzz00668lfs7xssdlxlysh");
+
+      Privkey blindingKey1 = ConfidentialTransaction.GetDefaultBlindingKey(masterBlindingKey, lockingScript);
+      Assert.Equal("95af1be4f929e182442c9f3aa55a3cacde69d1182677f3afd618cdfb4a588742", blindingKey1.ToHexString());
+
+      Privkey blindingKey2 = ConfidentialTransaction.GetDefaultBlindingKey(masterBlindingKey, address);
+      Assert.Equal("95af1be4f929e182442c9f3aa55a3cacde69d1182677f3afd618cdfb4a588742", blindingKey2.ToHexString());
     }
 
     [Fact]
     public void BlindTxTest()
     {
       Console.WriteLine("BlindTransaction");
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
 
       IDictionary<OutPoint, AssetValueData> utxos = new Dictionary<OutPoint, AssetValueData>();
       IDictionary<OutPoint, IssuanceKeys> issuanceKeys = new Dictionary<OutPoint, IssuanceKeys>();
@@ -88,11 +236,11 @@ namespace Cfd.xTests
       // Console.WriteLine("  - vsize    = " + tx.GetVsize());
       // Console.WriteLine("  - weight   = " + tx.GetWeight());
       // Console.WriteLine("  - tx       = " + tx.ToHexString());
-      Assert.Equal<UInt32>(12589, tx.GetSize());  // at randomize size
-      Assert.Equal<UInt32>(3604, tx.GetVsize());  // at randomize size
-      Assert.Equal<UInt32>(14413, tx.GetWeight());  // at randomize size
-      Assert.Equal<UInt32>(2, tx.GetVersion());
-      Assert.Equal<UInt32>(0, tx.GetLockTime());
+      Assert.Equal<uint>(17713, tx.GetSize());  // at randomize size
+      Assert.Equal<uint>(4885, tx.GetVsize());  // at randomize size
+      Assert.Equal<uint>(19537, tx.GetWeight());  // at randomize size
+      Assert.Equal<uint>(2, tx.GetVersion());
+      Assert.Equal<uint>(0, tx.GetLockTime());
 
       Console.WriteLine("UnblindTransaction");
       UnblindIssuanceData reissueData = tx.UnblindIssuance(1, issuanceBlindingKey, issuanceBlindingKey);
@@ -104,24 +252,87 @@ namespace Cfd.xTests
           new Privkey("0473d39aa6542e0c1bb6a2343b2319c3e92063dd019af4d47dbf50c460204f32"));
 
       Assert.Equal("accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd", reissueData.AssetData.Asset);
-      Assert.Equal<long>(600000000, reissueData.AssetData.SatoshiValue);
+      Assert.Equal(600000000, reissueData.AssetData.SatoshiValue);
       Assert.Equal("0000000000000000000000000000000000000000000000000000000000000000", reissueData.AssetData.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", reissueData.AssetData.AmountBlindFactor.ToHexString());
 
       Assert.Equal("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179", vout0.Asset);
-      Assert.Equal<long>(999587680, vout0.SatoshiValue);
+      Assert.Equal(999587680, vout0.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout0.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout0.AmountBlindFactor.ToHexString());
 
       Assert.Equal("ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b", vout1.Asset);
-      Assert.Equal<long>(700000000, vout1.SatoshiValue);
+      Assert.Equal(700000000, vout1.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout1.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout1.AmountBlindFactor.ToHexString());
 
       Assert.Equal("accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd", vout3.Asset);
-      Assert.Equal<long>(600000000, vout3.SatoshiValue);
+      Assert.Equal(600000000, vout3.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout3.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout3.AmountBlindFactor.ToHexString());
+    }
+
+    [Fact]
+    public void BlindTxAndOptionTest()
+    {
+      Console.WriteLine("BlindTransaction");
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
+
+      IDictionary<OutPoint, IssuanceKeys> issuanceKeys = new Dictionary<OutPoint, IssuanceKeys>();
+
+      // set utxo data
+      ElementsUtxoData[] utxos = new[]
+      {
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 0),
+          "186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179",
+          999637680,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          new BlindFactor("a10ecbe1be7a5f883d5d45d966e30dbc1beff5f21c55cec76cc21a2229116a9f"),
+          new BlindFactor("ae0f46d1940f297c2dc3bbd82bf8ef6931a2431fbb05b3d3bc5df41af86ae808")),
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 1),
+          "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b",
+          700000000,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          new BlindFactor("0b8954757234fd3ec9cf0dd6ef0a89d825ec56a9532e7da4b6cb90c51be3bbd8"),
+          new BlindFactor("62e36e1f0fa4916b031648a6b6903083069fa587572a88b729250cde528cfd3b")),
+      };
+      // set issuance blinding key (only issue/reissue)
+      Privkey issuanceBlindingKey = new Privkey("7d65c7970d836a878a1080399a3c11de39a8e82493e12b1ad154e383661fb77f");
+      issuanceKeys.Add(
+        new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 1),
+        new IssuanceKeys(
+          issuanceBlindingKey,
+          issuanceBlindingKey
+        ));
+
+      // set txout blinding info
+      ConfidentialAddress ctAddr1 = new ConfidentialAddress(
+        new Address("XZAEvLpasCN7rb5c6Cq8HfaQRSyJihQAcH"),
+        new Pubkey("02200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d"));
+      ConfidentialAddress ctAddr2 = new ConfidentialAddress(
+        new Address("2djHX9wtrtdyGw9cer1u6zB6Yq4SRD8V5zw"),
+        new Pubkey("02cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a"));
+      ConfidentialAddress ctAddr4 = new ConfidentialAddress(
+        new Address("2dodsWJgP3pTWWidK5hDxuYHqC1U4CEnT3n"),
+        new Pubkey("03ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed879"));
+
+      tx.BlindTransaction(utxos, issuanceKeys, new[] { ctAddr1, ctAddr2, ctAddr4 });
+      // Console.WriteLine("  - txid     = " + tx.GetTxid().ToHexString());
+      // Console.WriteLine("  - wtxid    = " + tx.GetWtxid().ToHexString());
+      // Console.WriteLine("  - witHash  = " + tx.GetWitHash());
+      // Console.WriteLine("  - size     = " + tx.GetSize());
+      // Console.WriteLine("  - vsize    = " + tx.GetVsize());
+      // Console.WriteLine("  - weight   = " + tx.GetWeight());
+      // Console.WriteLine("  - tx       = " + tx.ToHexString());
+      Assert.Equal<uint>(17713, tx.GetSize());  // at randomize size
+      Assert.Equal<uint>(4885, tx.GetVsize());  // at randomize size
+      Assert.Equal<uint>(19537, tx.GetWeight());  // at randomize size
+      Assert.Equal<uint>(2, tx.GetVersion());
+      Assert.Equal<uint>(0, tx.GetLockTime());
     }
 
     private string ConvertRangeProof(byte[] data)
@@ -143,7 +354,7 @@ namespace Cfd.xTests
 
     private void DumpDecodeTxData(string txHex)
     {
-      Cfd.ConfidentialTransaction tx = new Cfd.ConfidentialTransaction(txHex);
+      ConfidentialTransaction tx = new ConfidentialTransaction(txHex);
 
       Console.WriteLine("  - txin cout      = " + tx.GetTxInCount());
       Console.WriteLine("  - txout cout     = " + tx.GetTxOutCount());
@@ -195,6 +406,8 @@ namespace Cfd.xTests
           }
         }
         Console.WriteLine("    - PeginWitness[" + txin.PeginWitness.GetCount() + "]");
+        uint txinIndex = tx.GetTxInIndex(txin.OutPoint);
+        Assert.Equal(index, txinIndex);
       }
 
       for (uint index = 0; index < txouts.Length; ++index)
@@ -218,6 +431,8 @@ namespace Cfd.xTests
           Console.WriteLine("    - SurjProof    = " + StringUtil.FromBytes(txout.SurjectionProof));
           Console.WriteLine("    - RangeProof   = " + ConvertRangeProof(txout.RangeProof));
         }
+        uint txoutIndex = tx.GetTxOutIndex(txout.ScriptPubkey);
+        Assert.Equal(index, txoutIndex);
       }
 
       string jsonStr = ConfidentialTransaction.DecodeRawTransaction(tx);
@@ -259,12 +474,12 @@ namespace Cfd.xTests
       Assert.Equal("0268633a57723c6612ef217c49bdf804c632a14be2967c76afec4fd5781ad4c2131f358b2381a039c8c502959c64fbfeccf287be7dae710b4446968553aefbea", signature.ToHexString());
       signature.SetDerEncode(sighashType);
 
-      tx.AddPubkeySign(txid, vout, hashType, pubkey, signature);
+      tx.AddPubkeySign(new OutPoint(txid, vout), hashType, pubkey, signature);
       string expTxHex = "0200000001020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac0000000000000247304402200268633a57723c6612ef217c49bdf804c632a14be2967c76afec4fd5781ad4c20220131f358b2381a039c8c502959c64fbfeccf287be7dae710b4446968553aefbea012103f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d600000000000000000000000000";
       Assert.Equal(expTxHex, tx.ToHexString());
 
       Address addr = new Address(pubkey, CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
-      bool isVerifySign = tx.VerifySign(txid, vout, addr, addr.GetAddressType(), value);
+      bool isVerifySign = tx.VerifySign(new OutPoint(txid, vout), addr, addr.GetAddressType(), value);
       Assert.True(isVerifySign);
     }
 
@@ -281,7 +496,7 @@ namespace Cfd.xTests
       Privkey privkey = new Privkey("cU4KjNUT7GjHm7CkjRjG46SzLrXHXoH3ekXmqa2jTCFPMkQ64sw1");
       CfdHashType hashType = CfdHashType.P2wpkh;
       SignatureHashType sighashType = new SignatureHashType(CfdSighashType.All, false);
-      tx.AddSignWithPrivkeySimple(txid, vout, hashType, privkey, value, sighashType);
+      tx.AddSignWithPrivkeySimple(new OutPoint(txid, vout), hashType, privkey, value, sighashType);
       string expTxHex = "0200000001020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac0000000000000247304402200268633a57723c6612ef217c49bdf804c632a14be2967c76afec4fd5781ad4c20220131f358b2381a039c8c502959c64fbfeccf287be7dae710b4446968553aefbea012103f942716865bb9b62678d99aa34de4632249d066d99de2b5a2e542e54908450d600000000000000000000000000";
       Assert.Equal(expTxHex, tx.ToHexString());
 
@@ -325,7 +540,7 @@ namespace Cfd.xTests
       signature2.SetRelatedPubkey(pubkey2);
 
       SignParameter[] signList = { signature1, signature2 };
-      tx.AddMultisigSign(txid, vout, hashType, signList, redeemScript);
+      tx.AddMultisigSign(new OutPoint(txid, vout), hashType, signList, redeemScript);
 
       string expTxHex = "0200000001020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000000004004730440220795dbf165d3197fe27e2b73d57cacfb8d742029c972b109040c7785aee4e75ea022065f7a985efe82eba1d0e0cafd7cf711bb8c65485bddc4e495315dd92bd7e4a790147304402202ce4acde192e4109832d46970b510158d42fc156c92afff137157ebfc2a03e2a02200b7dfd3a92770d79d29b3c55fb6325b22bce0e1362de74b2dac80d9689b5a89b0147522102bfd7daa5d113fcbd8c2f374ae58cbb89cbed9570e898f1af5ff989457e2d4d712102715ed9a5f16153c5216a6751b7d84eba32076f0b607550a58b209077ab7c30ad52ae00000000000000000000000000";
       Assert.Equal(expTxHex, tx.ToHexString());
@@ -393,6 +608,10 @@ namespace Cfd.xTests
       output.WriteLine("asm    : " + script.GetAsm());
       Assert.Equal("473044022011cff5458ca362dbb540be2226244fd262f3eadaa005eac2a367b70d136413e702201c9981f607a5eb7f1283d26d2860495fafdad53c5699944fe8b01dadb4aa0f7d01210331e9b0c6b7f3798bb1b5a6b90c5e2e27c2906cbfd063a3c97b6031ee062ef745",
         script.ToHexString());
+
+      bool isVerify = tx.VerifySignature(txid, vout, desc.GetHashType(), signature,
+        pubkey, sighashType, new ConfidentialValue(valueCommitment));
+      Assert.True(isVerify);
     }
 
     [Fact]
@@ -443,7 +662,8 @@ namespace Cfd.xTests
         sighash.ToHexString());
 
       SignParameter sig = privkey.CalculateEcSignature(sighash);
-      ByteData signature = sig.ToDerEncode(sighashType);
+      sig.SetDerEncode(sighashType);
+      ByteData signature = sig.ToDerEncode();
       output.WriteLine("derSig: " + signature.ToHexString());
       Assert.Equal("304402207c39dd14480925d6d4babcf8c5393085f55054fa108aaf54fe34a87494132d48022050dbde84e1e955aca56a26af4fc117d95b2541547ea0ac4adc0aa50547a8a3e301",
         signature.ToHexString());
@@ -457,6 +677,303 @@ namespace Cfd.xTests
       output.WriteLine("asm    : " + script.GetAsm());
       Assert.Equal("0047304402207c39dd14480925d6d4babcf8c5393085f55054fa108aaf54fe34a87494132d48022050dbde84e1e955aca56a26af4fc117d95b2541547ea0ac4adc0aa50547a8a3e3014752210331e9b0c6b7f3798bb1b5a6b90c5e2e27c2906cbfd063a3c97b6031ee062ef7452102e3cf2c4dca39b502a6f8ba37e5d63a9757492c2155bf99418d9532728cd23d9352ae",
         script.ToHexString());
+
+      bool isVerify = tx.VerifySignature(txid, vout, desc.GetHashType(), signature,
+        pubkey, redeemScript, sighashType, new ConfidentialValue(valueCommitment));
+      Assert.True(isVerify);
     }
+
+    [Fact]
+    public void EstimateFeeTest()
+    {
+      string desc = "sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))#4z2vy08x";
+      string descMulti = "wsh(multi(2,03a0434d9e47f3c86235477c7b1ae6ae5d3442d49b1943c2b752a68e2a47e247c7,03774ae7f858a9411e5ef4246b70c65aac5649980be5c17891bbec17895da008cb,03d01115d548e7561b15c38f004d734633687cf4419620095bc5b0f47070afe85a))";
+
+      ConfidentialTransaction tx = new ConfidentialTransaction("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f6002200d8510dfcf8e2330c0795c771d1e6064daab2f274ac32a6e2708df9bfa893d17a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b9270002cc645552109331726c0ffadccab21620dd7a5a33260c6ac7bd1c78b98cb1e35a1976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c3460003ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed8791976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000");
+      Descriptor desc1 = new Descriptor(desc, CfdNetworkType.ElementsRegtest);
+      Descriptor desc2 = new Descriptor(descMulti, CfdNetworkType.ElementsRegtest);
+
+      // set utxo data
+      ElementsUtxoData[] utxos = new[]
+      {
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 0),
+          "186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179",
+          999637680,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          desc1,
+          new BlindFactor("a10ecbe1be7a5f883d5d45d966e30dbc1beff5f21c55cec76cc21a2229116a9f"),
+          new BlindFactor("ae0f46d1940f297c2dc3bbd82bf8ef6931a2431fbb05b3d3bc5df41af86ae808")),
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 1),
+          "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b",
+          700000000,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          desc2,
+          true,  // isBlindIssuance
+          new BlindFactor("0b8954757234fd3ec9cf0dd6ef0a89d825ec56a9532e7da4b6cb90c51be3bbd8"),
+          new BlindFactor("62e36e1f0fa4916b031648a6b6903083069fa587572a88b729250cde528cfd3b")),
+      };
+
+      // estimate fee on blind tx
+      FeeData feeData = tx.EstimateFee(utxos, new ConfidentialAsset("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179"));
+      Assert.Equal(552, feeData.TxFee);
+      Assert.Equal(205, feeData.InputFee);
+      Assert.Equal(757, feeData.InputFee + feeData.TxFee);
+
+      tx.UpdateFee(feeData.InputFee + feeData.TxFee,
+        new ConfidentialAsset("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179"));
+    }
+
+    [Fact]
+    public void FundRawTransactionTest()
+    {
+      ElementsUtxoData[] utxos = GetElementsBnbUtxoList(CfdNetworkType.Liquidv1);
+      ExtPubkey key = new ExtPubkey("xpub661MyMwAqRbcGB88KaFbLGiYAat55APKhtWg4uYMkXAmfuSTbq2QYsn9sKJCj1YqZPafsboef4h4YbXXhNhPwMbkHTpkf3zLhx7HvFw1NDy");
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0, null, new[] {
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
+        new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
+      });
+
+      var feeAsset = new ConfidentialAsset(assetA);
+      var targetAssetMap = new Dictionary<ConfidentialAsset, long> {
+        { new ConfidentialAsset(assetA), 0 },
+        { new ConfidentialAsset(assetB), 0 },
+      };
+      Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address addr2 = new Address(key.DerivePubkey(2).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      var reservedAddressMap = new Dictionary<ConfidentialAsset, string> {
+        { new ConfidentialAsset(assetA), addr1.ToAddressString() },
+        { new ConfidentialAsset(assetB), addr2.ToAddressString() },
+      };
+      double feeRate = 0.1;
+      string[] usedAddr = tx.FundRawTransaction(null, utxos, targetAssetMap, reservedAddressMap, feeAsset, feeRate);
+      output.WriteLine("tx: " + tx.ToHexString());
+
+      Assert.Equal("0200000000020bfa8774c5f753ce2f801a8106413b470af94edbff5b4242ed4c5a26d20e72b90000000000ffffffff040b0000000000000000000000000000000000000000000000000000000000000000000000ffffffff050100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c0100000000000000000000000000000000000000000000000000000000000000aa01000000000000020300000100000000000000000000000000000000000000000000000000000000000000bb010000000001124c1e00160014a53be40113bb50f2b8b2d0bfea1e823e75632b5f0100000000000000000000000000000000000000000000000000000000000000aa0100000000004b595b0016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+        tx.ToHexString());
+      output.WriteLine(ConfidentialTransaction.DecodeRawTransaction(tx));
+      Assert.Equal(2, usedAddr.Length);
+      if (usedAddr.Length == 2)
+      {
+        output.WriteLine("addr1: " + usedAddr[0]);
+        output.WriteLine("addr2: " + usedAddr[1]);
+        Assert.Equal(addr2.ToAddressString(), usedAddr[0]);
+        Assert.Equal(addr1.ToAddressString(), usedAddr[1]);
+      }
+      Assert.Equal(515, tx.GetLastTxFee());
+
+      // calc fee
+      ElementsUtxoData[] feeUtxos = new[]{
+        utxos[5],
+        utxos[9],
+      };
+      FeeData feeData = tx.EstimateFee(feeUtxos, feeRate, feeAsset, true);
+      Assert.Equal(506, feeData.TxFee + feeData.InputFee);
+      Assert.Equal(488, feeData.TxFee);
+      Assert.Equal(18, feeData.InputFee);
+    }
+
+    [Fact]
+    public void FundRawTransactionExistTxInTest()
+    {
+      // create reissue tx
+      string tokenAsset = "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b";
+      string descMulti = "wsh(multi(2,03a0434d9e47f3c86235477c7b1ae6ae5d3442d49b1943c2b752a68e2a47e247c7,03774ae7f858a9411e5ef4246b70c65aac5649980be5c17891bbec17895da008cb,03d01115d548e7561b15c38f004d734633687cf4419620095bc5b0f47070afe85a))";
+      Descriptor desc2 = new Descriptor(descMulti, CfdNetworkType.ElementsRegtest);
+      ElementsUtxoData inputUtxo = new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 1),
+          tokenAsset,
+          700000000,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          desc2,
+          true,
+          new BlindFactor("0b8954757234fd3ec9cf0dd6ef0a89d825ec56a9532e7da4b6cb90c51be3bbd8"),
+          new BlindFactor("62e36e1f0fa4916b031648a6b6903083069fa587572a88b729250cde528cfd3b"));
+      Address outAddr1 = new Address("2djHX9wtrtdyGw9cer1u6zB6Yq4SRD8V5zw");
+      Address outAddr2 = new Address("2dodsWJgP3pTWWidK5hDxuYHqC1U4CEnT3n");
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0, new[] {
+        new ConfidentialTxIn(inputUtxo.GetOutPoint()),
+      }, new[] {
+        new ConfidentialTxOut(
+          new ConfidentialAsset(tokenAsset),
+          new ConfidentialValue(700000000), outAddr1.GetLockingScript()),
+      });
+      ConfidentialAsset issueAsset = tx.SetRawReissueAsset(inputUtxo.GetOutPoint(),
+        600000000, inputUtxo.GetAssetBlindFactor().GetData(),
+        new ByteData("6f9ccf5949eba5d6a08bff7a015e825c97824e82d57c8a0c77f9a41908fe8306"),
+        outAddr2);
+      output.WriteLine("issue asset: " + issueAsset.ToHexString());
+
+      ElementsUtxoData[] inputUtxos = new[]
+      {
+        inputUtxo,
+      };
+
+      // add txout
+      ElementsUtxoData[] utxos = GetElementsBnbUtxoList(CfdNetworkType.Liquidv1);
+
+      ExtPubkey key = new ExtPubkey("xpub661MyMwAqRbcGB88KaFbLGiYAat55APKhtWg4uYMkXAmfuSTbq2QYsn9sKJCj1YqZPafsboef4h4YbXXhNhPwMbkHTpkf3zLhx7HvFw1NDy");
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+
+      tx.AddTxOutList(new[] {
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
+        new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
+      });
+
+      // fundrawtx
+      var feeAsset = new ConfidentialAsset(assetA);
+      var targetAssetMap = new Dictionary<ConfidentialAsset, long> {
+        { new ConfidentialAsset(assetA), 0 },
+        { new ConfidentialAsset(assetB), 0 },
+      };
+      Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address addr2 = new Address(key.DerivePubkey(2).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      // Address addr3 = new Address(key.DerivePubkey(3).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      // Address addr4 = new Address(key.DerivePubkey(3).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      var reservedAddressMap = new Dictionary<ConfidentialAsset, string> {
+        { new ConfidentialAsset(assetA), addr1.ToAddressString() },
+        { new ConfidentialAsset(assetB), addr2.ToAddressString() },
+      };
+      double feeRate = 0.1;
+      string[] usedAddr = tx.FundRawTransaction(inputUtxos, utxos, targetAssetMap, reservedAddressMap, feeAsset, feeRate);
+      output.WriteLine("tx: " + tx.ToHexString());
+
+      Assert.Equal("0200000000030f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c34600000bfa8774c5f753ce2f801a8106413b470af94edbff5b4242ed4c5a26d20e72b90000000000ffffffff040b0000000000000000000000000000000000000000000000000000000000000000000000ffffffff07010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b92700001976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac01cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c34600001976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac0100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c0100000000000000000000000000000000000000000000000000000000000000aa01000000000000037400000100000000000000000000000000000000000000000000000000000000000000bb010000000001124c1e00160014a53be40113bb50f2b8b2d0bfea1e823e75632b5f0100000000000000000000000000000000000000000000000000000000000000aa0100000000004b57ea0016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+        tx.ToHexString());
+      output.WriteLine(ConfidentialTransaction.DecodeRawTransaction(tx));
+      Assert.Equal(2, usedAddr.Length);
+      if (usedAddr.Length == 2)
+      {
+        output.WriteLine("addr1: " + usedAddr[0]);
+        output.WriteLine("addr2: " + usedAddr[1]);
+        Assert.Equal(addr2.ToAddressString(), usedAddr[0]);
+        Assert.Equal(addr1.ToAddressString(), usedAddr[1]);
+      }
+      Assert.Equal(884, tx.GetLastTxFee());
+
+      // calc fee
+      ElementsUtxoData[] feeUtxos = new[]{
+        inputUtxo,
+        utxos[5],
+        utxos[9],
+      };
+      FeeData feeData = tx.EstimateFee(feeUtxos, feeRate, feeAsset, true);
+      Assert.Equal(875, feeData.TxFee + feeData.InputFee);
+      Assert.Equal(729, feeData.TxFee);
+      Assert.Equal(146, feeData.InputFee);
+    }
+
+    [Fact]
+    public void RawReissueAssetTest()
+    {
+      string desc = "sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))#4z2vy08x";
+      string descMulti = "wsh(multi(2,03a0434d9e47f3c86235477c7b1ae6ae5d3442d49b1943c2b752a68e2a47e247c7,03774ae7f858a9411e5ef4246b70c65aac5649980be5c17891bbec17895da008cb,03d01115d548e7561b15c38f004d734633687cf4419620095bc5b0f47070afe85a))";
+
+      Descriptor desc1 = new Descriptor(desc, CfdNetworkType.ElementsRegtest);
+      Descriptor desc2 = new Descriptor(descMulti, CfdNetworkType.ElementsRegtest);
+
+      // set utxo data
+      ElementsUtxoData[] utxos = new[]
+      {
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 0),
+          "186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179",
+          999637680,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          desc1,
+          new BlindFactor("a10ecbe1be7a5f883d5d45d966e30dbc1beff5f21c55cec76cc21a2229116a9f"),
+          new BlindFactor("ae0f46d1940f297c2dc3bbd82bf8ef6931a2431fbb05b3d3bc5df41af86ae808")),
+        new ElementsUtxoData(
+          new OutPoint("57a15002d066ce52573d674df925c9bc0f1164849420705f2cfad8a68111230f", 1),
+          "ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b",
+          700000000,
+          new ConfidentialAsset("0a1100000000000000000000000000000000000000000000000000000000000000"),
+          new ConfidentialValue("081100000000000000000000000000000000000000000000000000000000000000"),
+          desc2,
+          new BlindFactor("0b8954757234fd3ec9cf0dd6ef0a89d825ec56a9532e7da4b6cb90c51be3bbd8"),
+          new BlindFactor("62e36e1f0fa4916b031648a6b6903083069fa587572a88b729250cde528cfd3b")),
+      };
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0, new[] {
+        new ConfidentialTxIn(utxos[0].GetOutPoint()),
+        new ConfidentialTxIn(utxos[1].GetOutPoint()),
+      }, new[] {
+        new ConfidentialTxOut(
+          new ConfidentialAsset("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179"),
+          new ConfidentialValue(999587680), new Script("a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87")),
+        new ConfidentialTxOut(
+          new ConfidentialAsset("ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b"),
+          new ConfidentialValue(700000000), new Script("76a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac")),
+        new ConfidentialTxOut(
+          new ConfidentialAsset("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179"),
+          50000),
+      });
+
+      tx.SetRawReissueAsset(utxos[1].GetOutPoint(), 600000000, utxos[1].GetAssetBlindFactor().GetData(),
+        new ByteData("6f9ccf5949eba5d6a08bff7a015e825c97824e82d57c8a0c77f9a41908fe8306"),
+        new Address("2dodsWJgP3pTWWidK5hDxuYHqC1U4CEnT3n"));
+
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000000020f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570000000000ffffffff0f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000003b947f600017a914ef3e40882e17d6e477082fcafeb0f09dc32d377b87010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b92700001976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac017981c1f171d7973a1fd922652f559f47d6d1506a4be2394b27a54951957f6c1801000000000000c350000001cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c34600001976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac00000000",
+        tx.ToHexString());
+    }
+
+    private static readonly string assetA = "aa00000000000000000000000000000000000000000000000000000000000000";
+    private static readonly string assetB = "bb00000000000000000000000000000000000000000000000000000000000000";
+    private static readonly string assetC = "cc00000000000000000000000000000000000000000000000000000000000000";
+
+    static ElementsUtxoData[] GetElementsBnbUtxoList(CfdNetworkType netType)
+    {
+      string desc = "sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))#4z2vy08x";
+      ElementsUtxoData[] utxos = new[] {
+        new ElementsUtxoData(new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(155062500),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(85062500),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("9e1ead91c432889cb478237da974dd1e9009c9e22694fd1e3999c40a1ef59b0a", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(39062500),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("8f4af7ee42e62a3d32f25ca56f618fb2f5df3d4c3a9c59e2c3646c5535a3d40a", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(61062500),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("4d97d0119b90421818bff4ec9033e5199199b53358f56390cb20f8148e76f40a", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(15675000),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("b9720ed2265a4ced42425bffdb4ef90a473b4106811a802fce53f7c57487fa0b", 0),
+          new ConfidentialAsset(assetA), new ConfidentialValue(14938590),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b01", 0),
+          new ConfidentialAsset(assetB), new ConfidentialValue(26918400),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b02", 0),
+          new ConfidentialAsset(assetB), new ConfidentialValue(750000),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b03", 0),
+          new ConfidentialAsset(assetB), new ConfidentialValue(346430050),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b04", 0),
+          new ConfidentialAsset(assetB), new ConfidentialValue(18476350),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000c01", 0),
+          new ConfidentialAsset(assetC), new ConfidentialValue(37654200),
+          new Descriptor(desc, netType)),
+        new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000c02", 0),
+          new ConfidentialAsset(assetC), new ConfidentialValue(127030000),
+          new Descriptor(desc, netType)),
+      };
+      return utxos;
+    }
+
   }
 }

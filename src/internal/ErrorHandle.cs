@@ -1,8 +1,5 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -46,10 +43,10 @@ namespace Cfd
     /// Throw exception from error handle and error code.
     /// </summary>
     /// <param name="errorCode">error code</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">argument range exception</exception>
-    /// <exception cref="System.ArgumentException">argument exception</exception>
-    /// <exception cref="System.InsufficientMemoryException">memory full exception</exception>
-    /// <exception cref="System.InvalidOperationException">illegal exception</exception>
+    /// <exception cref="ArgumentOutOfRangeException">argument range exception</exception>
+    /// <exception cref="ArgumentException">argument exception</exception>
+    /// <exception cref="InsufficientMemoryException">memory full exception</exception>
+    /// <exception cref="InvalidOperationException">illegal exception</exception>
     public void ThrowError(CfdErrorCode errorCode)
     {
       if ((errorCode == CfdErrorCode.Success) || disposed)

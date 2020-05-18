@@ -1,9 +1,8 @@
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Cfd.xTests
 {
-  public class CfdExtPubkeyTest
+  public class ExtPubkeyTest
   {
     [Fact]
     public void ExtPubkeyMainnetTest()
@@ -92,6 +91,7 @@ namespace Cfd.xTests
       ExtPubkey key2 = parent.DerivePubkey(new uint[] { 0, 44 });
       Assert.Equal(key.ToString(), key1.ToString());
       Assert.Equal(key.ToString(), key2.ToString());
+      Assert.True(key.Equals(key2));
     }
   }
 }

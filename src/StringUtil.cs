@@ -1,9 +1,6 @@
 using System;
 using System.Globalization;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   public static class StringUtil

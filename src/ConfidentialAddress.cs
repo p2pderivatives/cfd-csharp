@@ -1,11 +1,8 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
-  public class ConfidentialAddress
+  public class ConfidentialAddress : IEquatable<ConfidentialAddress>
   {
     private readonly string confidentialAddress;
     private readonly Pubkey key;
@@ -70,6 +67,55 @@ namespace Cfd
     public Address GetAddress()
     {
       return unconfidenialAddress;
+    }
+
+    public bool Equals(ConfidentialAddress other)
+    {
+      if (other is null)
+      {
+        return false;
+      }
+      if (ReferenceEquals(this, other))
+      {
+        return true;
+      }
+      return confidentialAddress.Equals(other.confidentialAddress, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if ((obj as ConfidentialAddress) != null)
+      {
+        return Equals((ConfidentialAddress)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return confidentialAddress.GetHashCode(StringComparison.Ordinal);
+    }
+
+    public static bool operator ==(ConfidentialAddress lhs, ConfidentialAddress rhs)
+    {
+      if (lhs is null)
+      {
+        if (rhs is null)
+        {
+          return true;
+        }
+        return false;
+      }
+      return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(ConfidentialAddress lhs, ConfidentialAddress rhs)
+    {
+      return !(lhs == rhs);
     }
   }
 }

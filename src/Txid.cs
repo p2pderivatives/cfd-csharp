@@ -1,8 +1,5 @@
 using System;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -37,7 +34,7 @@ namespace Cfd
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to txid size.");
       }
       var txidBytes = CfdCommon.ReverseBytes(bytes);
-      this.txid = StringUtil.FromBytes(txidBytes);
+      txid = StringUtil.FromBytes(txidBytes);
     }
 
     public string ToHexString()
@@ -57,7 +54,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -73,7 +70,7 @@ namespace Cfd
       }
       if ((obj as Txid) != null)
       {
-        return this.Equals((Txid)obj);
+        return Equals((Txid)obj);
       }
       return false;
     }

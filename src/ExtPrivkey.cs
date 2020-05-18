@@ -1,7 +1,5 @@
 using System;
-/// <summary>
-/// cfd library namespace.
-/// </summary>
+
 namespace Cfd
 {
   public class ExtPrivkey : IEquatable<ExtPrivkey>
@@ -43,6 +41,7 @@ namespace Cfd
           out version, out fingerprint,
           out chainCode, out depth, out childNumber, out _);
         privkey = GetPrivkeyFromExtKey(handle, extkey, networkType);
+        this.networkType = networkType;
       }
     }
 
@@ -260,7 +259,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -274,7 +273,7 @@ namespace Cfd
       }
       if ((obj as ExtPrivkey) != null)
       {
-        return this.Equals((ExtPrivkey)obj);
+        return Equals((ExtPrivkey)obj);
       }
       return false;
     }

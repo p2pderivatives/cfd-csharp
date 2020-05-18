@@ -15,15 +15,10 @@ namespace Cfd
       var result = "";
       if (address != IntPtr.Zero)
       {
-        result = Marshal.PtrToStringAnsi(address);
+        result = Marshal.PtrToStringUTF8(address);
         NativeMethods.CfdFreeBuffer(address);
       }
       return result;
-    }
-
-    public static CfdErrorCode CfdInitialize()
-    {
-      return NativeMethods.CfdInitialize();
     }
 
     internal static CfdErrorCode CfdCreateSimpleHandle(
@@ -52,14 +47,6 @@ namespace Cfd
     {
       return NativeMethods.CfdRequestExecuteJson(handle, requestName,
           requestJsonString, out responseJsonString);
-    }
-
-    internal static CfdErrorCode CfdSerializeByteData(
-        [In] IntPtr handle,
-        [In] string buffer,
-        [Out] out IntPtr output)
-    {
-      return NativeMethods.CfdSerializeByteData(handle, buffer, out output);
     }
   }
 }

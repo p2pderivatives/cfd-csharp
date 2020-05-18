@@ -1,15 +1,17 @@
 using System;
-using System.Globalization;
+using System.Text;
 
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   // FIXME Implementation is incomplete
   public class HDWallet : IEquatable<HDWallet>
   {
     private readonly ByteData seed;
+
+    public static string[] GetMnemonicWordlist()
+    {
+      return GetMnemonicWordlist("en");
+    }
 
     public static string[] GetMnemonicWordlist(string language)
     {
@@ -76,26 +78,34 @@ namespace Cfd
     }
 
     public static ByteData ConvertMnemonicToEntropy(
-      string[] mnemonic, string passphrase, string language)
+      string mnemonic, string language)
     {
       if (mnemonic is null)
       {
         throw new ArgumentNullException(nameof(mnemonic));
       }
-      if (passphrase is null)
+      string[] words = mnemonic.Split(new[] { ' ', '　' });
+      return ConvertMnemonicToEntropy(words, language);
+    }
+
+    public static ByteData ConvertMnemonicToEntropy(
+      string[] mnemonic, string language)
+    {
+      if (mnemonic is null)
       {
-        throw new ArgumentNullException(nameof(passphrase));
+        throw new ArgumentNullException(nameof(mnemonic));
       }
       if (language is null)
       {
         throw new ArgumentNullException(nameof(language));
       }
-      String mnemonicJoinWord = String.Join(" ", mnemonic);
+      string mnemonicJoinWord = string.Join(" ", mnemonic);
       using (var handle = new ErrorHandle())
       {
         var ret = NativeMethods.CfdConvertMnemonicToSeed(
-          handle.GetHandle(), mnemonicJoinWord.ToString(CultureInfo.InvariantCulture),
-          passphrase, true, language, false,
+          handle.GetHandle(),
+          Encoding.UTF8.GetBytes(mnemonicJoinWord.ToCharArray()),
+          "", true, language, false,
           out IntPtr tempSeed, out IntPtr tempEntropy);
         if (ret != CfdErrorCode.Success)
         {
@@ -105,6 +115,17 @@ namespace Cfd
         string entropy = CCommon.ConvertToString(tempEntropy);
         return new ByteData(entropy);
       }
+    }
+
+    public static HDWallet ConvertMnemonicToSeed(
+      string mnemonic, string passphrase, string language)
+    {
+      if (mnemonic is null)
+      {
+        throw new ArgumentNullException(nameof(mnemonic));
+      }
+      string[] words = mnemonic.Split(new[] { ' ', '　' });
+      return ConvertMnemonicToSeed(words, passphrase, language, false);
     }
 
     public static HDWallet ConvertMnemonicToSeed(
@@ -128,11 +149,12 @@ namespace Cfd
       {
         throw new ArgumentNullException(nameof(language));
       }
-      String mnemonicJoinWord = String.Join(" ", mnemonic);
+      string mnemonicJoinWord = string.Join(' ', mnemonic);
       using (var handle = new ErrorHandle())
       {
         var ret = NativeMethods.CfdConvertMnemonicToSeed(
-          handle.GetHandle(), mnemonicJoinWord.ToString(CultureInfo.InvariantCulture),
+          handle.GetHandle(),
+          Encoding.UTF8.GetBytes(mnemonicJoinWord.ToCharArray()),
           passphrase, true, language, useIdeographicSpace,
           out IntPtr tempSeed, out IntPtr tempEntropy);
         if (ret != CfdErrorCode.Success)
@@ -154,7 +176,24 @@ namespace Cfd
       this.seed = seed;
     }
 
-    public HDWallet(string[] mnemonic, string passphrase)
+    public HDWallet(string mnemonic, string passphrase) : this(mnemonic, passphrase, "en")
+    {
+      // do nothing
+    }
+
+    public HDWallet(string mnemonic, string passphrase, string language)
+      : this((mnemonic is null) ? Array.Empty<string>() : mnemonic.Split(new[] { ' ', '　' }),
+          passphrase, language)
+    {
+      // do nothing
+    }
+
+    public HDWallet(string[] mnemonic, string passphrase) : this(mnemonic, passphrase, "en")
+    {
+      // do nothing
+    }
+
+    public HDWallet(string[] mnemonic, string passphrase, string language)
     {
       if (mnemonic is null)
       {
@@ -164,8 +203,24 @@ namespace Cfd
       {
         throw new ArgumentNullException(nameof(passphrase));
       }
-      HDWallet seedData = ConvertMnemonicToSeed(mnemonic, passphrase, "en");
-      this.seed = seedData.GetSeed();
+      HDWallet seedData = ConvertMnemonicToSeed(mnemonic, passphrase, language);
+      seed = seedData.GetSeed();
+    }
+
+    public HDWallet(ByteData entropy, string passphrase, string language)
+    {
+      if (entropy is null)
+      {
+        throw new ArgumentNullException(nameof(entropy));
+      }
+      if (passphrase is null)
+      {
+        throw new ArgumentNullException(nameof(passphrase));
+      }
+
+      string[] mnemonic = ConvertEntropyToMnemonic(entropy, language);
+      HDWallet seedData = ConvertMnemonicToSeed(mnemonic, passphrase, language);
+      seed = seedData.GetSeed();
     }
 
     public ByteData GetSeed()
@@ -200,17 +255,17 @@ namespace Cfd
 
     public ExtPubkey GeneratePubkey(CfdNetworkType networkType, string bip32Path)
     {
-      return GeneratePubkey(networkType).DerivePubkey(bip32Path);
+      return GeneratePrivkey(networkType).DerivePubkey(bip32Path);
     }
 
     public ExtPubkey GeneratePubkey(CfdNetworkType networkType, uint childNumber)
     {
-      return GeneratePubkey(networkType).DerivePubkey(childNumber);
+      return GeneratePrivkey(networkType).DerivePubkey(childNumber);
     }
 
     public ExtPubkey GeneratePubkey(CfdNetworkType networkType, uint[] bip32Path)
     {
-      return GeneratePubkey(networkType).DerivePubkey(bip32Path);
+      return GeneratePrivkey(networkType).DerivePubkey(bip32Path);
     }
     public bool Equals(HDWallet other)
     {
@@ -218,7 +273,7 @@ namespace Cfd
       {
         return false;
       }
-      if (Object.ReferenceEquals(this, other))
+      if (ReferenceEquals(this, other))
       {
         return true;
       }
@@ -233,7 +288,7 @@ namespace Cfd
       }
       if ((obj as HDWallet) != null)
       {
-        return this.Equals((HDWallet)obj);
+        return Equals((HDWallet)obj);
       }
       return false;
     }

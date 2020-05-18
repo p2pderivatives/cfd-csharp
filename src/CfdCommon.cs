@@ -1,10 +1,6 @@
 using System;
 using System.Globalization;
 
-
-/// <summary>
-/// cfd library namespace.
-/// </summary>
 namespace Cfd
 {
   /// <summary>
@@ -49,10 +45,10 @@ namespace Cfd
     /// </summary>
     /// <param name="errorCode">error code</param>
     /// <param name="message">error message</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">argument range exception</exception>
-    /// <exception cref="System.ArgumentException">argument exception</exception>
-    /// <exception cref="System.InsufficientMemoryException">memory full exception</exception>
-    /// <exception cref="System.InvalidOperationException">illegal exception</exception>
+    /// <exception cref="ArgumentOutOfRangeException">argument range exception</exception>
+    /// <exception cref="ArgumentException">argument exception</exception>
+    /// <exception cref="InsufficientMemoryException">memory full exception</exception>
+    /// <exception cref="InvalidOperationException">illegal exception</exception>
     public static void ThrowError(CfdErrorCode errorCode, string message)
     {
       if (errorCode == CfdErrorCode.Success)
@@ -61,9 +57,9 @@ namespace Cfd
       }
 
       var errorMessage = message;
-      if (String.IsNullOrEmpty(errorMessage))
+      if (string.IsNullOrEmpty(errorMessage))
       {
-        errorMessage = String.Format(CultureInfo.InvariantCulture, "CFD error[{0}]", errorCode);
+        errorMessage = string.Format(CultureInfo.InvariantCulture, "CFD error[{0}]", errorCode);
       }
       switch (errorCode)
       {
