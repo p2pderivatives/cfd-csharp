@@ -18,14 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        dotnet: [2.1.804, 3.1.200]
-        exclude:
-          - os: macos-latest
-            dotnet: 2.1.804
-          - os: windows-latest
-            dotnet: 2.1.804
-          - os: ubuntu-latest
-            dotnet: 3.1.200
+        dotnet: [3.1.200]
 
     steps:
     - name: setup dotnet
@@ -62,8 +55,8 @@ jobs:
     - name: build and test on ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: |
-        ./tools/build_core2.sh
-        ./tools/test_core2.sh
+        ./tools/build.sh
+        ./tools/test.sh
     - name: build and test on mac
       if: matrix.os == 'macos-latest'
       run: |
