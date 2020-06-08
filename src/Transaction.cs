@@ -851,6 +851,21 @@ namespace Cfd
       }
     }
 
+    public void UpdateTxOutAmount(uint index, long value)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdUpdateTxOutAmount(
+            handle.GetHandle(), defaultNetType, tx, index, value,
+            out IntPtr txHex);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txHex);
+      }
+    }
+
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Pubkey pubkey, long value, SignatureHashType sighashType)
     {

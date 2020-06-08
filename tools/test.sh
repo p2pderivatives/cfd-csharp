@@ -6,4 +6,9 @@ cp -rp build/Release/* dotnet_project/CfdCsharpProject.xTests/bin/Release/netcor
 
 cd dotnet_project/CfdCsharpProject.xTests
 dotnet test -c Release --no-build
+if [ $? -gt 0 ]; then
+  cd ../..
+  exit 1
+fi
+
 cd ../..

@@ -10,6 +10,6 @@ cd dotnet_project/CfdCsharpProject.xTests
 CALL dotnet test -c Release --no-build
 if not %ERRORLEVEL% == 0 (
     cd ../..
-    exit /b 1
+    exit 1
 )
 cd ../..

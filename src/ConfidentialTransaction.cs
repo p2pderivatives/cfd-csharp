@@ -1403,6 +1403,21 @@ namespace Cfd
       return GetTxOutIndex(new Script(""));
     }
 
+    public void UpdateTxOutAmount(uint index, long value)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdUpdateTxOutAmount(
+            handle.GetHandle(), defaultNetType, tx, index, value,
+            out IntPtr txHex);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txHex);
+      }
+    }
+
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Pubkey pubkey, ConfidentialValue value, SignatureHashType sighashType)
     {
@@ -2432,6 +2447,62 @@ namespace Cfd
         }
         var key = CCommon.ConvertToString(blindingKey);
         return new Privkey(key);
+      }
+    }
+
+    public static ConfidentialAsset GetAssetCommitment(
+        ConfidentialAsset asset, BlindFactor assetBlindFactor)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if (assetBlindFactor is null)
+      {
+        throw new ArgumentNullException(nameof(assetBlindFactor));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdGetAssetCommitment(
+            handle.GetHandle(),
+            asset.ToHexString(),
+            assetBlindFactor.ToHexString(),
+            out IntPtr assetCommitment);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var commitment = CCommon.ConvertToString(assetCommitment);
+        return new ConfidentialAsset(commitment);
+      }
+    }
+
+    public static ConfidentialValue GetValueCommitment(
+        long amount, ConfidentialAsset assetCommitment,
+        BlindFactor valuetBlindFactor)
+    {
+      if (assetCommitment is null)
+      {
+        throw new ArgumentNullException(nameof(assetCommitment));
+      }
+      if (valuetBlindFactor is null)
+      {
+        throw new ArgumentNullException(nameof(valuetBlindFactor));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdGetValueCommitment(
+            handle.GetHandle(),
+            amount,
+            assetCommitment.ToHexString(),
+            valuetBlindFactor.ToHexString(),
+            out IntPtr valueCommitment);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var commitment = CCommon.ConvertToString(valueCommitment);
+        return new ConfidentialValue(commitment);
       }
     }
 

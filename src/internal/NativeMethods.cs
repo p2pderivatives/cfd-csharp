@@ -665,12 +665,27 @@ namespace Cfd
         [In] string valueCommitment);
 
 
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdGetConfidentialValueHex(
         [In] IntPtr handle,
         [In] long valueSatoshi,
         [In] bool ignoreVersionInfo,
         [Out] out IntPtr valueHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetAssetCommitment(
+        [In] IntPtr handle,
+        [In] string asset,
+        [In] string assetBlindFactor,
+        [Out] out IntPtr assetCommitment);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetValueCommitment(
+        [In] IntPtr handle,
+        [In] long valueSatoshi,
+        [In] string assetCommitment,
+        [In] string valueBlindFactor,
+        [Out] out IntPtr valueCommitment);
 
     // Key
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1051,6 +1066,15 @@ namespace Cfd
     internal static extern CfdErrorCode CfdFreeTransactionHandle(
         [In] IntPtr handle,
         [In] IntPtr createHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdUpdateTxOutAmount(
+        [In] IntPtr handle,
+        [In] int networkType,
+        [In] string txHexString,
+        [In] uint index,
+        [In] long amount,
+        [Out] out IntPtr txString);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdAddTxSign(
