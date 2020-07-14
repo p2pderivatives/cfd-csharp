@@ -293,5 +293,62 @@ namespace Cfd.xTests
       Assert.Equal("xpub6FMiTLEY5GgpKy1f9Vr2x5w25cs9eBtCMq6xJYPo8bWaFD11MrPxmBPoxqWTL2wninua6fwXuRyc5nAcg7RU3DebapJhaW8xXJWoFNpRN6s",
         descriptor.GetKeyData().ExtPubkey.ToString());
     }
+
+    [Fact]
+    public void DescriptorShMiniscriptTest()
+    {
+      string desc = "sh(or_d(sha256(38df1c1f64a24a77b23393bca50dff872e31edc4f3b5aa3b90ad0b82f4f089b6),and_n(un:after(499999999),older(4194305))))";
+      string derivePath = "";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Mainnet);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#ueuxphxk", descriptor.ToString());
+      Assert.Equal(CfdHashType.P2sh, descriptor.GetHashType());
+      Assert.Equal("38WFPv9fne2UeFxVkGMhLkamMadH8j6s1c", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_HASH160 4abf8cfc94ae837bf59965e0c74d02a611ec1329 OP_EQUAL",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal("OP_SIZE 32 OP_EQUALVERIFY OP_SHA256 38df1c1f64a24a77b23393bca50dff872e31edc4f3b5aa3b90ad0b82f4f089b6 OP_EQUAL OP_IFDUP OP_NOTIF OP_IF 499999999 OP_CHECKLOCKTIMEVERIFY OP_0NOTEQUAL OP_ELSE OP_0 OP_ENDIF OP_NOTIF OP_0 OP_ELSE 4194305 OP_CHECKSEQUENCEVERIFY OP_ENDIF OP_ENDIF",
+        descriptor.GetRedeemScript().GetAsm());
+      Assert.Single(descriptor.GetList());
+    }
+
+    [Fact]
+    public void DescriptorWshMiniscriptTest()
+    {
+      string desc = "wsh(thresh(2,multi(2,03a0434d9e47f3c86235477c7b1ae6ae5d3442d49b1943c2b752a68e2a47e247c7,036d2b085e9e382ed10b69fc311a03f8641ccfff21574de0927513a49d9a688a00),a:multi(1,036d2b085e9e382ed10b69fc311a03f8641ccfff21574de0927513a49d9a688a00),ac:pk_k(022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01)))";
+      string derivePath = "";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Mainnet);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#pv8ptztg", descriptor.ToString());
+      Assert.Equal(CfdHashType.P2wsh, descriptor.GetHashType());
+      Assert.Equal("bc1qdfky9a3dh8atpy0l47fsuz5ywergnrfztcddjnl5xgnwyqvqh8gschn2ch", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_0 6a6c42f62db9fab091ffaf930e0a847646898d225e1ad94ff43226e20180b9d1",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal("OP_2 03a0434d9e47f3c86235477c7b1ae6ae5d3442d49b1943c2b752a68e2a47e247c7 036d2b085e9e382ed10b69fc311a03f8641ccfff21574de0927513a49d9a688a00 OP_2 OP_CHECKMULTISIG OP_TOALTSTACK OP_1 036d2b085e9e382ed10b69fc311a03f8641ccfff21574de0927513a49d9a688a00 OP_1 OP_CHECKMULTISIG OP_FROMALTSTACK OP_ADD OP_TOALTSTACK 022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01 OP_CHECKSIG OP_FROMALTSTACK OP_ADD OP_2 OP_EQUAL",
+        descriptor.GetRedeemScript().GetAsm());
+      Assert.Single(descriptor.GetList());
+    }
+
+    [Fact]
+    public void DescriptorShWshMiniscriptDeriveTest()
+    {
+      string desc = "sh(wsh(c:or_i(andor(c:pk_h(xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB/1/0/*),pk_h(xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/0/*),pk_h(02c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5)),pk_k(02d7924d4f7d43ea965a465ae3095ff41131e5946f3c85f79e44adbcf8e27e080e))))";
+      string derivePath = "44";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Mainnet);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#cpx6as23", descriptor.ToString());
+      Assert.Equal(CfdHashType.P2shP2wsh, descriptor.GetHashType());
+      Assert.Equal("3GyYN9WnJBoMn8M5tuqVcFJq1BvbAcdPAt", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_HASH160 a7a9f411001e3e3db96d7f02fc9ab1d0dc6aa691 OP_EQUAL",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal("OP_IF OP_DUP OP_HASH160 520e6e72bcd5b616bc744092139bd759c31d6bbe OP_EQUALVERIFY OP_CHECKSIG OP_NOTIF OP_DUP OP_HASH160 06afd46bcdfd22ef94ac122aa11f241244a37ecc OP_EQUALVERIFY OP_ELSE OP_DUP OP_HASH160 5ab62f0be26fe9d6205a155403f33e2ad2d31efe OP_EQUALVERIFY OP_ENDIF OP_ELSE 02d7924d4f7d43ea965a465ae3095ff41131e5946f3c85f79e44adbcf8e27e080e OP_ENDIF OP_CHECKSIG",
+        descriptor.GetRedeemScript().GetAsm());
+      Assert.Equal(2, descriptor.GetList().Length);
+    }
   }
 }
