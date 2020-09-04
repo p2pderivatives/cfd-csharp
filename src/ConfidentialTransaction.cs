@@ -646,7 +646,7 @@ namespace Cfd
     /// <summary>
     /// Create Transaction.
     /// </summary>
-    private static string CreateTransaction(uint version, uint locktime, string txHex,
+    private string CreateTransaction(uint version, uint locktime, string txHex,
       ConfidentialTxIn[] txinList, ConfidentialTxOut[] txoutList)
     {
       using (var handle = new ErrorHandle())
@@ -692,7 +692,33 @@ namespace Cfd
           {
             handle.ThrowError(ret);
           }
-          return CCommon.ConvertToString(txString);
+          var tx = CCommon.ConvertToString(txString);
+
+          ret = NativeMethods.CfdGetConfidentialTxInfoByHandle(
+              handle.GetHandle(),
+              txHandle,
+              out IntPtr outputTxid,
+              out IntPtr outputWtxid,
+              out IntPtr outputWitHash,
+              out uint outputSize,
+              out uint outputVsize,
+              out uint outputWeight,
+              out uint outputVersion,
+              out uint outputLocktime);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          txid = CCommon.ConvertToString(outputTxid);
+          wtxid = CCommon.ConvertToString(outputWtxid);
+          witHash = CCommon.ConvertToString(outputWitHash);
+          txSize = outputSize;
+          txVsize = outputVsize;
+          txWeight = outputWeight;
+          txVersion = outputVersion;
+          txLocktime = outputLocktime;
+          lastGetTx = tx;
+          return tx;
         }
         finally
         {
@@ -747,6 +773,10 @@ namespace Cfd
       });
     }
 
+    /// <summary>
+    /// Add transction input list.
+    /// </summary>
+    /// <param name="txinList">tx input list.</param>
     public void AddTxInList(ConfidentialTxIn[] txinList)
     {
       tx = CreateTransaction(0, 0, tx, txinList, null);
@@ -1195,10 +1225,11 @@ namespace Cfd
     /// <returns>transaction input data.</returns>
     public ConfidentialTxIn GetTxIn(OutPoint outpoint)
     {
-      uint index = GetTxInIndex(outpoint);
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputByIndex(handle, index);
+        uint index = GetTxInIndexInternal(handle, txHandle, outpoint);
+        return GetInputByIndex(handle, txHandle, index);
       }
     }
 
@@ -1210,8 +1241,9 @@ namespace Cfd
     public ConfidentialTxIn GetTxIn(uint index)
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputByIndex(handle, index);
+        return GetInputByIndex(handle, txHandle, index);
       }
     }
 
@@ -1222,13 +1254,14 @@ namespace Cfd
     public ConfidentialTxIn[] GetTxInList()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        uint count = GetInputCount(handle);
+        uint count = GetInputCount(handle, txHandle);
         ConfidentialTxIn[] result = new ConfidentialTxIn[count];
 
         for (uint index = 0; index < count; ++index)
         {
-          result[index] = GetInputByIndex(handle, index);
+          result[index] = GetInputByIndex(handle, txHandle, index);
         }
         return result;
       }
@@ -1241,8 +1274,9 @@ namespace Cfd
     public uint GetTxInCount()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputCount(handle);
+        return GetInputCount(handle, txHandle);
       }
     }
 
@@ -1254,8 +1288,9 @@ namespace Cfd
     public ConfidentialTxOut GetTxOut(uint index)
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetOutputByIndex(handle, index);
+        return GetOutputByIndex(handle, txHandle, index);
       }
     }
 
@@ -1266,13 +1301,14 @@ namespace Cfd
     public ConfidentialTxOut[] GetTxOutList()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        uint count = GetOutputCount(handle);
+        uint count = GetOutputCount(handle, txHandle);
         ConfidentialTxOut[] result = new ConfidentialTxOut[count];
 
         for (uint index = 0; index < count; ++index)
         {
-          result[index] = GetOutputByIndex(handle, index);
+          result[index] = GetOutputByIndex(handle, txHandle, index);
         }
         return result;
       }
@@ -1285,8 +1321,9 @@ namespace Cfd
     public uint GetTxOutCount()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetOutputCount(handle);
+        return GetOutputCount(handle, txHandle);
       }
     }
 
@@ -1302,17 +1339,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(outpoint));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetConfidentialTxInIndex(
-            handle.GetHandle(), tx,
-            outpoint.GetTxid().ToHexString(),
-            outpoint.GetVout(),
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxInIndexInternal(handle, txHandle, outpoint);
       }
     }
 
@@ -1328,17 +1357,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(address));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetConfidentialTxOutIndex(
-            handle.GetHandle(), tx,
-            address.ToAddressString(),
-            "",
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxOutIndexInternal(handle, txHandle, address.ToAddressString(), "");
       }
     }
 
@@ -1354,17 +1375,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(address));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetConfidentialTxOutIndex(
-            handle.GetHandle(), tx,
-            address.ToAddressString(),
-            "",
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxOutIndexInternal(handle, txHandle, address.ToAddressString(), "");
       }
     }
 
@@ -1380,17 +1393,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(script));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetConfidentialTxOutIndex(
-            handle.GetHandle(), tx,
-            "",
-            script.ToHexString(),
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxOutIndexInternal(handle, txHandle, "", script.ToHexString());
       }
     }
 
@@ -1786,16 +1791,16 @@ namespace Cfd
       }
     }
 
-    public bool VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, ConfidentialValue value)
+    public void VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, ConfidentialValue value)
     {
       if (outpoint is null)
       {
         throw new ArgumentNullException(nameof(outpoint));
       }
-      return VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, value);
+      VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, value);
     }
 
-    public bool VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, ConfidentialValue value)
+    public void VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, ConfidentialValue value)
     {
       if (txid is null)
       {
@@ -1816,16 +1821,11 @@ namespace Cfd
             address.ToAddressString(), (int)addressType, "",
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "");
-        if (ret == CfdErrorCode.Success)
-        {
-          return true;
-        }
-        else if (ret != CfdErrorCode.SignVerificationError)
+        if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
       }
-      return false;
     }
 
     public bool VerifySignature(Txid txid, uint vout, CfdHashType hashType,
@@ -2119,13 +2119,29 @@ namespace Cfd
         exponent, minimumBits, effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Fund transaction.
+    /// </summary>
+    /// <param name="txinList">setting txin utxo list</param>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="reservedAddressMap">reserved address of asset. address for adding txout. Also serves as a change address.</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="isBlind">blind flag</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="exponent">blinding exponent</param>
+    /// <param name="minimumBits">blinding minimum bits</param>
+    /// <param name="longTermFeeRate">long-term fee rate</param>
+    /// <param name="dustFeeRate">dust fee rate</param>
+    /// <param name="knapsackMinChange">knapsack min change value. knapsack logic's threshold. Recommended value is 1.</param>
+    /// <returns>used address list.</returns>
     public string[] FundRawTransaction(
       ElementsUtxoData[] txinList, ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
       IDictionary<ConfidentialAsset, string> reservedAddressMap,
       ConfidentialAsset feeAsset,
       bool isBlind, double effectiveFeeRate, int exponent, int minimumBits,
-      double longTermFeeRate, long dustFeeRate, long knapsackMinChange)
+      double longTermFeeRate, double dustFeeRate, long knapsackMinChange)
     {
       if (utxoList is null)
       {
@@ -2541,10 +2557,10 @@ namespace Cfd
       }
     }
 
-    private ConfidentialTxIn GetInputByIndex(ErrorHandle handle, uint index)
+    private ConfidentialTxIn GetInputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
-      var ret = NativeMethods.CfdGetConfidentialTxIn(
-          handle.GetHandle(), tx, index,
+      var ret = NativeMethods.CfdGetTxInByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), index,
           out IntPtr outTxid,
           out uint vout,
           out uint sequence,
@@ -2556,8 +2572,8 @@ namespace Cfd
       var utxoTxid = CCommon.ConvertToString(outTxid);
       var scriptSig = CCommon.ConvertToString(outScriptSig);
 
-      ret = NativeMethods.CfdGetConfidentialTxInWitnessCount(
-          handle.GetHandle(), tx, index,
+      ret = NativeMethods.CfdGetTxInWitnessCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), 0, index,
           out uint witnessCount);
       if (ret != CfdErrorCode.Success)
       {
@@ -2570,8 +2586,8 @@ namespace Cfd
 #pragma warning disable IDE0059 // Unnecessary value assignment
         IntPtr stackData = IntPtr.Zero;
 #pragma warning restore IDE0059 // Unnecessary value assignment
-        ret = NativeMethods.CfdGetConfidentialTxInWitness(
-            handle.GetHandle(), tx, index, witnessIndex,
+        ret = NativeMethods.CfdGetTxInWitnessByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), 0, index, witnessIndex,
             out stackData);
         if (ret != CfdErrorCode.Success)
         {
@@ -2580,8 +2596,8 @@ namespace Cfd
         witnessArray[witnessIndex] = CCommon.ConvertToString(stackData);
       }
 
-      ret = NativeMethods.CfdGetTxInIssuanceInfo(
-          handle.GetHandle(), tx, index,
+      ret = NativeMethods.CfdGetTxInIssuanceInfoByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), index,
           out IntPtr outEntropy,
           out IntPtr outNonce,
           out long assetAmount,
@@ -2606,8 +2622,8 @@ namespace Cfd
       var nonceBytes = StringUtil.ToBytes(nonce);
       nonceBytes = CfdCommon.ReverseBytes(nonceBytes);
 
-      ret = NativeMethods.CfdGetConfidentialTxInPeginWitnessCount(
-          handle.GetHandle(), tx, index,
+      ret = NativeMethods.CfdGetTxInWitnessCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), 1, index,
           out uint peginCount);
       if (ret != CfdErrorCode.Success)
       {
@@ -2620,8 +2636,8 @@ namespace Cfd
 #pragma warning disable IDE0059 // Unnecessary value assignment
         IntPtr stackData = IntPtr.Zero;
 #pragma warning restore IDE0059 // Unnecessary value assignment
-        ret = NativeMethods.CfdGetConfidentialTxInPeginWitness(
-            handle.GetHandle(), tx, index, witnessIndex,
+        ret = NativeMethods.CfdGetTxInWitnessByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), 1, index, witnessIndex,
             out stackData);
         if (ret != CfdErrorCode.Success)
         {
@@ -2640,10 +2656,10 @@ namespace Cfd
               StringUtil.ToBytes(tokenRangeproof)));
     }
 
-    private uint GetInputCount(ErrorHandle handle)
+    private uint GetInputCount(ErrorHandle handle, TxHandle txHandle)
     {
-      var ret = NativeMethods.CfdGetConfidentialTxInCount(
-          handle.GetHandle(), tx, out uint count);
+      var ret = NativeMethods.CfdGetTxInCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out uint count);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
@@ -2651,10 +2667,10 @@ namespace Cfd
       return count;
     }
 
-    private ConfidentialTxOut GetOutputByIndex(ErrorHandle handle, uint index)
+    private ConfidentialTxOut GetOutputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
-      var ret = NativeMethods.CfdGetConfidentialTxOut(
-          handle.GetHandle(), tx, index,
+      var ret = NativeMethods.CfdGetConfidentialTxOutByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), index,
           out IntPtr assetString,
           out long satoshi,
           out IntPtr valueCommitment,
@@ -2681,15 +2697,46 @@ namespace Cfd
           StringUtil.ToBytes(rangeProof));
     }
 
-    private uint GetOutputCount(ErrorHandle handle)
+    private uint GetOutputCount(ErrorHandle handle, TxHandle txHandle)
     {
-      var ret = NativeMethods.CfdGetConfidentialTxOutCount(
-          handle.GetHandle(), tx, out uint count);
+      var ret = NativeMethods.CfdGetTxOutCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out uint count);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
       return count;
+    }
+
+    private uint GetTxInIndexInternal(ErrorHandle handle, TxHandle txHandle, OutPoint outpoint)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      var ret = NativeMethods.CfdGetTxInIndexByHandle(
+          handle.GetHandle(), txHandle.GetHandle(),
+          outpoint.GetTxid().ToHexString(),
+          outpoint.GetVout(),
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return index;
+    }
+
+    private uint GetTxOutIndexInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
+    {
+      var ret = NativeMethods.CfdGetTxOutIndexByHandle(
+          handle.GetHandle(), txHandle.GetHandle(),
+          address, lockingScript,
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return index;
     }
 
   }

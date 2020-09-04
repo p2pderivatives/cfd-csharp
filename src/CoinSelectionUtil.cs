@@ -50,8 +50,19 @@ namespace Cfd
         effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Select coins.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="targetAmount">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="longTermFeeRate">long-term fee rate</param>
+    /// <param name="dustFeeRate">dust fee rate</param>
+    /// <param name="knapsackMinChange">knapsack min change value. knapsack logic's threshold. Recommended value is 1.</param>
+    /// <returns>select utxo list.</returns>
     public UtxoData[] SelectCoins(UtxoData[] utxoList, long txFeeAmount, long targetAmount,
-      double effectiveFeeRate, double longTermFeeRate, long dustFeeRate, long knapsackMinChange)
+      double effectiveFeeRate, double longTermFeeRate, double dustFeeRate, long knapsackMinChange)
     {
       if (utxoList is null)
       {
@@ -185,13 +196,27 @@ namespace Cfd
         longTermFeeRate, dustFeeRate, knapsackMinChange);
     }
 
+    /// <summary>
+    /// Select coins.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="exponent">blinding exponent</param>
+    /// <param name="minimumBits">blinding minimum bits</param>
+    /// <param name="longTermFeeRate">long-term fee rate</param>
+    /// <param name="dustFeeRate">dust fee rate</param>
+    /// <param name="knapsackMinChange">knapsack min change value. knapsack logic's threshold. Recommended value is 1.</param>
+    /// <returns>select utxo list.</returns>
     public ElementsUtxoData[] SelectCoinsForElements(
       ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
       ConfidentialAsset feeAsset, long txFeeAmount,
       double effectiveFeeRate, int exponent, int minimumBits,
       double longTermFeeRate,
-      long dustFeeRate, long knapsackMinChange)
+      double dustFeeRate, long knapsackMinChange)
     {
       if (utxoList is null)
       {

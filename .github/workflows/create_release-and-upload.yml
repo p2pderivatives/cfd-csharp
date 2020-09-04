@@ -31,7 +31,7 @@ jobs:
           - First Change
           - Second Change
         draft: false
-        prerelease: false
+        prerelease: true
 #      continue-on-error: true
     - name: write upload url
       env:
@@ -44,8 +44,8 @@ jobs:
         name: artifact-upload_url
         path: upload_url.txt
 
-  upload-object-windows-mingw:
-    name: upload-object-win-mingw
+  upload-object-windows:
+    name: upload-object-win
     needs: create-releases
     runs-on: windows-latest
 
@@ -112,7 +112,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
 
     steps:
     - name: setup dotnet
@@ -124,30 +124,6 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-    - name: cmake-useCache-ubuntu
-      uses: actions/cache@v1
-      id: cache
-      with:
-        path: cache/cmake
-        key: ${{ runner.os }}-cmake-${{ env.CMAKE_VERSION }}-x64-0
-        restore-keys: |
-          ${{ runner.os }}-cmake-${{ env.CMAKE_VERSION }}-x64-
-    - name: cmake-download-ubuntu
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: |
-        mkdir -p cache/cmake
-        cd cache/cmake
-        wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz
-        cd ../..
-    - name: cmake-setting-ubuntu
-      run: |
-        export cmake_file_name="cmake-$CMAKE_VERSION-Linux-x86_64"
-        cd cache/cmake
-        tar zxvf $cmake_file_name.tar.gz
-        chmod +x $cmake_file_name/bin/cmake $cmake_file_name/bin/ctest
-        export CURRENT_DIR=$(pwd)
-        echo ::add-path::$CURRENT_DIR/$cmake_file_name/bin
-        cd ../..
     - name: cmake-build
       run: |
         ./tools/build.sh
@@ -181,8 +157,6 @@ jobs:
         asset_path: ./dist/cfd.zip
         asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.os }}-dotnet${{env.DOTNET_VERSION}}-gcc-x86_64.zip
         asset_content_type: application/zip
-    - name: ubuntu-after
-      run: rm -rf cache/cmake/cmake-$CMAKE_VERSION-Linux-x86_64
 
   upload-object-macos:
     name: upload-object-macos

@@ -532,8 +532,7 @@ namespace Cfd
           return data;
         }
       }
-      if ((scriptList[0].ScriptType != CfdDescriptorScriptType.Sh) ||
-        (scriptList.Length == 1))
+      if (scriptList.Length == 1)
       {
         return scriptList[0];
       }

@@ -427,11 +427,7 @@ namespace Cfd.Tests.Cli
       }
 
       Address addr = new Address(pubkey, CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
-      bool isVerifySign = tx.VerifySign(txid, vout, addr, addr.GetAddressType(), value);
-      if (!isVerifySign)
-      {
-        throw new InvalidOperationException("**** sign fail. ****");
-      }
+      tx.VerifySign(txid, vout, addr, addr.GetAddressType(), value);
     }
 
     // [TestMethod()]
@@ -455,11 +451,7 @@ namespace Cfd.Tests.Cli
         throw new InvalidOperationException("**** tx fail. ****");
       }
       Address addr = new Address(pubkey, CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
-      bool isVerifySign = tx.VerifySign(txid, vout, addr, addr.GetAddressType(), value);
-      if (!isVerifySign)
-      {
-        throw new InvalidOperationException("**** sign fail. ****");
-      }
+      tx.VerifySign(txid, vout, addr, addr.GetAddressType(), value);
     }
 
     // [TestMethod()]

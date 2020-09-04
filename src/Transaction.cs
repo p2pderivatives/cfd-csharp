@@ -39,18 +39,26 @@ namespace Cfd
 
   public struct FeeData : IEquatable<FeeData>
   {
-    public long TxFee { get; }
+    public long TxOutFee { get; }
+    public long UtxoFee { get; }
+    [Obsolete("deprecated: Replaced to UtxoFee.")]
     public long InputFee { get; }
+    [Obsolete("deprecated: Replaced to TxOutFee.")]
+    public long TxFee { get; }
 
-    public FeeData(long txFee, long inputFee)
+    public FeeData(long txFee, long utxoFee)
     {
+      TxOutFee = txFee;
+      UtxoFee = utxoFee;
+#pragma warning disable CS0618
       TxFee = txFee;
-      InputFee = inputFee;
+      InputFee = utxoFee;
+#pragma warning restore CS0618
     }
 
     public bool Equals(FeeData other)
     {
-      return (TxFee == other.TxFee) && (InputFee == other.InputFee);
+      return (TxOutFee == other.TxOutFee) && (UtxoFee == other.UtxoFee);
     }
 
     public override bool Equals(object obj)
@@ -68,7 +76,7 @@ namespace Cfd
 
     public override int GetHashCode()
     {
-      return TxFee.GetHashCode() + InputFee.GetHashCode();
+      return TxOutFee.GetHashCode() + UtxoFee.GetHashCode();
     }
 
     public static bool operator ==(FeeData left, FeeData right)
@@ -339,6 +347,9 @@ namespace Cfd
     }
   };
 
+  /// <summary>
+  /// Bitcoin Transaction class.
+  /// </summary>
   public class Transaction
   {
     public static readonly int defaultNetType = (int)CfdNetworkType.Mainnet;
@@ -469,7 +480,7 @@ namespace Cfd
     /// <summary>
     /// Create Transaction.
     /// </summary>
-    private static string CreateTransaction(uint version, uint locktime, string txHex, TxIn[] txinList, TxOut[] txoutList)
+    private string CreateTransaction(uint version, uint locktime, string txHex, TxIn[] txinList, TxOut[] txoutList)
     {
       using (var handle = new ErrorHandle())
       {
@@ -514,7 +525,31 @@ namespace Cfd
           {
             handle.ThrowError(ret);
           }
-          return CCommon.ConvertToString(txString);
+          var tx = CCommon.ConvertToString(txString);
+
+          ret = NativeMethods.CfdGetTxInfoByHandle(
+              handle.GetHandle(),
+              txHandle,
+              out IntPtr outputTxid,
+              out IntPtr outputWtxid,
+              out uint outputSize,
+              out uint outputVsize,
+              out uint outputWeight,
+              out uint outputVersion,
+              out uint outputLocktime);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          txid = CCommon.ConvertToString(outputTxid);
+          wtxid = CCommon.ConvertToString(outputWtxid);
+          txSize = outputSize;
+          txVsize = outputVsize;
+          txWeight = outputWeight;
+          txVersion = outputVersion;
+          txLocktime = outputLocktime;
+          lastGetTx = tx;
+          return tx;
         }
         finally
         {
@@ -650,10 +685,11 @@ namespace Cfd
     /// <returns>transaction input data.</returns>
     public TxIn GetTxIn(OutPoint outpoint)
     {
-      uint index = GetTxInIndex(outpoint);
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputByIndex(handle, index);
+        uint index = GetTxInIndex(outpoint);
+        return GetInputByIndex(handle, txHandle, index);
       }
     }
 
@@ -665,8 +701,9 @@ namespace Cfd
     public TxIn GetTxIn(uint index)
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputByIndex(handle, index);
+        return GetInputByIndex(handle, txHandle, index);
       }
     }
 
@@ -677,13 +714,14 @@ namespace Cfd
     public TxIn[] GetTxInList()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        uint count = GetInputCount(handle);
+        uint count = GetInputCount(handle, txHandle);
         TxIn[] result = new TxIn[count];
 
         for (uint index = 0; index < count; ++index)
         {
-          result[index] = GetInputByIndex(handle, index);
+          result[index] = GetInputByIndex(handle, txHandle, index);
         }
         return result;
       }
@@ -696,8 +734,9 @@ namespace Cfd
     public uint GetTxInCount()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetInputCount(handle);
+        return GetInputCount(handle, txHandle);
       }
     }
 
@@ -708,10 +747,15 @@ namespace Cfd
     /// <returns>transaction output data.</returns>
     public TxOut GetTxOut(Address address)
     {
-      uint index = GetTxOutIndex(address);
-      using (var handle = new ErrorHandle())
+      if (address is null)
       {
-        return GetOutputByIndex(handle, index);
+        throw new ArgumentNullException(nameof(address));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        uint index = GetTxOutIndexInternal(handle, txHandle, address.ToAddressString(), "");
+        return GetOutputByIndex(handle, txHandle, index);
       }
     }
 
@@ -722,10 +766,15 @@ namespace Cfd
     /// <returns>transaction output data.</returns>
     public TxOut GetTxOut(Script lockingScript)
     {
-      uint index = GetTxOutIndex(lockingScript);
-      using (var handle = new ErrorHandle())
+      if (lockingScript is null)
       {
-        return GetOutputByIndex(handle, index);
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        uint index = GetTxOutIndexInternal(handle, txHandle, "", lockingScript.ToHexString());
+        return GetOutputByIndex(handle, txHandle, index);
       }
     }
 
@@ -737,8 +786,9 @@ namespace Cfd
     public TxOut GetTxOut(uint index)
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetOutputByIndex(handle, index);
+        return GetOutputByIndex(handle, txHandle, index);
       }
     }
 
@@ -749,13 +799,14 @@ namespace Cfd
     public TxOut[] GetTxOutList()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        uint count = GetOutputCount(handle);
+        uint count = GetOutputCount(handle, txHandle);
         TxOut[] result = new TxOut[count];
 
         for (uint index = 0; index < count; ++index)
         {
-          result[index] = GetOutputByIndex(handle, index);
+          result[index] = GetOutputByIndex(handle, txHandle, index);
         }
         return result;
       }
@@ -768,8 +819,9 @@ namespace Cfd
     public uint GetTxOutCount()
     {
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        return GetOutputCount(handle);
+        return GetOutputCount(handle, txHandle);
       }
     }
 
@@ -785,17 +837,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(outpoint));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetTxInIndex(
-            handle.GetHandle(), defaultNetType, tx,
-            outpoint.GetTxid().ToHexString(),
-            outpoint.GetVout(),
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxInIndexInternal(handle, txHandle, outpoint);
       }
     }
 
@@ -811,17 +855,9 @@ namespace Cfd
         throw new ArgumentNullException(nameof(address));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetTxOutIndex(
-            handle.GetHandle(), defaultNetType, tx,
-            address.ToAddressString(),
-            "",
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxOutIndexInternal(handle, txHandle, address.ToAddressString(), "");
       }
     }
 
@@ -837,20 +873,17 @@ namespace Cfd
         throw new ArgumentNullException(nameof(lockingScript));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdGetTxOutIndex(
-            handle.GetHandle(), defaultNetType, tx,
-            "",
-            lockingScript.ToHexString(),
-            out uint index);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        return index;
+        return GetTxOutIndexInternal(handle, txHandle, "", lockingScript.ToHexString());
       }
     }
 
+    /// <summary>
+    /// Update txout amount.
+    /// </summary>
+    /// <param name="index">txout index.</param>
+    /// <param name="value">txout amount.</param>
     public void UpdateTxOutAmount(uint index, long value)
     {
       using (var handle = new ErrorHandle())
@@ -866,6 +899,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get signature hash by pubkey.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <returns>signature hash.</returns>
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Pubkey pubkey, long value, SignatureHashType sighashType)
     {
@@ -876,6 +918,16 @@ namespace Cfd
       return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, value, sighashType);
     }
 
+    /// <summary>
+    /// Get signature hash by pubkey.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <returns>signature hash.</returns>
     public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
         Pubkey pubkey, long value, SignatureHashType sighashType)
     {
@@ -904,6 +956,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get signature hash by script.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="redeemScript">utxo signed redeem script.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <returns>signature hash.</returns>
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Script redeemScript, long value, SignatureHashType sighashType)
     {
@@ -914,6 +975,16 @@ namespace Cfd
       return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, redeemScript, value, sighashType);
     }
 
+    /// <summary>
+    /// Get signature hash by script.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="redeemScript">utxo signed redeem script.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <returns>signature hash.</returns>
     public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
         Script redeemScript, long value, SignatureHashType sighashType)
     {
@@ -941,12 +1012,29 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
     public void AddSignWithPrivkeySimple(OutPoint outpoint, CfdHashType hashType,
         Privkey privkey, long value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(outpoint, hashType, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="hasGrindR">sign grind-r option.</param>
     public void AddSignWithPrivkeySimple(OutPoint outpoint, CfdHashType hashType,
         Privkey privkey, long value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -962,12 +1050,31 @@ namespace Cfd
         privkey, value, sighashType, hasGrindR);
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType,
     Privkey privkey, long value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(txid, vout, hashType, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="hasGrindR">sign grind-r option.</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType,
         Privkey privkey, long value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -978,12 +1085,33 @@ namespace Cfd
       AddSignWithPrivkeySimple(txid, vout, hashType, privkey.GetPubkey(), privkey, value, sighashType, hasGrindR);
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey,
         Privkey privkey, long value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(txid, vout, hashType, pubkey, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="value">utxo amount.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="hasGrindR">sign grind-r option.</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey,
         Privkey privkey, long value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -1017,6 +1145,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add pubkey signature to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="signature">signature.</param>
     public void AddPubkeySign(OutPoint outpoint, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
     {
       if (outpoint is null)
@@ -1026,6 +1161,14 @@ namespace Cfd
       AddPubkeySign(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, signature);
     }
 
+    /// <summary>
+    /// Add pubkey signature to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="pubkey">utxo signed pubkey.</param>
+    /// <param name="signature">signature.</param>
     public void AddPubkeySign(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
     {
       if (txid is null)
@@ -1058,6 +1201,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add multisig signatures to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signList">signature list.</param>
+    /// <param name="redeemScript">multisig redeem script.</param>
     public void AddMultisigSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (outpoint is null)
@@ -1067,6 +1217,14 @@ namespace Cfd
       AddMultisigSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
     }
 
+    /// <summary>
+    /// Add multisig signatures to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signList">signature list.</param>
+    /// <param name="redeemScript">multisig redeem script.</param>
     public void AddMultisigSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (signList is null)
@@ -1132,6 +1290,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add signatures to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signList">signature list.</param>
+    /// <param name="redeemScript">redeem script.</param>
     public void AddScriptSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (outpoint is null)
@@ -1141,6 +1306,14 @@ namespace Cfd
       AddScriptSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
     }
 
+    /// <summary>
+    /// Add signatures to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signList">signature list.</param>
+    /// <param name="redeemScript">redeem script.</param>
     public void AddScriptSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (txid is null)
@@ -1191,6 +1364,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add signature to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signData">signature or data.</param>
+    /// <param name="clearStack">stack clear flag.</param>
     public void AddSign(OutPoint outpoint, CfdHashType hashType, SignParameter signData, bool clearStack)
     {
       if (outpoint is null)
@@ -1200,6 +1380,14 @@ namespace Cfd
       AddSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signData, clearStack);
     }
 
+    /// <summary>
+    /// Add signature to transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="hashType">utxo hash type.</param>
+    /// <param name="signData">signature or data.</param>
+    /// <param name="clearStack">stack clear flag.</param>
     public void AddSign(Txid txid, uint vout, CfdHashType hashType, SignParameter signData, bool clearStack)
     {
       if (txid is null)
@@ -1227,16 +1415,31 @@ namespace Cfd
       }
     }
 
-    public bool VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, long satoshiValue)
+    /// <summary>
+    /// Verification sign on transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="address">utxo address.</param>
+    /// <param name="addressType">address type.</param>
+    /// <param name="satoshiValue">utxo amount.</param>
+    public void VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, long satoshiValue)
     {
       if (outpoint is null)
       {
         throw new ArgumentNullException(nameof(outpoint));
       }
-      return VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, satoshiValue);
+      VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, satoshiValue);
     }
 
-    public bool VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, long satoshiValue)
+    /// <summary>
+    /// Verification sign on transaction.
+    /// </summary>
+    /// <param name="txid">utxo outpoint txid.</param>
+    /// <param name="vout">utxo outpoint vout.</param>
+    /// <param name="address">utxo address.</param>
+    /// <param name="addressType">address type.</param>
+    /// <param name="satoshiValue">utxo amount.</param>
+    public void VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, long satoshiValue)
     {
       if (txid is null)
       {
@@ -1252,16 +1455,11 @@ namespace Cfd
             handle.GetHandle(), defaultNetType, tx, txid.ToHexString(), vout,
             address.ToAddressString(), (int)addressType, "",
             satoshiValue, "");
-        if (ret == CfdErrorCode.Success)
-        {
-          return true;
-        }
-        else if (ret != CfdErrorCode.SignVerificationError)
+        if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
       }
-      return false;
     }
 
     public bool VerifySignature(OutPoint outpoint, CfdHashType hashType,
@@ -1442,9 +1640,21 @@ namespace Cfd
         effectiveFeeRate, effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Fund transaction.
+    /// </summary>
+    /// <param name="txinList">setting txin utxo list</param>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAmount">Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="reservedAddress">address for adding txout. Also serves as a change address.</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="longTermFeeRate">long-term fee rate</param>
+    /// <param name="dustFeeRate">dust fee rate</param>
+    /// <param name="knapsackMinChange">knapsack min change value. knapsack logic's threshold. Recommended value is 1.</param>
+    /// <returns>used address list.</returns>
     public string FundRawTransaction(UtxoData[] txinList, UtxoData[] utxoList,
       long targetAmount, string reservedAddress,
-      double effectiveFeeRate, double longTermFeeRate, long dustFeeRate, long knapsackMinChange)
+      double effectiveFeeRate, double longTermFeeRate, double dustFeeRate, long knapsackMinChange)
     {
       if (utxoList is null)
       {
@@ -1652,10 +1862,10 @@ namespace Cfd
       }
     }
 
-    private TxIn GetInputByIndex(ErrorHandle handle, uint index)
+    private TxIn GetInputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
-      var ret = NativeMethods.CfdGetTxIn(
-          handle.GetHandle(), defaultNetType, tx, index,
+      var ret = NativeMethods.CfdGetTxInByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), index,
           out IntPtr outTxid,
           out uint vout,
           out uint sequence,
@@ -1667,8 +1877,8 @@ namespace Cfd
       var utxoTxid = CCommon.ConvertToString(outTxid);
       var scriptSig = CCommon.ConvertToString(outScriptSig);
 
-      ret = NativeMethods.CfdGetTxInWitnessCount(
-          handle.GetHandle(), defaultNetType, tx, index,
+      ret = NativeMethods.CfdGetTxInWitnessCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), 0, index,
           out uint witnessCount);
       if (ret != CfdErrorCode.Success)
       {
@@ -1681,8 +1891,8 @@ namespace Cfd
 #pragma warning disable IDE0059 // Unnecessary value assignment
         IntPtr stackData = IntPtr.Zero;
 #pragma warning restore IDE0059 // Unnecessary value assignment
-        ret = NativeMethods.CfdGetTxInWitness(
-            handle.GetHandle(), defaultNetType, tx, index, witnessIndex,
+        ret = NativeMethods.CfdGetTxInWitnessByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), 0, index, witnessIndex,
             out stackData);
         if (ret != CfdErrorCode.Success)
         {
@@ -1696,10 +1906,10 @@ namespace Cfd
           new ScriptWitness(witnessArray));
     }
 
-    private uint GetInputCount(ErrorHandle handle)
+    private uint GetInputCount(ErrorHandle handle, TxHandle txHandle)
     {
-      var ret = NativeMethods.CfdGetTxInCount(
-          handle.GetHandle(), defaultNetType, tx, out uint count);
+      var ret = NativeMethods.CfdGetTxInCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out uint count);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
@@ -1707,30 +1917,64 @@ namespace Cfd
       return count;
     }
 
-    private TxOut GetOutputByIndex(ErrorHandle handle, uint index)
+    private TxOut GetOutputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
-      var ret = NativeMethods.CfdGetTxOut(
-          handle.GetHandle(), defaultNetType, tx, index,
+      var ret = NativeMethods.CfdGetTxOutByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), index,
           out long satoshi,
-          out IntPtr lockingScript);
+          out IntPtr lockingScript,
+          out IntPtr asset);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
+      CCommon.ConvertToString(asset);
       var scriptPubkey = CCommon.ConvertToString(lockingScript);
 
       return new TxOut(satoshi, new Script(scriptPubkey));
     }
 
-    private uint GetOutputCount(ErrorHandle handle)
+    private uint GetOutputCount(ErrorHandle handle, TxHandle txHandle)
     {
-      var ret = NativeMethods.CfdGetTxOutCount(
-          handle.GetHandle(), defaultNetType, tx, out uint count);
+      var ret = NativeMethods.CfdGetTxOutCountByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out uint count);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
       }
       return count;
     }
+
+    private uint GetTxInIndexInternal(ErrorHandle handle, TxHandle txHandle, OutPoint outpoint)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      var ret = NativeMethods.CfdGetTxInIndexByHandle(
+          handle.GetHandle(), txHandle.GetHandle(),
+          outpoint.GetTxid().ToHexString(),
+          outpoint.GetVout(),
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return index;
+    }
+
+    private uint GetTxOutIndexInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
+    {
+      var ret = NativeMethods.CfdGetTxOutIndexByHandle(
+          handle.GetHandle(), txHandle.GetHandle(),
+          address, lockingScript,
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return index;
+    }
+
   }
 }
