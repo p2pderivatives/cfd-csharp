@@ -6,6 +6,7 @@ namespace Cfd
   public class BlindFactor
   {
     public static readonly uint Size = 32;
+    private const string EmptyString = "0000000000000000000000000000000000000000000000000000000000000000";
     private readonly string hexString;
 
     /// <summary>
@@ -13,7 +14,7 @@ namespace Cfd
     /// </summary>
     public BlindFactor()
     {
-      hexString = "0000000000000000000000000000000000000000000000000000000000000000";
+      hexString = EmptyString;
     }
 
     /// <summary>
@@ -24,7 +25,7 @@ namespace Cfd
     {
       if (string.IsNullOrEmpty(blindFactorHex))
       {
-        hexString = "0000000000000000000000000000000000000000000000000000000000000000";
+        hexString = EmptyString;
       }
       else if (blindFactorHex.Length != Size * 2)
       {
@@ -44,7 +45,7 @@ namespace Cfd
     {
       if ((bytes is null) || (bytes.Length == 0))
       {
-        hexString = "0000000000000000000000000000000000000000000000000000000000000000";
+        hexString = EmptyString;
       }
       else if (bytes.Length != Size)
       {
@@ -83,6 +84,15 @@ namespace Cfd
     public ByteData GetData()
     {
       return new ByteData(hexString, true);
+    }
+
+    /// <summary>
+    /// check empty byte data.
+    /// </summary>
+    /// <returns>true is empty byte data.</returns>
+    public bool IsEmpty()
+    {
+      return hexString.Equals(EmptyString, System.StringComparison.OrdinalIgnoreCase);
     }
   }
 }

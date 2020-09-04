@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -58,8 +59,14 @@ namespace Cfd.xTests
         tx.ToHexString());
 
       Address addr11 = new Address(pubkey1, CfdAddressType.P2wpkh, CfdNetworkType.Regtest);
-      bool isVerify = tx.VerifySign(outpoint1, addr11, addr11.GetAddressType(), 50000);
-      Assert.True(isVerify);
+      try
+      {
+        tx.VerifySign(outpoint1, addr11, addr11.GetAddressType(), 50000);
+      }
+      catch (Exception e)
+      {
+        Assert.Null(e);
+      }
 
       string json = Transaction.DecodeRawTransaction(tx);
       output.WriteLine(json);
@@ -260,8 +267,8 @@ namespace Cfd.xTests
       });
 
       FeeData feeData = tx.EstimateFee(new[] { utxos[1], utxos[2] }, 10.0);
-      Assert.Equal(720, feeData.TxFee);
-      Assert.Equal(1800, feeData.InputFee);
+      Assert.Equal(720, feeData.TxOutFee);
+      Assert.Equal(1800, feeData.UtxoFee);
     }
 
     [Fact]
@@ -329,9 +336,9 @@ namespace Cfd.xTests
         utxos[0],
       };
       FeeData feeData = tx.EstimateFee(feeUtxos, feeRate);
-      Assert.Equal(7460, feeData.TxFee + feeData.InputFee);
-      Assert.Equal(2060, feeData.TxFee);
-      Assert.Equal(5400, feeData.InputFee);
+      Assert.Equal(7460, feeData.TxOutFee + feeData.UtxoFee);
+      Assert.Equal(2060, feeData.TxOutFee);
+      Assert.Equal(5400, feeData.UtxoFee);
     }
 
     static UtxoData[] GetBitcoinBnbUtxoList(CfdNetworkType netType)

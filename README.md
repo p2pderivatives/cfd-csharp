@@ -8,19 +8,26 @@
 
 ## Dependencies
 
+- C# (8.0 or higher)
+  - .NET Core 3.0 or higher
+- C/C++ Compiler
+  - can compile c++11
+- CMake (3.14.3 or higher)
+
 ### Windows
 
 - C# (8.0 or higher)
   - .NET Core 3.0 or higher
-- CMake (3.14.3 or higher)
-- Build Tools for Visual Studio (2017 or higher)
+- [CMake](https://cmake.org/) (3.14.3 or higher)
+- MSVC
+  - [Visual Studio](https://visualstudio.microsoft.com/downloads/) (Verified version is 2017 or higher)
+  - [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/) (2017 or higher)
+  - (Using only) [msvc redistribution package](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads)
 
 ### MacOS
 
 - C# (8.0 or higher)
   - .NET Core 3.0 or higher
-- CMake (3.14.3 or higher)
-
 - [Homebrew](https://brew.sh/)
 
 ```Shell
@@ -28,7 +35,7 @@
 xcode-select --install
 
 # install dependencies using Homebrew
-brew install cmake
+brew install cmake cask
 brew cask install dotnet-sdk
 ```
 
@@ -53,20 +60,17 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 ## Build
 
-### Windows (Visual Studio)
+### Windows
 
 ```Cmd
 # configure & build
 .\tools\build.bat
 ```
 
-### Windows (.NET Core only)
-
-- tools/build.bat
-```Cmd
-# configure & build
-.\tools\build_core3.bat
-```
+- (.NET Core only)
+  ```Cmd
+  .\tools\build_core3.bat
+  ```
 
 ### Linux & MacOSX
 
@@ -78,16 +82,11 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 ---
 
-## Example
+## Test and Example
 
 ### Test
 
-- Windows (Visual Studio)
-```Cmd
-.\tools\test.bat
-```
-
-- Windows (.NET Core only)
+- Windows
 ```Cmd
 .\tools\test_core3.bat
 ```
@@ -100,8 +99,32 @@ echo ".NET Core 3.x"
 
 ### Example
 
-- test/CfdTestMain.cs
-  - blind/unblind: TestBlindTx()
+- Not Implemented yet
+
+---
+
+## Information for developers
+
+### using library
+
+- cfd
+  - cfd-core
+    - [libwally-core](https://github.com/cryptogarageinc/libwally-core/tree/cfd-develop) (forked from [ElementsProject/libwally-core](https://github.com/ElementsProject/libwally-core))
+    - [univalue](https://github.com/jgarzik/univalue) (for JSON encoding and decoding)
+
+### formatter
+
+- dotnet format
+
+### support compilers
+
+- .NET Core (3.x or higher)
+- for cfd build
+  - Visual Studio (2017 or higher)
+  - Clang (7.x or higher)
+  - GCC (5.x or higher)
+
+---
 
 ## Note
 

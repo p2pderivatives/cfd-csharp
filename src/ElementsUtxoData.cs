@@ -8,7 +8,7 @@ namespace Cfd
   public class ElementsUtxoData : UtxoData, IEquatable<ElementsUtxoData>
   {
     private readonly ConfidentialValue value;
-    private readonly ConfidentialAsset asset;
+    // private readonly ConfidentialAsset asset;
     private readonly string unblindedAsset;
     private readonly bool isIssuance;
     private readonly bool isBlindIssuance;
@@ -48,7 +48,6 @@ namespace Cfd
       {
         throw new InvalidOperationException("asset is blinded.");
       }
-      this.asset = asset;
       unblindedAsset = asset.ToHexString();
       value = new ConfidentialValue(amount);
       assetBlindFactor = new BlindFactor();
@@ -66,12 +65,12 @@ namespace Cfd
       {
         throw new ArgumentNullException(nameof(value));
       }
-      this.asset = asset;
-      this.value = value;
-      if (!asset.HasBlinding())
+      if (asset.HasBlinding())
       {
-        unblindedAsset = asset.ToHexString();
+        throw new InvalidOperationException("asset is blinded.");
       }
+      this.value = value;
+      unblindedAsset = asset.ToHexString();
       assetBlindFactor = new BlindFactor();
       amountBlindFactor = new BlindFactor();
     }
@@ -93,12 +92,12 @@ namespace Cfd
       {
         throw new ArgumentNullException(nameof(value));
       }
-      this.asset = asset;
-      this.value = value;
-      if (!asset.HasBlinding())
+      if (asset.HasBlinding())
       {
-        unblindedAsset = asset.ToHexString();
+        throw new InvalidOperationException("asset is blinded.");
       }
+      this.value = value;
+      unblindedAsset = asset.ToHexString();
     }
 
     public ElementsUtxoData(OutPoint outpoint, string asset,
@@ -126,10 +125,17 @@ namespace Cfd
         throw new ArgumentNullException(nameof(valueCommitment));
       }
       unblindedAsset = asset;
-      this.asset = assetCommitment;
       value = valueCommitment;
       assetBlindFactor = (assetBlinder is null) ? new BlindFactor() : assetBlinder;
       amountBlindFactor = (amountBlinder is null) ? new BlindFactor() : amountBlinder;
+      if (!assetBlindFactor.IsEmpty() && assetCommitment.HasBlinding())
+      {
+        ConfidentialAsset generateAsset = GetAssetCommitment();
+        if (generateAsset.Equals(assetCommitment))
+        {
+          throw new InvalidOperationException("unmatch asset commitment.");
+        }
+      }
     }
 
     public ElementsUtxoData(OutPoint outpoint, string asset,
@@ -166,10 +172,17 @@ namespace Cfd
         throw new ArgumentNullException(nameof(valueCommitment));
       }
       unblindedAsset = asset;
-      this.asset = assetCommitment;
       value = valueCommitment;
       assetBlindFactor = (assetBlinder is null) ? new BlindFactor() : assetBlinder;
       amountBlindFactor = (amountBlinder is null) ? new BlindFactor() : amountBlinder;
+      if (!assetBlindFactor.IsEmpty() && assetCommitment.HasBlinding())
+      {
+        ConfidentialAsset generateAsset = GetAssetCommitment();
+        if (generateAsset.Equals(assetCommitment))
+        {
+          throw new InvalidOperationException("unmatch asset commitment.");
+        }
+      }
     }
 
     public ElementsUtxoData(OutPoint outpoint, string asset,
@@ -218,7 +231,8 @@ namespace Cfd
 
     public ConfidentialAsset GetAssetCommitment()
     {
-      return asset;
+      ConfidentialAsset unblindAsset = new ConfidentialAsset(this.unblindedAsset);
+      return ConfidentialTransaction.GetAssetCommitment(unblindAsset, this.assetBlindFactor);
     }
 
     public ConfidentialValue GetValueCommitment()
