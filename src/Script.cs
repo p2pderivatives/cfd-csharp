@@ -3,12 +3,20 @@ using System.Text;
 
 namespace Cfd
 {
+  /// <summary>
+  /// bitcoin script class.
+  /// </summary>
   public class Script : IEquatable<Script>
   {
     public static readonly uint MaxSize = 65535;
     private readonly string script;
     private readonly string[] scriptItems;
 
+    /// <summary>
+    /// create script from asm string.
+    /// </summary>
+    /// <param name="asm">asm string</param>
+    /// <returns>script object</returns>
     public static Script CreateFromAsm(string asm)
     {
       if (asm is null)
@@ -26,6 +34,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// create script from asm string list.
+    /// </summary>
+    /// <param name="asmList">asm string list</param>
+    /// <returns>script object</returns>
     public static Script CreateFromAsm(string[] asmList)
     {
       if (asmList is null)
@@ -51,6 +64,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// create multisig script.
+    /// </summary>
+    /// <param name="requireNum">require num</param>
+    /// <param name="pubkeys">pubkey list</param>
+    /// <returns>multisig script</returns>
     public static Script CreateMultisigScript(uint requireNum, Pubkey[] pubkeys)
     {
       if (pubkeys is null)
@@ -63,6 +82,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get multisig address list.
+    /// </summary>
+    /// <param name="multisigScript">multisig script</param>
+    /// <param name="networkType">network type</param>
+    /// <param name="addressType">address type</param>
+    /// <returns>address list</returns>
     public static Address[] GetMultisigAddresses(Script multisigScript,
       CfdNetworkType networkType, CfdAddressType addressType
       )
@@ -109,12 +135,19 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// empty constructor.
+    /// </summary>
     public Script()
     {
       script = "";
       scriptItems = Array.Empty<string>();
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="scriptHex">script hex string</param>
     public Script(string scriptHex)
     {
       if (scriptHex is null)
@@ -132,6 +165,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="bytes">script byte array.</param>
     public Script(byte[] bytes)
     {
       if (bytes is null)

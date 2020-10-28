@@ -2,12 +2,19 @@ using System;
 
 namespace Cfd
 {
+  /// <summary>
+  /// confidential address class.
+  /// </summary>
   public class ConfidentialAddress : IEquatable<ConfidentialAddress>
   {
     private readonly string confidentialAddress;
     private readonly Pubkey key;
     private readonly Address unconfidenialAddress;
 
+    /// <summary>
+    /// constructor by address string.
+    /// </summary>
+    /// <param name="addressString">address string.</param>
     public ConfidentialAddress(string addressString)
     {
       confidentialAddress = addressString;
@@ -29,6 +36,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="address">address</param>
+    /// <param name="confidentialKey">confidential key</param>
     public ConfidentialAddress(Address address, Pubkey confidentialKey)
     {
       if (address is null)
@@ -54,16 +66,28 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get confidential address string.
+    /// </summary>
+    /// <returns>confidential address string.</returns>
     public string ToAddressString()
     {
       return confidentialAddress;
     }
 
+    /// <summary>
+    /// get confidential key.
+    /// </summary>
+    /// <returns></returns>
     public Pubkey GetConfidentialKey()
     {
       return key;
     }
 
+    /// <summary>
+    /// get address object.
+    /// </summary>
+    /// <returns>address object</returns>
     public Address GetAddress()
     {
       return unconfidenialAddress;

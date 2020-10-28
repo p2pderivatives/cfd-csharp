@@ -11,6 +11,9 @@ namespace Cfd
     Pubkey        //!< extended pubkey
   };
 
+  /// <summary>
+  /// extend pubkey class.
+  /// </summary>
   public class ExtPubkey : IEquatable<ExtPubkey>
   {
     public static readonly string VersionMainnet = "0488b21e";

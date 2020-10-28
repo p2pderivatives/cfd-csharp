@@ -3,16 +3,27 @@ using System.Text;
 
 namespace Cfd
 {
-  // FIXME Implementation is incomplete
+  /// <summary>
+  /// HD Wallet class.
+  /// </summary>
   public class HDWallet : IEquatable<HDWallet>
   {
     private readonly ByteData seed;
 
+    /// <summary>
+    /// get mnemonic word list.
+    /// </summary>
+    /// <returns>mnemonic word list.</returns>
     public static string[] GetMnemonicWordlist()
     {
       return GetMnemonicWordlist("en");
     }
 
+    /// <summary>
+    /// get mnemonic word list.
+    /// </summary>
+    /// <param name="language">language/country</param>
+    /// <returns>mnemonic word list.</returns>
     public static string[] GetMnemonicWordlist(string language)
     {
       if (language is null)
@@ -52,6 +63,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// convert entropy to mnemonic.
+    /// </summary>
+    /// <param name="entropy">entropy</param>
+    /// <param name="language">language</param>
+    /// <returns>mnemonic words</returns>
     public static string[] ConvertEntropyToMnemonic(
       ByteData entropy, string language)
     {
@@ -77,6 +94,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// convert mnemonic to entropy
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="language">language</param>
+    /// <returns>entropy</returns>
     public static ByteData ConvertMnemonicToEntropy(
       string mnemonic, string language)
     {
@@ -88,6 +111,12 @@ namespace Cfd
       return ConvertMnemonicToEntropy(words, language);
     }
 
+    /// <summary>
+    /// convert mnemonic to entropy
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="language">language</param>
+    /// <returns>entropy</returns>
     public static ByteData ConvertMnemonicToEntropy(
       string[] mnemonic, string language)
     {
@@ -117,6 +146,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// convert mnemonic to seed.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
+    /// <returns>seed bytes</returns>
     public static HDWallet ConvertMnemonicToSeed(
       string mnemonic, string passphrase, string language)
     {
@@ -128,12 +164,27 @@ namespace Cfd
       return ConvertMnemonicToSeed(words, passphrase, language, false);
     }
 
+    /// <summary>
+    /// convert mnemonic to seed.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
+    /// <returns>seed bytes</returns>
     public static HDWallet ConvertMnemonicToSeed(
       string[] mnemonic, string passphrase, string language)
     {
       return ConvertMnemonicToSeed(mnemonic, passphrase, language, false);
     }
 
+    /// <summary>
+    /// convert mnemonic to seed.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
+    /// <param name="useIdeographicSpace">use ideographics space</param>
+    /// <returns>seed bytes</returns>
     public static HDWallet ConvertMnemonicToSeed(
       string[] mnemonic, string passphrase, string language, bool useIdeographicSpace)
     {
@@ -167,6 +218,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor from seed.
+    /// </summary>
+    /// <param name="seed">seed bytes</param>
     public HDWallet(ByteData seed)
     {
       if (seed is null)
@@ -176,11 +231,22 @@ namespace Cfd
       this.seed = seed;
     }
 
+    /// <summary>
+    /// constructor from english mnemonic.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
     public HDWallet(string mnemonic, string passphrase) : this(mnemonic, passphrase, "en")
     {
       // do nothing
     }
 
+    /// <summary>
+    /// constructor from mnemonic.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
     public HDWallet(string mnemonic, string passphrase, string language)
       : this((mnemonic is null) ? Array.Empty<string>() : mnemonic.Split(new[] { ' ', '　' }),
           passphrase, language)
@@ -188,11 +254,22 @@ namespace Cfd
       // do nothing
     }
 
+    /// <summary>
+    /// constructor from mnemonic.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
     public HDWallet(string[] mnemonic, string passphrase) : this(mnemonic, passphrase, "en")
     {
       // do nothing
     }
 
+    /// <summary>
+    /// constructor from mnemonic.
+    /// </summary>
+    /// <param name="mnemonic">mnemonic words</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
     public HDWallet(string[] mnemonic, string passphrase, string language)
     {
       if (mnemonic is null)
@@ -207,6 +284,12 @@ namespace Cfd
       seed = seedData.GetSeed();
     }
 
+    /// <summary>
+    /// constructor from entropy.
+    /// </summary>
+    /// <param name="entropy">entropy</param>
+    /// <param name="passphrase">passphrase</param>
+    /// <param name="language">language</param>
     public HDWallet(ByteData entropy, string passphrase, string language)
     {
       if (entropy is null)

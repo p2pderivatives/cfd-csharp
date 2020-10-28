@@ -13,6 +13,10 @@ namespace Cfd
     private readonly bool isCompressed;
     private readonly CfdNetworkType networkType;
 
+    /// <summary>
+    /// generate random privkey.
+    /// </summary>
+    /// <returns>privkey</returns>
     public static Privkey Generate()
     {
       using (var handle = new ErrorHandle())
@@ -102,6 +106,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// privkey tweak add.
+    /// </summary>
+    /// <param name="tweak">tweak bytes</param>
+    /// <returns>tweaked privkey</returns>
     public Privkey TweakAdd(ByteData tweak)
     {
       if (tweak is null)
@@ -122,6 +131,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// privkey tweak mul.
+    /// </summary>
+    /// <param name="tweak">tweak bytes</param>
+    /// <returns>tweaked privkey</returns>
     public Privkey TweakMul(ByteData tweak)
     {
       if (tweak is null)
@@ -142,6 +156,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// negate privkey.
+    /// </summary>
+    /// <returns>negated privkey.</returns>
     public Privkey Negate()
     {
       using (var handle = new ErrorHandle())
@@ -243,6 +261,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get pubkey.
+    /// </summary>
+    /// <param name="isCompress">compressed pubkey flag</param>
+    /// <returns>pubkey</returns>
     public Pubkey GetPubkey(bool isCompress)
     {
       using (var handle = new ErrorHandle())

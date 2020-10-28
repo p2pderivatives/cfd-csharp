@@ -3,7 +3,7 @@ using System;
 namespace Cfd
 {
   /// <summary>
-  /// txid data class.
+  /// utxo data class.
   /// </summary>
   public class UtxoData : IEquatable<UtxoData>
   {
