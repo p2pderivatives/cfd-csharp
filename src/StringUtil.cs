@@ -3,8 +3,16 @@ using System.Globalization;
 
 namespace Cfd
 {
+  /// <summary>
+  /// string utility class.
+  /// </summary>
   public static class StringUtil
   {
+    /// <summary>
+    /// convert hex to bytes.
+    /// </summary>
+    /// <param name="hex">hex string</param>
+    /// <returns>byte array</returns>
     public static byte[] ToBytes(string hex)
     {
       if (hex is null)
@@ -19,6 +27,11 @@ namespace Cfd
       return buffer;
     }
 
+    /// <summary>
+    /// convert hex from bytes.
+    /// </summary>
+    /// <param name="bytes">byte array</param>
+    /// <returns>hex string</returns>
     public static string FromBytes(byte[] bytes)
     {
       if (bytes is null)
@@ -29,6 +42,12 @@ namespace Cfd
         "-", "", StringComparison.Ordinal)
         .ToLower(CultureInfo.InvariantCulture);
     }
+
+    /// <summary>
+    /// convert hex from ByteData object.
+    /// </summary>
+    /// <param name="bytes">ByteData object</param>
+    /// <returns>hex string</returns>
     public static string FromBytes(ByteData bytes)
     {
       if (bytes is null)

@@ -3,6 +3,9 @@ using System.Globalization;
 
 namespace Cfd
 {
+  /// <summary>
+  /// elements value (amount) class.
+  /// </summary>
   public class ConfidentialValue
   {
     const uint CommitmentSize = 33;
@@ -10,23 +13,38 @@ namespace Cfd
     private readonly string commitmentValue;
     private readonly long satoshiValue;
 
+    /// <summary>
+    /// empty constructor.
+    /// </summary>
     public ConfidentialValue()
     {
       commitmentValue = "";
       satoshiValue = 0;
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="satoshiValue">satoshi amount.</param>
     public ConfidentialValue(long satoshiValue)
     {
       commitmentValue = "";
       this.satoshiValue = satoshiValue;
     }
 
+    /// <summary>
+    /// constructor for commitment.
+    /// </summary>
+    /// <param name="commitmentValue">commitment value hex.</param>
     public ConfidentialValue(string commitmentValue) : this(commitmentValue, 0)
     {
       // do nothing
     }
 
+    /// <summary>
+    /// constructor for commitment.
+    /// </summary>
+    /// <param name="commitmentValue">commitment value bytes.</param>
     public ConfidentialValue(byte[] commitmentValue)
     {
       if (commitmentValue is null)
@@ -43,6 +61,11 @@ namespace Cfd
       satoshiValue = 0;
     }
 
+    /// <summary>
+    /// constructor .
+    /// </summary>
+    /// <param name="commitmentValue">commitment value</param>
+    /// <param name="satoshiValue">unblind satoshi amount</param>
     public ConfidentialValue(string commitmentValue, long satoshiValue)
     {
       if (commitmentValue is null)

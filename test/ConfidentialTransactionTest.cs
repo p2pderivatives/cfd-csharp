@@ -837,6 +837,9 @@ namespace Cfd.xTests
         new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
         new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
       });
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("020000000000020100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
 
       var feeAsset = new ConfidentialAsset(assetA);
       var targetAssetMap = new Dictionary<ConfidentialAsset, long> {
@@ -925,6 +928,9 @@ namespace Cfd.xTests
         new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
         new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
       });
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("0200000000010f231181a6d8fa2c5f7020948464110fbcc925f94d673d5752ce66d00250a1570100008000ffffffffd8bbe31bc590cbb6a47d2e53a956ec25d8890aefd60dcfc93efd34727554890b0683fe0819a4f9770c8a7cd5824e82975c825e017aff8ba0d6a5eb4959cf9c6f010000000023c346000004010bad521bafdac767421d45b71b29a349c7b2ca2a06b5d8e3b5898c91df2769ed010000000029b92700001976a9146c22e209d36612e0d9d2a20b814d7d8648cc7a7788ac01cdb0ed311810e61036ac9255674101497850f5eee5e4320be07479c05473cbac010000000023c34600001976a9149bdcb18911fa9faad6632ca43b81739082b0a19588ac0100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
 
       // fundrawtx
       var feeAsset = new ConfidentialAsset(assetA);

@@ -303,12 +303,20 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// Output descriptor class.
+  /// </summary>
   public class Descriptor
   {
     private readonly string descriptor;
     private readonly CfdDescriptorScriptData[] scriptList;
     private readonly CfdDescriptorScriptData rootData;
 
+    /// <summary>
+    /// parse output descriptor.
+    /// </summary>
+    /// <param name="descriptorString">output descriptor</param>
+    /// <param name="network">network type for address</param>
     public Descriptor(string descriptorString, CfdNetworkType network)
     {
       if (descriptorString is null)
@@ -323,6 +331,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// parse output descriptor for derive path.
+    /// </summary>
+    /// <param name="descriptorString">output descriptor</param>
+    /// <param name="derivePath">derive path</param>
+    /// <param name="network">network type for address</param>
     public Descriptor(string descriptorString, string derivePath, CfdNetworkType network)
     {
       if (descriptorString is null)

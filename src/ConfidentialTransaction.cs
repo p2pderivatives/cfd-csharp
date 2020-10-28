@@ -643,9 +643,6 @@ namespace Cfd
       tx = CreateTransaction(0, 0, StringUtil.FromBytes(txBytes), txinList, txoutList);
     }
 
-    /// <summary>
-    /// Create Transaction.
-    /// </summary>
     private string CreateTransaction(uint version, uint locktime, string txHex,
       ConfidentialTxIn[] txinList, ConfidentialTxOut[] txoutList)
     {
@@ -892,6 +889,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add transaction output fee.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi amount</param>
     public void AddFeeTxOut(string asset, long satoshiValue)
     {
       if (asset is null)
@@ -901,6 +903,11 @@ namespace Cfd
       AddTxOutList(new[] { new ConfidentialTxOut(new ConfidentialAsset(asset), satoshiValue) });
     }
 
+    /// <summary>
+    /// Add transaction output for destroy amount.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi amount</param>
     public void AddDestroyAmountTxOut(string asset, long satoshiValue)
     {
       if (asset is null)
@@ -911,6 +918,10 @@ namespace Cfd
         new ConfidentialValue(satoshiValue), new Script("6a")) });
     }
 
+    /// <summary>
+    /// Add transaction output list.
+    /// </summary>
+    /// <param name="txoutList">txout list</param>
     public void AddTxOutList(ConfidentialTxOut[] txoutList)
     {
       tx = CreateTransaction(0, 0, tx, null, txoutList);
@@ -1022,6 +1033,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Blind transction.
+    /// </summary>
+    /// <param name="utxos">txin's utxo list</param>
+    /// <param name="issuanceKeys">issuance blinding keys</param>
+    /// <param name="confidentialAddresses">txout's confidential address list</param>
     public void BlindTransaction(ElementsUtxoData[] utxos,
         IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
         ConfidentialAddress[] confidentialAddresses)
@@ -1030,6 +1047,13 @@ namespace Cfd
         new CfdBlindOptionData(1, 0, defaultMinimumBits));
     }
 
+    /// <summary>
+    /// Blind transction.
+    /// </summary>
+    /// <param name="utxos">txin's utxo list</param>
+    /// <param name="issuanceKeys">issuance blinding keys</param>
+    /// <param name="confidentialAddresses">txout's confidential address list</param>
+    /// <param name="option">blind option</param>
     public void BlindTransaction(ElementsUtxoData[] utxos,
         IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
         ConfidentialAddress[] confidentialAddresses, CfdBlindOptionData option)
@@ -1408,6 +1432,11 @@ namespace Cfd
       return GetTxOutIndex(new Script(""));
     }
 
+    /// <summary>
+    /// Update txout's amount.
+    /// </summary>
+    /// <param name="index">txout index</param>
+    /// <param name="value">satoshi amount</param>
     public void UpdateTxOutAmount(uint index, long value)
     {
       using (var handle = new ErrorHandle())
@@ -1423,6 +1452,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get signature hash for pubkey hash.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">locking script's pubkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <returns>signature hash</returns>
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Pubkey pubkey, ConfidentialValue value, SignatureHashType sighashType)
     {
@@ -1433,6 +1471,16 @@ namespace Cfd
       return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, value, sighashType);
     }
 
+    /// <summary>
+    /// Get signature hash for pubkey hash.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">locking script's pubkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <returns>signature hash</returns>
     public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
         Pubkey pubkey, ConfidentialValue value, SignatureHashType sighashType)
     {
@@ -1466,6 +1514,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get signature hash for script hash.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="redeemScript">locking script's redeem script</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <returns>signature hash</returns>
     public ByteData GetSignatureHash(OutPoint outpoint, CfdHashType hashType,
         Script redeemScript, ConfidentialValue value, SignatureHashType sighashType)
     {
@@ -1476,6 +1533,16 @@ namespace Cfd
       return GetSignatureHash(outpoint.GetTxid(), outpoint.GetVout(), hashType, redeemScript, value, sighashType);
     }
 
+    /// <summary>
+    /// Get signature hash for script hash.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="redeemScript">locking script's redeem script</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <returns>signature hash</returns>
     public ByteData GetSignatureHash(Txid txid, uint vout, CfdHashType hashType,
         Script redeemScript, ConfidentialValue value, SignatureHashType sighashType)
     {
@@ -1509,12 +1576,29 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
     public void AddSignWithPrivkeySimple(OutPoint outpoint, CfdHashType hashType,
         Privkey privkey, ConfidentialValue value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(outpoint, hashType, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <param name="hasGrindR">grind-r flag</param>
     public void AddSignWithPrivkeySimple(OutPoint outpoint, CfdHashType hashType,
         Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -1530,12 +1614,31 @@ namespace Cfd
         privkey, value, sighashType, hasGrindR);
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType,
     Privkey privkey, ConfidentialValue value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(txid, vout, hashType, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <param name="hasGrindR">grind-r flag</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType,
         Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -1546,12 +1649,33 @@ namespace Cfd
       AddSignWithPrivkeySimple(txid, vout, hashType, privkey.GetPubkey(), privkey, value, sighashType, hasGrindR);
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">pubkey</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey,
         Privkey privkey, ConfidentialValue value, SignatureHashType sighashType)
     {
       AddSignWithPrivkeySimple(txid, vout, hashType, pubkey, privkey, value, sighashType, true);
     }
 
+    /// <summary>
+    /// Add sign by privkey.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">pubkey</param>
+    /// <param name="privkey">privkey</param>
+    /// <param name="value">satoshi amount</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <param name="hasGrindR">grind-r flag</param>
     public void AddSignWithPrivkeySimple(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey,
         Privkey privkey, ConfidentialValue value, SignatureHashType sighashType, bool hasGrindR)
     {
@@ -1590,6 +1714,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add pubkey's sign.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">pubkey</param>
+    /// <param name="signature">pubkey's signature</param>
     public void AddPubkeySign(OutPoint outpoint, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
     {
       if (outpoint is null)
@@ -1599,6 +1730,14 @@ namespace Cfd
       AddPubkeySign(outpoint.GetTxid(), outpoint.GetVout(), hashType, pubkey, signature);
     }
 
+    /// <summary>
+    /// Add pubkey's sign.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="pubkey">pubkey</param>
+    /// <param name="signature">pubkey's signature</param>
     public void AddPubkeySign(Txid txid, uint vout, CfdHashType hashType, Pubkey pubkey, SignParameter signature)
     {
       if (txid is null)
@@ -1631,6 +1770,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add multisig sign.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signList">signature list</param>
+    /// <param name="redeemScript">multisig's redeem script</param>
     public void AddMultisigSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (outpoint is null)
@@ -1640,6 +1786,14 @@ namespace Cfd
       AddMultisigSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
     }
 
+    /// <summary>
+    /// Add multisig sign.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signList">signature list</param>
+    /// <param name="redeemScript">multisig's redeem script</param>
     public void AddMultisigSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (signList is null)
@@ -1705,6 +1859,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add script hash's sign.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signList">scriptsig's data list</param>
+    /// <param name="redeemScript">redeem script</param>
     public void AddScriptSign(OutPoint outpoint, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (outpoint is null)
@@ -1714,6 +1875,14 @@ namespace Cfd
       AddScriptSign(outpoint.GetTxid(), outpoint.GetVout(), hashType, signList, redeemScript);
     }
 
+    /// <summary>
+    /// Add script hash's sign.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signList">scriptsig's data list</param>
+    /// <param name="redeemScript">redeem script</param>
     public void AddScriptSign(Txid txid, uint vout, CfdHashType hashType, SignParameter[] signList, Script redeemScript)
     {
       if (txid is null)
@@ -1764,6 +1933,14 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Add sign data.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signData">sign data</param>
+    /// <param name="clearStack">clear stack flag</param>
     public void AddSign(Txid txid, uint vout, CfdHashType hashType, SignParameter signData, bool clearStack)
     {
       if (txid is null)
@@ -1791,6 +1968,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Verify sign on transaction. (only pubkey hash or multisig script)
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="address">utxo address</param>
+    /// <param name="addressType">utxo address type</param>
+    /// <param name="value">utxo's value (amount or commitment)</param>
     public void VerifySign(OutPoint outpoint, Address address, CfdAddressType addressType, ConfidentialValue value)
     {
       if (outpoint is null)
@@ -1800,6 +1984,14 @@ namespace Cfd
       VerifySign(outpoint.GetTxid(), outpoint.GetVout(), address, addressType, value);
     }
 
+    /// <summary>
+    /// Verify sign on transaction. (only pubkey hash or multisig script)
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="address">utxo address</param>
+    /// <param name="addressType">utxo address type</param>
+    /// <param name="value">utxo's value (amount or commitment)</param>
     public void VerifySign(Txid txid, uint vout, Address address, CfdAddressType addressType, ConfidentialValue value)
     {
       if (txid is null)
@@ -1828,6 +2020,17 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Verify signature for pubkey hash.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signature">signature</param>
+    /// <param name="pubkey">signed pubkey</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <param name="value">utxo's value (amount or commitment)</param>
+    /// <returns>true or false</returns>
     public bool VerifySignature(Txid txid, uint vout, CfdHashType hashType,
         ByteData signature, Pubkey pubkey, SignatureHashType sighashType, ConfidentialValue value)
     {
@@ -1874,6 +2077,18 @@ namespace Cfd
       return false;
     }
 
+    /// <summary>
+    /// Verify signature for script hash.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="signature">signature</param>
+    /// <param name="pubkey">signed pubkey</param>
+    /// <param name="redeemScript">utxo's redeem script</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <param name="value">utxo's value (amount or commitment)</param>
+    /// <returns>true or false</returns>
     public bool VerifySignature(Txid txid, uint vout, CfdHashType hashType, ByteData signature,
       Pubkey pubkey, Script redeemScript, SignatureHashType sighashType, ConfidentialValue value)
     {
@@ -1925,24 +2140,55 @@ namespace Cfd
       return false;
     }
 
+    /// <summary>
+    /// Estimate fee
+    /// </summary>
+    /// <param name="txinList">txin's utxo list</param>
+    /// <param name="feeAsset">fee asset</param>
+    /// <returns>fee data</returns>
     public FeeData EstimateFee(ElementsUtxoData[] txinList,
       ConfidentialAsset feeAsset)
     {
       return EstimateFee(txinList, defaultFeeRate, feeAsset, true);
     }
 
+    /// <summary>
+    /// Estimate fee.
+    /// </summary>
+    /// <param name="txinList">txin's utxo list</param>
+    /// <param name="feeRate">fee rate</param>
+    /// <param name="feeAsset">fee asset</param>
+    /// <returns>fee data</returns>
     public FeeData EstimateFee(ElementsUtxoData[] txinList, double feeRate,
       ConfidentialAsset feeAsset)
     {
       return EstimateFee(txinList, feeRate, feeAsset, true);
     }
 
+    /// <summary>
+    /// Estimate fee.
+    /// </summary>
+    /// <param name="txinList">txin's utxo list</param>
+    /// <param name="feeRate">fee rate</param>
+    /// <param name="feeAsset">fee asset</param>
+    /// <param name="isBlind">blind flag</param>
+    /// <returns>fee data</returns>
     public FeeData EstimateFee(ElementsUtxoData[] txinList, double feeRate,
       ConfidentialAsset feeAsset, bool isBlind)
     {
       return EstimateFee(txinList, feeRate, feeAsset, isBlind, 0, defaultMinimumBits);
     }
 
+    /// <summary>
+    /// Estimate fee.
+    /// </summary>
+    /// <param name="txinList">txin's utxo list</param>
+    /// <param name="feeRate">fee rate</param>
+    /// <param name="feeAsset">fee asset</param>
+    /// <param name="isBlind">blind flag</param>
+    /// <param name="exponent">blind exponent</param>
+    /// <param name="minimumBits">blind minimum bits</param>
+    /// <returns></returns>
     public FeeData EstimateFee(ElementsUtxoData[] txinList, double feeRate,
       ConfidentialAsset feeAsset, bool isBlind, int exponent, int minimumBits)
     {
@@ -2020,6 +2266,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Update txout's fee.
+    /// </summary>
+    /// <param name="feeAmount">fee's satoshi amount</param>
+    /// <param name="feeAsset">fee asset</param>
     public void UpdateFee(long feeAmount, ConfidentialAsset feeAsset)
     {
       if (feeAsset is null)
@@ -2051,6 +2302,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="address">sending address</param>
+    /// <returns>reissuance asset</returns>
     public ConfidentialAsset SetRawReissueAsset(OutPoint outpoint, long assetAmount,
       ByteData blindingNonce, ByteData entropy, Address address)
     {
@@ -2062,6 +2322,16 @@ namespace Cfd
         assetAmount, blindingNonce, entropy, address);
     }
 
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="address">sending address</param>
+    /// <returns>reissuance asset</returns>
     public ConfidentialAsset SetRawReissueAsset(Txid txid, uint vout, long assetAmount,
       ByteData blindingNonce, ByteData entropy, Address address)
     {
@@ -2097,6 +2367,16 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Fund transaction.
+    /// </summary>
+    /// <param name="txinList">setting txin utxo list</param>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="reservedAddressMap">reserved address of asset. address for adding txout. Also serves as a change address.</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <returns>used address list.</returns>
     public string[] FundRawTransaction(
       ElementsUtxoData[] txinList, ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
@@ -2108,6 +2388,18 @@ namespace Cfd
         0, defaultMinimumBits, effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Fund transaction.
+    /// </summary>
+    /// <param name="txinList">setting txin utxo list</param>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="reservedAddressMap">reserved address of asset. address for adding txout. Also serves as a change address.</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="exponent">blinding exponent</param>
+    /// <param name="minimumBits">blinding minimum bits</param>
+    /// <returns>used address list.</returns>
     public string[] FundRawTransaction(
       ElementsUtxoData[] txinList, ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
@@ -2301,16 +2593,28 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get transaction hex.
+    /// </summary>
+    /// <returns>transaction hex</returns>
     public string ToHexString()
     {
       return tx;
     }
 
+    /// <summary>
+    /// Get transaction byte array.
+    /// </summary>
+    /// <returns>byte array</returns>
     public byte[] GetBytes()
     {
       return StringUtil.ToBytes(tx);
     }
 
+    /// <summary>
+    /// Get txid.
+    /// </summary>
+    /// <returns>txid</returns>
     public Txid GetTxid()
     {
       UpdateTxInfoCache();
@@ -2359,11 +2663,21 @@ namespace Cfd
       return txLocktime;
     }
 
+    /// <summary>
+    /// Get last fundrawtransaction's transaction fee.
+    /// </summary>
+    /// <returns>transaction fee</returns>
     public long GetLastTxFee()
     {
       return lastTxFee;
     }
 
+    /// <summary>
+    /// Get default issuance blinding key.
+    /// </summary>
+    /// <param name="masterBlindingKey">master blinding key</param>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <returns>blinding key</returns>
     public static Privkey GetIssuanceBlindingKey(
         Privkey masterBlindingKey, OutPoint outpoint)
     {
@@ -2374,6 +2688,13 @@ namespace Cfd
       return GetIssuanceBlindingKey(masterBlindingKey, outpoint.GetTxid(), outpoint.GetVout());
     }
 
+    /// <summary>
+    /// Get default issuance blinding key.
+    /// </summary>
+    /// <param name="masterBlindingKey">master blinding key</param>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <returns>blinding key</returns>
     public static Privkey GetIssuanceBlindingKey(
         Privkey masterBlindingKey, Txid txid, uint vout)
     {
@@ -2402,6 +2723,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get default blinding key.
+    /// </summary>
+    /// <param name="masterBlindingKey">master blinding key</param>
+    /// <param name="address">txout's address</param>
+    /// <returns>blinding key</returns>
     public static Privkey GetDefaultBlindingKey(
         Privkey masterBlindingKey, Address address)
     {
@@ -2439,6 +2766,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get default blinding key.
+    /// </summary>
+    /// <param name="masterBlindingKey">master blinding key</param>
+    /// <param name="lockingScript">txout's locking script</param>
+    /// <returns>blinding key</returns>
     public static Privkey GetDefaultBlindingKey(
         Privkey masterBlindingKey, Script lockingScript)
     {
@@ -2466,6 +2799,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get asset commitment.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="assetBlindFactor">asset blinder</param>
+    /// <returns>asset commitment</returns>
     public static ConfidentialAsset GetAssetCommitment(
         ConfidentialAsset asset, BlindFactor assetBlindFactor)
     {
@@ -2493,6 +2832,13 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Get value commitment.
+    /// </summary>
+    /// <param name="amount">amount</param>
+    /// <param name="assetCommitment">asset commitment</param>
+    /// <param name="valuetBlindFactor">blinder</param>
+    /// <returns>value commitment</returns>
     public static ConfidentialValue GetValueCommitment(
         long amount, ConfidentialAsset assetCommitment,
         BlindFactor valuetBlindFactor)
@@ -2557,7 +2903,7 @@ namespace Cfd
       }
     }
 
-    private ConfidentialTxIn GetInputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
+    private static ConfidentialTxIn GetInputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
       var ret = NativeMethods.CfdGetTxInByHandle(
           handle.GetHandle(), txHandle.GetHandle(), index,
@@ -2656,7 +3002,7 @@ namespace Cfd
               StringUtil.ToBytes(tokenRangeproof)));
     }
 
-    private uint GetInputCount(ErrorHandle handle, TxHandle txHandle)
+    private static uint GetInputCount(ErrorHandle handle, TxHandle txHandle)
     {
       var ret = NativeMethods.CfdGetTxInCountByHandle(
           handle.GetHandle(), txHandle.GetHandle(), out uint count);
@@ -2667,7 +3013,7 @@ namespace Cfd
       return count;
     }
 
-    private ConfidentialTxOut GetOutputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
+    private static ConfidentialTxOut GetOutputByIndex(ErrorHandle handle, TxHandle txHandle, uint index)
     {
       var ret = NativeMethods.CfdGetConfidentialTxOutByHandle(
           handle.GetHandle(), txHandle.GetHandle(), index,
@@ -2697,7 +3043,7 @@ namespace Cfd
           StringUtil.ToBytes(rangeProof));
     }
 
-    private uint GetOutputCount(ErrorHandle handle, TxHandle txHandle)
+    private static uint GetOutputCount(ErrorHandle handle, TxHandle txHandle)
     {
       var ret = NativeMethods.CfdGetTxOutCountByHandle(
           handle.GetHandle(), txHandle.GetHandle(), out uint count);
@@ -2708,7 +3054,7 @@ namespace Cfd
       return count;
     }
 
-    private uint GetTxInIndexInternal(ErrorHandle handle, TxHandle txHandle, OutPoint outpoint)
+    private static uint GetTxInIndexInternal(ErrorHandle handle, TxHandle txHandle, OutPoint outpoint)
     {
       if (outpoint is null)
       {
@@ -2726,7 +3072,7 @@ namespace Cfd
       return index;
     }
 
-    private uint GetTxOutIndexInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
+    private static uint GetTxOutIndexInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
     {
       var ret = NativeMethods.CfdGetTxOutIndexByHandle(
           handle.GetHandle(), txHandle.GetHandle(),

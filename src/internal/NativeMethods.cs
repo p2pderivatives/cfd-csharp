@@ -767,35 +767,114 @@ namespace Cfd
           [In] string signature);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdCalculateSchnorrSignature(
+    internal static extern CfdErrorCode CfdSignEcdsaAdaptor(
           [In] IntPtr handle,
-          [In] string oraclePrivkey,
-          [In] string kValue,
-          [In] string message,
+          [In] string msg,
+          [In] string sk,
+          [In] string adaptor,
+          [Out] out IntPtr adaptorSignature,
+          [Out] out IntPtr adaptorProof);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAdaptEcdsaAdaptor(
+          [In] IntPtr handle,
+          [In] string adaptorSignature,
+          [In] string adaptorSecret,
           [Out] out IntPtr signature);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdVerifySchnorrSignatureWithNonce(
+    internal static extern CfdErrorCode CfdExtractEcdsaAdaptorSecret(
           [In] IntPtr handle,
-          [In] string oraclePrivkey,
-          [In] string kValue,
-          [In] string message,
-          [Out] out IntPtr signature);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdVerifySchnorrSignature(
-          [In] IntPtr handle,
-          [In] string pubkey,
+          [In] string adaptorSignature,
           [In] string signature,
-          [In] string message);
+          [In] string adaptor,
+          [Out] out IntPtr adaptorSecret);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdVerifySchnorrSignatureWithNonce(
+    internal static extern CfdErrorCode CfdVerifyEcdsaAdaptor(
+          [In] IntPtr handle,
+          [In] string adaptorSignature,
+          [In] string proof,
+          [In] string adaptor,
+          [In] string msg,
+          [In] string pubkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetSchnorrPubkeyFromPrivkey(
+          [In] IntPtr handle,
+          [In] string privkey,
+          [Out] out IntPtr pubkey,
+          [Out] out bool parity);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetSchnorrPubkeyFromPubkey(
           [In] IntPtr handle,
           [In] string pubkey,
+          [Out] out IntPtr schnorrPubkey,
+          [Out] out bool parity);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSchnorrPubkeyTweakAdd(
+          [In] IntPtr handle,
+          [In] string pubkey,
+          [In] string tweak,
+          [Out] out IntPtr output,
+          [Out] out bool parity);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSchnorrKeyPairTweakAdd(
+          [In] IntPtr handle,
+          [In] string privkey,
+          [In] string tweak,
+          [Out] out IntPtr tweakedPubkey,
+          [Out] out bool tweakedParity,
+          [Out] out IntPtr tweakedPrivkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdCheckTweakAddFromSchnorrPubkey(
+          [In] IntPtr handle,
+          [In] string tweakedPubkey,
+          [In] bool tweakedParity,
+          [In] string basePubkey,
+          [In] string tweak);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSignSchnorr(
+          [In] IntPtr handle,
+          [In] string msg,
+          [In] string sk,
+          [In] string auxRand,
+          [Out] out IntPtr signature);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSignSchnorrWithNonce(
+          [In] IntPtr handle,
+          [In] string msg,
+          [In] string sk,
           [In] string nonce,
+          [Out] out IntPtr signature);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdComputeSchnorrSigPoint(
+          [In] IntPtr handle,
+          [In] string msg,
+          [In] string nonce,
+          [In] string pubkey,
+          [Out] out IntPtr sigpoint);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdVerifySchnorr(
+          [In] IntPtr handle,
           [In] string signature,
-          [In] string message);
+          [In] string msg,
+          [In] string pubkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSplitSchnorrSignature(
+          [In] IntPtr handle,
+          [In] string signature,
+          [Out] out IntPtr nonce,
+          [Out] out IntPtr key);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdEncodeSignatureByDer(
@@ -932,20 +1011,6 @@ namespace Cfd
           [In] IntPtr handle,
           [In] string privkey,
           [Out] out IntPtr output);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdGetSchnorrPubkey(
-          [In] IntPtr handle,
-          [In] string oraclePubkey,
-          [In] string oracleRPoint,
-          [In] string message,
-          [Out] out IntPtr output);
-
-    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-    internal static extern CfdErrorCode CfdGetSchnorrPublicNonce(
-          [In] IntPtr handle,
-          [In] string privkey,
-          [Out] out IntPtr nonce);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdCreateExtkeyFromSeed(

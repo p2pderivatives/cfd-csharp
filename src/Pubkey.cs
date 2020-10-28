@@ -11,6 +11,11 @@ namespace Cfd
     public static readonly uint CompressLength = 33;
     private readonly string pubkey;
 
+    /// <summary>
+    /// combine pubkeys.
+    /// </summary>
+    /// <param name="pubkeyList">pubkey list</param>
+    /// <returns>combined pubkey</returns>
     public static Pubkey Combine(Pubkey[] pubkeyList)
     {
       if (pubkeyList is null)
@@ -109,6 +114,10 @@ namespace Cfd
       return pubkey.Length == CompressLength * 2;
     }
 
+    /// <summary>
+    /// get compressed pubkey.
+    /// </summary>
+    /// <returns>compressed pubkey.</returns>
     public Pubkey Compress()
     {
       if (IsCompressed())
@@ -128,6 +137,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get uncompressed pubkey.
+    /// </summary>
+    /// <returns>uncompressed pubkey</returns>
     public Pubkey Uncompress()
     {
       if (!IsCompressed())
@@ -147,6 +160,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// pubkey tweak add.
+    /// </summary>
+    /// <param name="tweak">tweak bytes</param>
+    /// <returns>tweaked pubkey</returns>
     public Pubkey TweakAdd(ByteData tweak)
     {
       if (tweak is null)
@@ -167,6 +185,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// pubkey tweak mul.
+    /// </summary>
+    /// <param name="tweak">tweak bytes</param>
+    /// <returns>tweaked pubkey</returns>
     public Pubkey TweakMul(ByteData tweak)
     {
       if (tweak is null)
@@ -187,6 +210,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// negate pubkey.
+    /// </summary>
+    /// <returns>negated pubkey</returns>
     public Pubkey Negate()
     {
       using (var handle = new ErrorHandle())

@@ -265,6 +265,9 @@ namespace Cfd.xTests
         new TxOut(amount1, setAddr1.GetLockingScript()),
         new TxOut(amount2, setAddr2.GetLockingScript()),
       });
+      output.WriteLine("tx:\n" + tx.ToHexString());
+      Assert.Equal("02000000020a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff0a9bf51e0ac499391efd9426e2c909901edd74a97d2378b49c8832c491ad1e9e0000000000ffffffff0200e1f505000000001600144352a1a6e86311f22274f7ebb2746de21b09b15dc00a7001000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
 
       FeeData feeData = tx.EstimateFee(new[] { utxos[1], utxos[2] }, 10.0);
       Assert.Equal(720, feeData.TxOutFee);
@@ -283,6 +286,9 @@ namespace Cfd.xTests
         new TxOut(10000000, setAddr1.GetLockingScript()),
         new TxOut(4000000, setAddr2.GetLockingScript()),
       });
+      output.WriteLine("tx:\n" + tx.ToHexString());
+      Assert.Equal("02000000000280969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
 
       Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Mainnet);
       string usedAddr = tx.FundRawTransaction(null, utxos, addr1.ToAddressString(), 20.0);
@@ -314,6 +320,9 @@ namespace Cfd.xTests
         new TxOut(amount1, setAddr1.GetLockingScript()),
         new TxOut(amount2, setAddr2.GetLockingScript()),
       });
+      output.WriteLine("tx:\n" + tx.ToHexString());
+      Assert.Equal("02000000020a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff0a9bf51e0ac499391efd9426e2c909901edd74a97d2378b49c8832c491ad1e9e0000000000ffffffff0200e1f505000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00e1f505000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
 
       UtxoData[] inputUtxos = new[] {
         utxos[1],

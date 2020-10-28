@@ -2,6 +2,9 @@ using System;
 
 namespace Cfd
 {
+  /// <summary>
+  /// extend privkey class.
+  /// </summary>
   public class ExtPrivkey : IEquatable<ExtPrivkey>
   {
     public static readonly uint Hardened = 0x80000000;
@@ -17,10 +20,19 @@ namespace Cfd
     private readonly CfdNetworkType networkType;
     private readonly Privkey privkey;
 
+    /// <summary>
+    /// empty constructor.
+    /// </summary>
     public ExtPrivkey()
     {
       extkey = "";
     }
+
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="seed">seed bytes</param>
+    /// <param name="networkType">network type</param>
     public ExtPrivkey(ByteData seed, CfdNetworkType networkType)
     {
       if (seed is null)
@@ -45,6 +57,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="base58String">base58 string</param>
     public ExtPrivkey(string base58String)
     {
       if (base58String is null)

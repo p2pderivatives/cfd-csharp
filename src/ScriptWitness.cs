@@ -2,15 +2,25 @@ using System;
 
 namespace Cfd
 {
+  /// <summary>
+  /// script witness stack class.
+  /// </summary>
   public class ScriptWitness
   {
     private readonly string[] hexArray;
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
     public ScriptWitness()
     {
       hexArray = Array.Empty<string>();
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="hexArray">hex string array.</param>
     public ScriptWitness(string[] hexArray)
     {
       if (hexArray is null)
@@ -24,6 +34,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get hex string from array.
+    /// </summary>
+    /// <param name="index">array index</param>
+    /// <returns>hex string</returns>
     public string ToHexString(uint index)
     {
       if (index >= hexArray.Length)
@@ -33,6 +48,11 @@ namespace Cfd
       return hexArray[index];
     }
 
+    /// <summary>
+    /// get bytes from array.
+    /// </summary>
+    /// <param name="index">array index</param>
+    /// <returns>byte array</returns>
     public byte[] GetBytes(uint index)
     {
       if (index >= hexArray.Length)
@@ -47,6 +67,10 @@ namespace Cfd
       return hexArray;
     }
 
+    /// <summary>
+    /// get array length.
+    /// </summary>
+    /// <returns>array length.</returns>
     public uint GetCount()
     {
       return (uint)hexArray.Length;

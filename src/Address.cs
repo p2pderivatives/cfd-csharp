@@ -78,6 +78,9 @@ namespace Cfd
 #pragma warning restore CA1720 // Identifier contains type name
   };
 
+  /// <summary>
+  /// Bitcoin Address class.
+  /// </summary>
   public class Address : IEquatable<Address>
   {
     private readonly string address;
@@ -88,6 +91,12 @@ namespace Cfd
     private CfdAddressType addressType;
     private readonly CfdWitnessVersion witnessVersion;
 
+    /// <summary>
+    /// Get address from locking script.
+    /// </summary>
+    /// <param name="inputLockingScript">locking script</param>
+    /// <param name="network">network type</param>
+    /// <returns>address object</returns>
     public static Address GetAddressByLockingScript(Script inputLockingScript, CfdNetworkType network)
     {
       if (inputLockingScript is null)
@@ -110,11 +119,18 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// empty constructor.
+    /// </summary>
     public Address()
     {
       address = "";
     }
 
+    /// <summary>
+    /// constructor.
+    /// </summary>
+    /// <param name="addressString">address string.</param>
     public Address(string addressString)
     {
       using (var handle = new ErrorHandle())
@@ -130,6 +146,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor for pubkey.
+    /// </summary>
+    /// <param name="pubkey">public key</param>
+    /// <param name="type">address type</param>
+    /// <param name="network">network type</param>
     public Address(Pubkey pubkey, CfdAddressType type, CfdNetworkType network)
     {
       if (pubkey is null)
@@ -163,6 +185,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// constructor for redeem script.
+    /// </summary>
+    /// <param name="script">redeem script</param>
+    /// <param name="type">address type</param>
+    /// <param name="networkType">network type</param>
     public Address(Script script, CfdAddressType type, CfdNetworkType networkType)
     {
       if (script is null)
@@ -197,11 +225,19 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get address string
+    /// </summary>
+    /// <returns>address string</returns>
     public string ToAddressString()
     {
       return address;
     }
 
+    /// <summary>
+    /// get locking script.
+    /// </summary>
+    /// <returns>locking script</returns>
     public Script GetLockingScript()
     {
       return new Script(lockingScript);
@@ -212,6 +248,10 @@ namespace Cfd
       return hash;
     }
 
+    /// <summary>
+    /// get p2sh-segwit's locking script.
+    /// </summary>
+    /// <returns>p2sh-segwit's locking script.</returns>
     public string GetP2shLockingScript()
     {
       return p2shSegwitLockingScript;
@@ -232,6 +272,10 @@ namespace Cfd
       return witnessVersion;
     }
 
+    /// <summary>
+    /// set address type for p2sh-segwit.
+    /// </summary>
+    /// <param name="addrType">address type</param>
     public void SetAddressType(CfdAddressType addrType)
     {
       addressType = addrType;

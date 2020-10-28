@@ -21,6 +21,9 @@ namespace Cfd
     SignVerificationError = 7
   };
 
+  /// <summary>
+  /// cfd common util class.
+  /// </summary>
   public static class CfdCommon
   {
     /// <summary>

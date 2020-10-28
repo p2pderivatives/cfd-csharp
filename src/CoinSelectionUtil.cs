@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Cfd
 {
+  /// <summary>
+  /// Coin selection utility class.
+  /// </summary>
   public class CoinSelectionUtil
   {
     /// option: blind exponent (int64)
@@ -12,6 +15,11 @@ namespace Cfd
 
     private long lastSelectedUtxoFee;
 
+    /// <summary>
+    /// get total amount from utxo list.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <returns>total amount (satoshi)</returns>
     public static long GetTotalAmount(UtxoData[] utxoList)
     {
       if (utxoList is null)
@@ -26,6 +34,12 @@ namespace Cfd
       return amount;
     }
 
+    /// <summary>
+    /// get total amount from utxo list on asset.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="asset">asset</param>
+    /// <returns>asset total amount</returns>
     public static long GetTotalAmount(ElementsUtxoData[] utxoList, ConfidentialAsset asset)
     {
       if ((utxoList is null) || (asset is null))
@@ -43,6 +57,14 @@ namespace Cfd
       return amount;
     }
 
+    /// <summary>
+    /// Select coins.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="targetAmount">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <returns>select utxo list.</returns>
     public UtxoData[] SelectCoins(UtxoData[] utxoList, long txFeeAmount, long targetAmount,
       double effectiveFeeRate)
     {
@@ -163,6 +185,15 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// Select coins for elements.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <returns>select utxo list.</returns>
     public ElementsUtxoData[] SelectCoinsForElements(
       ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
@@ -174,6 +205,17 @@ namespace Cfd
         effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Select coins for elements.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="exponent">blinding exponent</param>
+    /// <param name="minimumBits">blinding minimum bits</param>
+    /// <returns>select utxo list.</returns>
     public ElementsUtxoData[] SelectCoinsForElements(
       ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
@@ -184,6 +226,18 @@ namespace Cfd
         effectiveFeeRate, exponent, minimumBits, effectiveFeeRate, -1, -1);
     }
 
+    /// <summary>
+    /// Select coins for elements.
+    /// </summary>
+    /// <param name="utxoList">utxo list</param>
+    /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
+    /// <param name="feeAsset">asset by fee</param>
+    /// <param name="txFeeAmount">transaction fee</param>
+    /// <param name="effectiveFeeRate">fee rate</param>
+    /// <param name="longTermFeeRate">long-term fee rate</param>
+    /// <param name="dustFeeRate">dust fee rate</param>
+    /// <param name="knapsackMinChange">knapsack min change value. knapsack logic's threshold. Recommended value is 1.</param>
+    /// <returns>select utxo list.</returns>
     public ElementsUtxoData[] SelectCoinsForElements(
       ElementsUtxoData[] utxoList,
       IDictionary<ConfidentialAsset, long> targetAssetAmountMap,
@@ -197,7 +251,7 @@ namespace Cfd
     }
 
     /// <summary>
-    /// Select coins.
+    /// Select coins for elements.
     /// </summary>
     /// <param name="utxoList">utxo list</param>
     /// <param name="targetAssetAmountMap">target amount of asset. Amount more than the specified amount is set in txout. default is 0 (disable).</param>
@@ -370,6 +424,10 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// get last selected utxo's fee.
+    /// </summary>
+    /// <returns>utxo's fee.</returns>
     public long GetLastSelectedUtxoFee()
     {
       return lastSelectedUtxoFee;

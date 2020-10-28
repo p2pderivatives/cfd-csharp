@@ -280,29 +280,29 @@ namespace Cfd.xTests
       Descriptor desc = new Descriptor("sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))", CfdNetworkType.ElementsRegtest);
       ElementsUtxoData[] utxos = new[] {
         new ElementsUtxoData(new OutPoint("7ca81dd22c934747f4f5ab7844178445fe931fb248e0704c062b8f4fbd3d500a", 0),
-          new ConfidentialAsset(assetA), 312500000),
+          new ConfidentialAsset(assetA), new ConfidentialValue(312500000), desc),
         new ElementsUtxoData(new OutPoint("30f71f39d210f7ee291b0969c6935debf11395b0935dca84d30c810a75339a0a", 0),
-          new ConfidentialAsset(assetA), 78125000),
+          new ConfidentialAsset(assetA), new ConfidentialValue(78125000), desc),
         new ElementsUtxoData(new OutPoint("9e1ead91c432889cb478237da974dd1e9009c9e22694fd1e3999c40a1ef59b0a", 0),
-          new ConfidentialAsset(assetA), 1250000000),
+          new ConfidentialAsset(assetA), new ConfidentialValue(1250000000), desc),
         new ElementsUtxoData(new OutPoint("8f4af7ee42e62a3d32f25ca56f618fb2f5df3d4c3a9c59e2c3646c5535a3d40a", 0),
-          new ConfidentialAsset(assetA), 39062500),
+          new ConfidentialAsset(assetA), new ConfidentialValue(39062500), desc),
         new ElementsUtxoData(new OutPoint("4d97d0119b90421818bff4ec9033e5199199b53358f56390cb20f8148e76f40a", 0),
-          new ConfidentialAsset(assetA), 156250000),
+          new ConfidentialAsset(assetA), new ConfidentialValue(156250000), desc),
         new ElementsUtxoData(new OutPoint("b9720ed2265a4ced42425bffdb4ef90a473b4106811a802fce53f7c57487fa0b", 0),
-          new ConfidentialAsset(assetA), 2500000000),
+          new ConfidentialAsset(assetA), new ConfidentialValue(2500000000), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b01", 0),
-          new ConfidentialAsset(assetB), 26918400),
+          new ConfidentialAsset(assetB), new ConfidentialValue(26918400), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b02", 0),
-          new ConfidentialAsset(assetB), 750000),
+          new ConfidentialAsset(assetB), new ConfidentialValue(750000), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b03", 0),
-          new ConfidentialAsset(assetB), 346430050),
+          new ConfidentialAsset(assetB), new ConfidentialValue(346430050), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000b04", 0),
-          new ConfidentialAsset(assetB), 18476350),
+          new ConfidentialAsset(assetB), new ConfidentialValue(18476350), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000c01", 0),
-          new ConfidentialAsset(assetC), 5000000000),
+          new ConfidentialAsset(assetC), new ConfidentialValue(5000000000), desc),
         new ElementsUtxoData(new OutPoint("0000000000000000000000000000000000000000000000000000000000000c02", 0),
-          new ConfidentialAsset(assetC), 127030000),
+          new ConfidentialAsset(assetC), new ConfidentialValue(127030000), desc),
       };
       return utxos;
     }
@@ -379,7 +379,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Single(selectedList);
-      Assert.Equal(1380, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1820, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(78125000, totalAmount);
       if (selectedList.Length == 1)
@@ -400,7 +400,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Equal(2, selectedList.Length);
-      Assert.Equal(2760, util.GetLastSelectedUtxoFee());
+      Assert.Equal(3640, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(234375000, totalAmount);
       if (selectedList.Length == 2)
@@ -492,7 +492,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Equal(2, selectedList.Length);
-      Assert.Equal(2760, util.GetLastSelectedUtxoFee());
+      Assert.Equal(3640, util.GetLastSelectedUtxoFee());
       long totalAmountA = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       long totalAmountB = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetB));
       long totalAmountC = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetC));

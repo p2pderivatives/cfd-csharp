@@ -3,7 +3,7 @@ using System;
 namespace Cfd
 {
   /// <summary>
-  /// txid data class.
+  /// utxo data for elements class.
   /// </summary>
   public class ElementsUtxoData : UtxoData, IEquatable<ElementsUtxoData>
   {
@@ -26,6 +26,10 @@ namespace Cfd
       // do nothing
     }
 
+    /// <summary>
+    /// constructor on outpoint.
+    /// </summary>
+    /// <param name="outpoint"></param>
     public ElementsUtxoData(OutPoint outpoint) : base(outpoint)
     {
       assetBlindFactor = new BlindFactor();

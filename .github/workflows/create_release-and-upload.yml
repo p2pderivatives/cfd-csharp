@@ -6,14 +6,15 @@ on:
     - 'v*'
 
 env:
-  CMAKE_VERSION: 3.17.2
   XCODE_VERSION: 11.5
   DOTNET_VERSION: 3.1.200
 
 jobs:
-  create-releases:
+  create_releases:
     name: create-releases
     runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.output_url.outputs.upload_url }}
 
     steps:
     - name: checkout
@@ -32,21 +33,21 @@ jobs:
           - Second Change
         draft: false
         prerelease: true
-#      continue-on-error: true
-    - name: write upload url
+      continue-on-error: true
+    - name: Get release
+      if: steps.create_release.outcome == 'failure'
+      id: get_release
+      uses: bruceadams/get-release@v1.2.0
       env:
-        url: ${{ steps.create_release.outputs.upload_url }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: output url
+      id: output_url
       run: |
-        echo $url > upload_url.txt
-    - name: upload artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: artifact-upload_url
-        path: upload_url.txt
+        echo "::set-output name=upload_url::${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}"
 
   upload-object-windows:
     name: upload-object-win
-    needs: create-releases
+    needs: create_releases
     runs-on: windows-latest
 
     steps:
@@ -56,17 +57,9 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: checkout
       uses: actions/checkout@v2
-    - name: download artifact
-      uses: actions/download-artifact@v1
-      with:
-        name: artifact-upload_url
-    - name: dump upload url
+    - name: output url
       id: get_url
-      run: |
-        export up_url="$(cat artifact-upload_url/upload_url.txt)"
-        echo "::set-output name=upload_url::$up_url"
-        echo "url=$up_url"
-      shell: bash
+      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
@@ -108,7 +101,7 @@ jobs:
 
   upload-object-ubuntu:
     name: upload-object-ubuntu
-    needs: create-releases
+    needs: create_releases
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -139,15 +132,9 @@ jobs:
         zip -r cfd.zip .
         echo "---- dump zip file ----"
         ls -l
-    - name: download artifact
-      uses: actions/download-artifact@v1
-      with:
-        name: artifact-upload_url
-    - name: dump upload url
+    - name: output url
       id: get_url
-      run: |
-        url=$(cat artifact-upload_url/upload_url.txt)
-        echo ::set-output name=upload_url::$url
+      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1.0.1
       env:
@@ -160,7 +147,7 @@ jobs:
 
   upload-object-macos:
     name: upload-object-macos
-    needs: create-releases
+    needs: create_releases
     runs-on: macos-latest
 
     steps:
@@ -192,15 +179,9 @@ jobs:
         zip -r cfd.zip .
         echo "---- dump zip file ----"
         ls -l
-    - name: download artifact
-      uses: actions/download-artifact@v1
-      with:
-        name: artifact-upload_url
-    - name: dump upload url
+    - name: output url
       id: get_url
-      run: |
-        url=$(cat artifact-upload_url/upload_url.txt)
-        echo ::set-output name=upload_url::$url
+      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1.0.1
       env:

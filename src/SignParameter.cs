@@ -3,7 +3,7 @@ using System;
 namespace Cfd
 {
   /// <summary>
-  /// txid data class.
+  /// sign parameter class.
   /// </summary>
   public class SignParameter
   {
@@ -12,6 +12,11 @@ namespace Cfd
     private SignatureHashType signatureHashType;
     private Pubkey pubkey;
 
+    /// <summary>
+    /// normalize signature.
+    /// </summary>
+    /// <param name="signature">signature</param>
+    /// <returns>normalized signature</returns>
     public static ByteData NormalizeSignature(ByteData signature)
     {
       if (signature is null)
@@ -31,6 +36,12 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// encode by DER.
+    /// </summary>
+    /// <param name="signature">signature</param>
+    /// <param name="sighashType">sighash type</param>
+    /// <returns>DER encoded data</returns>
     public static ByteData EncodeToDer(ByteData signature, SignatureHashType sighashType)
     {
       if (signature is null)
@@ -52,6 +63,11 @@ namespace Cfd
       }
     }
 
+    /// <summary>
+    /// decode from DER.
+    /// </summary>
+    /// <param name="derSignature">DER encoded data</param>
+    /// <returns>signature (SignParameter object)</returns>
     public static SignParameter DecodeFromDer(ByteData derSignature)
     {
       if (derSignature is null)
@@ -137,6 +153,10 @@ namespace Cfd
       this.signatureHashType = signatureHashType;
     }
 
+    /// <summary>
+    /// set signature's related pubkey.
+    /// </summary>
+    /// <param name="relatedPubkey">pubkey</param>
     public void SetRelatedPubkey(Pubkey relatedPubkey)
     {
       pubkey = relatedPubkey;
@@ -167,6 +187,10 @@ namespace Cfd
       return signatureHashType;
     }
 
+    /// <summary>
+    /// get signature's related pubkey.
+    /// </summary>
+    /// <returns>pubkey</returns>
     public Pubkey GetRelatedPubkey()
     {
       return pubkey;
