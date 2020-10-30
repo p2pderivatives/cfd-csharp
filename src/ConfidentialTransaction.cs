@@ -2453,8 +2453,31 @@ namespace Cfd
       }
       using (var handle = new ErrorHandle())
       {
+        int network = defaultNetType;
+        foreach (var key in reservedAddressMap.Keys)
+        {
+          var reservedAddress = reservedAddressMap[key];
+          if (reservedAddress.Length > 0)
+          {
+            Address addr;
+            try
+            {
+              var ctAddr = new ConfidentialAddress(reservedAddress);
+              addr = ctAddr.GetAddress();
+            }
+            catch (ArgumentException)
+            {
+              addr = new Address(reservedAddress);
+            }
+            if ((addr.GetNetwork() == CfdNetworkType.Liquidv1) || (addr.GetNetwork() == CfdNetworkType.ElementsRegtest))
+            {
+              network = (int)addr.GetNetwork();
+              break;
+            }
+          }
+        }
         var ret = NativeMethods.CfdInitializeFundRawTx(
-          handle.GetHandle(), defaultNetType, (uint)targetAssetAmountMap.Keys.Count,
+          handle.GetHandle(), network, (uint)targetAssetAmountMap.Keys.Count,
           feeAsset.ToHexString(), out IntPtr fundHandle);
         if (ret != CfdErrorCode.Success)
         {
