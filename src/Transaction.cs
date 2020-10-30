@@ -1749,8 +1749,23 @@ namespace Cfd
       }
       using (var handle = new ErrorHandle())
       {
+        int network = defaultNetType;
+        if (reservedAddress.Length > 0)
+        {
+          var addr = new Address(reservedAddress);
+          switch (addr.GetNetwork())
+          {
+            case CfdNetworkType.Mainnet:
+            case CfdNetworkType.Testnet:
+            case CfdNetworkType.Regtest:
+              network = (int)addr.GetNetwork();
+              break;
+            default:
+              break;
+          }
+        }
         var ret = NativeMethods.CfdInitializeFundRawTx(
-          handle.GetHandle(), defaultNetType, 1, "", out IntPtr fundHandle);
+          handle.GetHandle(), network, 1, "", out IntPtr fundHandle);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);

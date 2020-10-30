@@ -976,6 +976,104 @@ namespace Cfd.xTests
     }
 
     [Fact]
+    public void FundRawTransactionRegtestCtAddressTest()
+    {
+      ElementsUtxoData[] utxos = GetElementsBnbUtxoList(CfdNetworkType.ElementsRegtest);
+      ExtPubkey key = new ExtPubkey("xpub661MyMwAqRbcGB88KaFbLGiYAat55APKhtWg4uYMkXAmfuSTbq2QYsn9sKJCj1YqZPafsboef4h4YbXXhNhPwMbkHTpkf3zLhx7HvFw1NDy");
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0, null, new[] {
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
+        new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
+      });
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("020000000000020100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
+
+      var feeAsset = new ConfidentialAsset(assetA);
+      var targetAssetMap = new Dictionary<ConfidentialAsset, long> {
+        { new ConfidentialAsset(assetA), 0 },
+        { new ConfidentialAsset(assetB), 0 },
+      };
+      var ctKey = key.DerivePubkey("1/1").GetPubkey();
+      Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
+      Address addr2 = new Address(key.DerivePubkey(2).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.ElementsRegtest);
+      var ctAddr1 = new ConfidentialAddress(addr1, ctKey);
+      var reservedAddressMap = new Dictionary<ConfidentialAsset, string> {
+        { new ConfidentialAsset(assetA), ctAddr1.ToAddressString() },
+        { new ConfidentialAsset(assetB), addr2.ToAddressString() },
+      };
+      double feeRate = 0.1;
+      string[] usedAddr = tx.FundRawTransaction(null, utxos, targetAssetMap, reservedAddressMap, feeAsset, feeRate);
+      output.WriteLine("tx: " + tx.ToHexString());
+
+      Assert.Equal("0200000000020bfa8774c5f753ce2f801a8106413b470af94edbff5b4242ed4c5a26d20e72b90000000000ffffffff040b0000000000000000000000000000000000000000000000000000000000000000000000ffffffff050100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c0100000000000000000000000000000000000000000000000000000000000000aa0100000000000001ff00000100000000000000000000000000000000000000000000000000000000000000bb010000000001124c1e00160014a53be40113bb50f2b8b2d0bfea1e823e75632b5f0100000000000000000000000000000000000000000000000000000000000000aa0100000000004b595f034082879df418331794e4a55b87cd94d2d23cf1f22aa07081aa28b91c28b5e5a116001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+        tx.ToHexString());
+      output.WriteLine(ConfidentialTransaction.DecodeRawTransaction(tx));
+      Assert.Equal(2, usedAddr.Length);
+      if (usedAddr.Length == 2)
+      {
+        output.WriteLine("addr1: " + usedAddr[0]);
+        output.WriteLine("addr2: " + usedAddr[1]);
+        Assert.Equal(addr2.ToAddressString(), usedAddr[0]);
+        Assert.Equal(ctAddr1.ToAddressString(), usedAddr[1]);
+      }
+      Assert.Equal(511, tx.GetLastTxFee());
+
+      // calc fee
+      ElementsUtxoData[] feeUtxos = new[]{
+        utxos[5],
+        utxos[9],
+      };
+      FeeData feeData = tx.EstimateFee(feeUtxos, feeRate, feeAsset, true);
+      Assert.Equal(501, feeData.TxOutFee + feeData.UtxoFee);
+      Assert.Equal(482, feeData.TxOutFee);
+      Assert.Equal(19, feeData.UtxoFee);
+    }
+
+    [Fact]
+    public void FundRawTransactionBitcoinAddressTest()
+    {
+      ElementsUtxoData[] utxos = GetElementsBnbUtxoList(CfdNetworkType.Liquidv1);
+      ExtPubkey key = new ExtPubkey("xpub661MyMwAqRbcGB88KaFbLGiYAat55APKhtWg4uYMkXAmfuSTbq2QYsn9sKJCj1YqZPafsboef4h4YbXXhNhPwMbkHTpkf3zLhx7HvFw1NDy");
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Liquidv1);
+
+      ConfidentialTransaction tx = new ConfidentialTransaction(2, 0, null, new[] {
+        new ConfidentialTxOut(new ConfidentialAsset(assetA), new ConfidentialValue(10000000), setAddr1.GetLockingScript()),
+        new ConfidentialTxOut(new ConfidentialAsset(assetB), new ConfidentialValue(500000), setAddr2.GetLockingScript()),
+      });
+      output.WriteLine("tx: " + tx.ToHexString());
+      Assert.Equal("020000000000020100000000000000000000000000000000000000000000000000000000000000aa010000000000989680001600144352a1a6e86311f22274f7ebb2746de21b09b15d0100000000000000000000000000000000000000000000000000000000000000bb01000000000007a120001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
+
+      var feeAsset = new ConfidentialAsset(assetA);
+      var targetAssetMap = new Dictionary<ConfidentialAsset, long> {
+        { new ConfidentialAsset(assetA), 0 },
+        { new ConfidentialAsset(assetB), 0 },
+      };
+      Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Mainnet);
+      Address addr2 = new Address(key.DerivePubkey(2).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Mainnet);
+      var reservedAddressMap = new Dictionary<ConfidentialAsset, string> {
+        { new ConfidentialAsset(assetA), addr1.ToAddressString() },
+        { new ConfidentialAsset(assetB), addr2.ToAddressString() },
+      };
+      double feeRate = 0.1;
+      try
+      {
+        tx.FundRawTransaction(null, utxos, targetAssetMap, reservedAddressMap, feeAsset, feeRate);
+        Assert.True(false);
+      }
+      catch (Exception e)
+      {
+        output.WriteLine("Exception: " + e.ToString());
+        Assert.Equal("CFD error[IllegalArgumentError] message:Base58 decode error.", e.Message);
+        Assert.True(e is System.ArgumentException);
+      }
+    }
+
+    [Fact]
     public void RawReissueAssetTest()
     {
       string desc = "sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))#4z2vy08x";

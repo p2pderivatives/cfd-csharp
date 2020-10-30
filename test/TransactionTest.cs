@@ -350,6 +350,33 @@ namespace Cfd.xTests
       Assert.Equal(5400, feeData.UtxoFee);
     }
 
+    [Fact]
+    public void FundRawTransactionRegtestAddressTest()
+    {
+      UtxoData[] utxos = GetBitcoinBnbUtxoList(CfdNetworkType.Regtest);
+      ExtPubkey key = new ExtPubkey("xpub661MyMwAqRbcGB88KaFbLGiYAat55APKhtWg4uYMkXAmfuSTbq2QYsn9sKJCj1YqZPafsboef4h4YbXXhNhPwMbkHTpkf3zLhx7HvFw1NDy");
+      Address setAddr1 = new Address(key.DerivePubkey(11).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Regtest);
+      Address setAddr2 = new Address(key.DerivePubkey(12).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Regtest);
+
+      Transaction tx = new Transaction(2, 0, null, new[] {
+        new TxOut(10000000, setAddr1.GetLockingScript()),
+        new TxOut(4000000, setAddr2.GetLockingScript()),
+      });
+      output.WriteLine("tx:\n" + tx.ToHexString());
+      Assert.Equal("02000000000280969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c00000000",
+        tx.ToHexString());
+
+      Address addr1 = new Address(key.DerivePubkey(1).GetPubkey(), CfdAddressType.P2wpkh, CfdNetworkType.Regtest);
+      string usedAddr = tx.FundRawTransaction(null, utxos, addr1.ToAddressString(), 20.0);
+      output.WriteLine("tx: " + tx.ToHexString());
+
+      Assert.Equal("02000000010af4768e14f820cb9063f55833b5999119e53390ecf4bf181842909b11d0974d0000000000ffffffff0380969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470ce47f19000000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+        tx.ToHexString());
+      output.WriteLine(Transaction.DecodeRawTransaction(tx));
+      Assert.Equal(addr1.ToAddressString(), usedAddr);
+      Assert.Equal(3860, tx.GetLastTxFee());
+    }
+
     static UtxoData[] GetBitcoinBnbUtxoList(CfdNetworkType netType)
     {
       string desc = "sh(wpkh([ef735203/0'/0'/7']022c2409fbf657ba25d97bb3dab5426d20677b774d4fc7bd3bfac27ff96ada3dd1))#4z2vy08x";
