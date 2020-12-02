@@ -11,6 +11,7 @@ namespace Cfd
     MinimumRangeValue = 1,  //!< minRangeValue
     Exponent = 2,           //!< exponent
     MinimumBits = 3,        //!< minBits
+    CollectBlinder = 4,     //!< collect blinder data
   }
 
   /// <summary>
@@ -21,12 +22,46 @@ namespace Cfd
     public long MinimumRangeValue { get; }
     public int Exponent { get; }
     public int MinimumBits { get; }
+    public bool CollectBlinder { get; }
+
+    public CfdBlindOptionData(bool collectBlinder)
+    {
+      MinimumRangeValue = 1;
+      Exponent = 0;
+      MinimumBits = ConfidentialTransaction.defaultMinimumBits;
+      CollectBlinder = collectBlinder;
+    }
+
+    public CfdBlindOptionData(int minimumBits)
+    {
+      MinimumRangeValue = 1;
+      Exponent = 0;
+      MinimumBits = minimumBits;
+      CollectBlinder = false;
+    }
+
+    public CfdBlindOptionData(int minimumBits, bool collectBlinder)
+    {
+      MinimumRangeValue = 1;
+      Exponent = 0;
+      MinimumBits = minimumBits;
+      CollectBlinder = collectBlinder;
+    }
 
     public CfdBlindOptionData(long minimumRangeValue, int exponent, int minimumBits)
     {
       MinimumRangeValue = minimumRangeValue;
       Exponent = exponent;
       MinimumBits = minimumBits;
+      CollectBlinder = false;
+    }
+
+    public CfdBlindOptionData(long minimumRangeValue, int exponent, int minimumBits, bool collectBlinder)
+    {
+      MinimumRangeValue = minimumRangeValue;
+      Exponent = exponent;
+      MinimumBits = minimumBits;
+      CollectBlinder = collectBlinder;
     }
 
     public bool Equals(CfdBlindOptionData other)
@@ -56,6 +91,82 @@ namespace Cfd
     }
 
     public static bool operator !=(CfdBlindOptionData left, CfdBlindOptionData right)
+    {
+      return !(left == right);
+    }
+  }
+
+  /// <summary>
+  /// Blind data.
+  /// </summary>
+  public struct CfdBlindData : IEquatable<CfdBlindData>
+  {
+    public uint Vout { get; }
+    public string Asset { get; }
+    public long SatoshiValue { get; }
+    public BlindFactor AssetBlindFactor { get; }
+    public BlindFactor AmountBlindFactor { get; }
+    public OutPoint IssuanceOutPoint { get; }
+    public bool IsIssuanceAsset { get; }
+    public bool IsIssuanceToken { get; }
+
+    public CfdBlindData(uint vout, string asset, long amount, string assetBlinder,
+        string amountBlinder, string issuanceTxid, uint issuanceVout,
+        bool isIssuanceAsset, bool isIssuanceToken)
+    {
+      Vout = vout;
+      Asset = asset;
+      SatoshiValue = amount;
+      AssetBlindFactor = new BlindFactor(assetBlinder);
+      AmountBlindFactor = new BlindFactor(amountBlinder);
+      if (String.IsNullOrEmpty(issuanceTxid))
+      {
+        IssuanceOutPoint = new OutPoint();
+      }
+      else
+      {
+        IssuanceOutPoint = new OutPoint(issuanceTxid, issuanceVout);
+      }
+      IsIssuanceAsset = isIssuanceAsset;
+      IsIssuanceToken = isIssuanceToken;
+    }
+
+    public bool IsIssuance()
+    {
+      return IsIssuanceAsset || IsIssuanceToken;
+    }
+
+    public bool Equals(CfdBlindData other)
+    {
+      return Vout.Equals(other.Vout) && SatoshiValue.Equals(other.SatoshiValue) &&
+        Asset.Equals(other.Asset, StringComparison.Ordinal) &&
+        IssuanceOutPoint.Equals(other.IssuanceOutPoint) &&
+        IsIssuanceAsset.Equals(other.IsIssuanceAsset) &&
+        IsIssuanceToken.Equals(other.IsIssuanceToken);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is CfdBlindData)
+      {
+        return Equals((CfdBlindData)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Vout.GetHashCode() + Asset.GetHashCode(StringComparison.Ordinal)
+        + SatoshiValue.GetHashCode() + IssuanceOutPoint.GetHashCode()
+        + IsIssuanceAsset.GetHashCode() + IsIssuanceToken.GetHashCode();
+    }
+
+    public static bool operator ==(CfdBlindData left, CfdBlindData right)
+    {
+      return left.Equals(right);
+    }
+
+    public static bool operator !=(CfdBlindData left, CfdBlindData right)
     {
       return !(left == right);
     }
@@ -932,11 +1043,25 @@ namespace Cfd
     /// </summary>
     /// <param name="utxos">txin utxo list</param>
     /// <param name="confidentialKeys">txout confidential key list</param>
+    /// <param name="confidentialKeys">txout confidential key list</param>
     public void BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos,
         IDictionary<uint, Pubkey> confidentialKeys)
     {
-      BlindTransaction(utxos, new Dictionary<OutPoint, IssuanceKeys>(),
-          confidentialKeys);
+      BlindTxOut(utxos, confidentialKeys, false);
+    }
+
+    /// <summary>
+    /// Blind transction txout only.
+    /// </summary>
+    /// <param name="utxos">txin utxo list</param>
+    /// <param name="confidentialKeys">txout confidential key list</param>
+    /// <param name="collectBlinder">blinder collect flag</param>
+    /// <returns>blinder list</returns>
+    public CfdBlindData[] BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos,
+        IDictionary<uint, Pubkey> confidentialKeys, bool collectBlinder)
+    {
+      return BlindTransaction(utxos, new Dictionary<OutPoint, IssuanceKeys>(),
+          confidentialKeys, collectBlinder);
     }
 
     /// <summary>
@@ -948,6 +1073,20 @@ namespace Cfd
     public void BlindTransaction(IDictionary<OutPoint, AssetValueData> utxos,
         IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
         IDictionary<uint, Pubkey> confidentialKeys)
+    {
+      BlindTransaction(utxos, issuanceKeys, confidentialKeys, false);
+    }
+
+    /// <summary>
+    /// Blind transction.
+    /// </summary>
+    /// <param name="utxos">txin utxo list</param>
+    /// <param name="issuanceKeys">issuance blinding key list</param>
+    /// <param name="confidentialKeys">txout confidential key list</param>
+    /// <returns>blinder list</returns>
+    public CfdBlindData[] BlindTransaction(IDictionary<OutPoint, AssetValueData> utxos,
+        IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
+        IDictionary<uint, Pubkey> confidentialKeys, bool collectBlinder)
     {
       if (issuanceKeys is null)
       {
@@ -1016,6 +1155,15 @@ namespace Cfd
           {
             handle.ThrowError(ret);
           }
+          if (collectBlinder)
+          {
+            ret = NativeMethods.CfdSetBlindTxOption(
+              handle.GetHandle(), blindHandle, (int)CfdBlindOption.CollectBlinder, 1);
+            if (ret != CfdErrorCode.Success)
+            {
+              handle.ThrowError(ret);
+            }
+          }
 
           ret = NativeMethods.CfdFinalizeBlindTx(
             handle.GetHandle(), blindHandle, tx,
@@ -1025,6 +1173,42 @@ namespace Cfd
             handle.ThrowError(ret);
           }
           tx = CCommon.ConvertToString(txHexString);
+
+          CfdBlindData[] blinderList;
+          if (collectBlinder)
+          {
+            List<CfdBlindData> list = new List<CfdBlindData>();
+            for (uint index = 0; index < uint.MaxValue; ++index)
+            {
+              ret = NativeMethods.CfdGetBlindTxBlindData(
+                handle.GetHandle(), blindHandle, index,
+                out uint vout, out IntPtr asset, out long valueSatoshi,
+                out IntPtr assetBlindFactor, out IntPtr valueBlindFactor,
+                out IntPtr issuanceTxid, out uint issuanceVout,
+                out bool isIssuanceAsset, out bool isIssuanceToken);
+              if (ret == CfdErrorCode.OutOfRangeError)
+              {
+                break;
+              }
+              else if (ret != CfdErrorCode.Success)
+              {
+                handle.ThrowError(ret);
+              }
+              var assetStr = CCommon.ConvertToString(asset);
+              var abf = CCommon.ConvertToString(assetBlindFactor);
+              var vbf = CCommon.ConvertToString(valueBlindFactor);
+              var txid = CCommon.ConvertToString(issuanceTxid);
+              list.Add(new CfdBlindData(
+                vout, assetStr, valueSatoshi, abf, vbf, txid, issuanceVout,
+                isIssuanceAsset, isIssuanceToken));
+            }
+            blinderList = list.ToArray();
+          }
+          else
+          {
+            blinderList = Array.Empty<CfdBlindData>();
+          }
+          return blinderList;
         }
         finally
         {
@@ -1054,7 +1238,8 @@ namespace Cfd
     /// <param name="issuanceKeys">issuance blinding keys</param>
     /// <param name="confidentialAddresses">txout's confidential address list</param>
     /// <param name="option">blind option</param>
-    public void BlindTransaction(ElementsUtxoData[] utxos,
+    /// <returns>blinder list</returns>
+    public CfdBlindData[] BlindTransaction(ElementsUtxoData[] utxos,
         IDictionary<OutPoint, IssuanceKeys> issuanceKeys,
         ConfidentialAddress[] confidentialAddresses, CfdBlindOptionData option)
     {
@@ -1100,6 +1285,15 @@ namespace Cfd
           if (ret != CfdErrorCode.Success)
           {
             handle.ThrowError(ret);
+          }
+          if (option.CollectBlinder)
+          {
+            ret = NativeMethods.CfdSetBlindTxOption(
+              handle.GetHandle(), blindHandle, (int)CfdBlindOption.CollectBlinder, 1);
+            if (ret != CfdErrorCode.Success)
+            {
+              handle.ThrowError(ret);
+            }
           }
 
           foreach (var utxo in utxos)
@@ -1148,6 +1342,42 @@ namespace Cfd
             handle.ThrowError(ret);
           }
           tx = CCommon.ConvertToString(txHexString);
+
+          CfdBlindData[] blinderList;
+          if (option.CollectBlinder)
+          {
+            List<CfdBlindData> list = new List<CfdBlindData>();
+            for (uint index = 0; index < uint.MaxValue; ++index)
+            {
+              ret = NativeMethods.CfdGetBlindTxBlindData(
+                handle.GetHandle(), blindHandle, index,
+                out uint vout, out IntPtr asset, out long valueSatoshi,
+                out IntPtr assetBlindFactor, out IntPtr valueBlindFactor,
+                out IntPtr issuanceTxid, out uint issuanceVout,
+                out bool isIssuanceAsset, out bool isIssuanceToken);
+              if (ret == CfdErrorCode.OutOfRangeError)
+              {
+                break;
+              }
+              else if (ret != CfdErrorCode.Success)
+              {
+                handle.ThrowError(ret);
+              }
+              var assetStr = CCommon.ConvertToString(asset);
+              var abf = CCommon.ConvertToString(assetBlindFactor);
+              var vbf = CCommon.ConvertToString(valueBlindFactor);
+              var txid = CCommon.ConvertToString(issuanceTxid);
+              list.Add(new CfdBlindData(
+                vout, assetStr, valueSatoshi, abf, vbf, txid, issuanceVout,
+                isIssuanceAsset, isIssuanceToken));
+            }
+            blinderList = list.ToArray();
+          }
+          else
+          {
+            blinderList = Array.Empty<CfdBlindData>();
+          }
+          return blinderList;
         }
         finally
         {

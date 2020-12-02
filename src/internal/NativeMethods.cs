@@ -599,6 +599,21 @@ namespace Cfd
         [In] string txHexString,
         [Out] out IntPtr txString);
 
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetBlindTxBlindData(
+        [In] IntPtr handle,
+        [In] IntPtr blindHandle,
+        [In] uint index,
+        [Out] out uint vout,
+        [Out] out IntPtr asset,
+        [Out] out long valueSatoshi,
+        [Out] out IntPtr assetBlindFactor,
+        [Out] out IntPtr valueBlindFactor,
+        [Out] out IntPtr issuanceTxid,
+        [Out] out uint issuanceVout,
+        [Out] out bool isIssuanceAsset,
+        [Out] out bool isIssuanceToken);
+
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFreeBlindHandle(
         [In] IntPtr handle,

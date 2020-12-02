@@ -250,7 +250,7 @@ namespace Cfd.xTests
       confidentialKeys.Add(
         3, new Pubkey("03ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed879"));
 
-      tx.BlindTransaction(utxos, issuanceKeys, confidentialKeys);
+      var blinderList = tx.BlindTransaction(utxos, issuanceKeys, confidentialKeys, true);
       // Console.WriteLine("  - txid     = " + tx.GetTxid().ToHexString());
       // Console.WriteLine("  - wtxid    = " + tx.GetWtxid().ToHexString());
       // Console.WriteLine("  - witHash  = " + tx.GetWitHash());
@@ -263,6 +263,7 @@ namespace Cfd.xTests
       Assert.Equal<uint>(19537, tx.GetWeight());  // at randomize size
       Assert.Equal<uint>(2, tx.GetVersion());
       Assert.Equal<uint>(0, tx.GetLockTime());
+      Assert.Equal(4, blinderList.Length);
 
       Console.WriteLine("UnblindTransaction");
       UnblindIssuanceData reissueData = tx.UnblindIssuance(1, issuanceBlindingKey, issuanceBlindingKey);
@@ -277,21 +278,35 @@ namespace Cfd.xTests
       Assert.Equal(600000000, reissueData.AssetData.SatoshiValue);
       Assert.Equal("0000000000000000000000000000000000000000000000000000000000000000", reissueData.AssetData.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", reissueData.AssetData.AmountBlindFactor.ToHexString());
+      Assert.Equal(reissueData.AssetData.SatoshiValue, blinderList[0].SatoshiValue);
+      Assert.Equal(reissueData.AssetData.AmountBlindFactor.ToHexString(), blinderList[0].AmountBlindFactor.ToHexString());
 
       Assert.Equal("186c7f955149a5274b39e24b6a50d1d6479f552f6522d91f3a97d771f1c18179", vout0.Asset);
       Assert.Equal(999587680, vout0.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout0.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout0.AmountBlindFactor.ToHexString());
+      Assert.Equal(vout0.Asset, blinderList[1].Asset);
+      Assert.Equal(vout0.SatoshiValue, blinderList[1].SatoshiValue);
+      Assert.Equal(vout0.AssetBlindFactor.ToHexString(), blinderList[1].AssetBlindFactor.ToHexString());
+      Assert.Equal(vout0.AmountBlindFactor.ToHexString(), blinderList[1].AmountBlindFactor.ToHexString());
 
       Assert.Equal("ed6927df918c89b5e3d8b5062acab2c749a3291bb7451d4267c7daaf1b52ad0b", vout1.Asset);
       Assert.Equal(700000000, vout1.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout1.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout1.AmountBlindFactor.ToHexString());
+      Assert.Equal(vout1.Asset, blinderList[2].Asset);
+      Assert.Equal(vout1.SatoshiValue, blinderList[2].SatoshiValue);
+      Assert.Equal(vout1.AssetBlindFactor.ToHexString(), blinderList[2].AssetBlindFactor.ToHexString());
+      Assert.Equal(vout1.AmountBlindFactor.ToHexString(), blinderList[2].AmountBlindFactor.ToHexString());
 
       Assert.Equal("accb7354c07974e00b32e4e5eef55078490141675592ac3610e6101831edb0cd", vout3.Asset);
       Assert.Equal(600000000, vout3.SatoshiValue);
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout3.AssetBlindFactor.ToHexString());
       Assert.NotEqual("0000000000000000000000000000000000000000000000000000000000000000", vout3.AmountBlindFactor.ToHexString());
+      Assert.Equal(vout3.Asset, blinderList[3].Asset);
+      Assert.Equal(vout3.SatoshiValue, blinderList[3].SatoshiValue);
+      Assert.Equal(vout3.AssetBlindFactor.ToHexString(), blinderList[3].AssetBlindFactor.ToHexString());
+      Assert.Equal(vout3.AmountBlindFactor.ToHexString(), blinderList[3].AmountBlindFactor.ToHexString());
     }
 
     [Fact]
@@ -342,7 +357,8 @@ namespace Cfd.xTests
         new Address("2dodsWJgP3pTWWidK5hDxuYHqC1U4CEnT3n"),
         new Pubkey("03ce4c4eac09fe317f365e45c00ffcf2e9639bc0fd792c10f72cdc173c4e5ed879"));
 
-      tx.BlindTransaction(utxos, issuanceKeys, new[] { ctAddr1, ctAddr2, ctAddr4 });
+      CfdBlindOptionData opt = new CfdBlindOptionData(true);
+      var blinderList = tx.BlindTransaction(utxos, issuanceKeys, new[] { ctAddr1, ctAddr2, ctAddr4 }, opt);
       // Console.WriteLine("  - txid     = " + tx.GetTxid().ToHexString());
       // Console.WriteLine("  - wtxid    = " + tx.GetWtxid().ToHexString());
       // Console.WriteLine("  - witHash  = " + tx.GetWitHash());
@@ -355,6 +371,7 @@ namespace Cfd.xTests
       Assert.Equal<uint>(19537, tx.GetWeight());  // at randomize size
       Assert.Equal<uint>(2, tx.GetVersion());
       Assert.Equal<uint>(0, tx.GetLockTime());
+      Assert.Equal(4, blinderList.Length);
     }
 
     private string ConvertRangeProof(byte[] data)
