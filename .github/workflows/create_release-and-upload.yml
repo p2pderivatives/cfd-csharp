@@ -12,7 +12,7 @@ env:
 jobs:
   create_releases:
     name: create-releases
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     outputs:
       release_url: ${{ steps.output_url.outputs.upload_url }}
 
@@ -48,7 +48,7 @@ jobs:
   upload-object-windows:
     name: upload-object-win
     needs: create_releases
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
     - name: setup dotnet
@@ -71,8 +71,8 @@ jobs:
       shell: bash
     - name: cmake-build
       run: |
-        .\tools\build.bat
-        .\tools\test.bat
+        .\tools\build_core3.bat
+        .\tools\test_core3.bat
       timeout-minutes: 20
     - name: cmake-install
       shell: cmd
@@ -119,10 +119,10 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: cmake-build
       run: |
-        ./tools/build.sh
+        ./tools/build_core3.sh
     - name: test
       run: |
-        ./tools/test.sh
+        ./tools/test_core3.sh
     - name: create archive file
       run: |
         mkdir dist
@@ -148,7 +148,7 @@ jobs:
   upload-object-macos:
     name: upload-object-macos
     needs: create_releases
-    runs-on: macos-latest
+    runs-on: macos-10.15
 
     steps:
     - name: setup dotnet
@@ -166,10 +166,10 @@ jobs:
       run: xcodebuild -version
     - name: cmake-build
       run: |
-        ./tools/build.sh
+        ./tools/build_core3.sh
     - name: test
       run: |
-        ./tools/test.sh
+        ./tools/test_core3.sh
     - name: create archive file
       run: |
         mkdir dist

@@ -231,7 +231,7 @@ namespace Cfd.xTests
     public void SelectCoinsErrorTest01()
     {
       CoinSelectionUtil util = new CoinSelectionUtil();
-      UtxoData[] utxos = new UtxoData[0];
+      UtxoData[] utxos = Array.Empty<UtxoData>();
       try
       {
         util.SelectCoins(utxos, 1500, 100000000, 20.0);
