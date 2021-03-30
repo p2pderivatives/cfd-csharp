@@ -12,6 +12,17 @@ namespace Cfd
     /// </summary>
     /// <param name="msg">32-byte msg</param>
     /// <param name="secretKey">secret key</param>
+    /// <returns>schnorr signature</returns>
+    public static SchnorrSignature Sign(ByteData msg, Privkey secretKey)
+    {
+      return Sign(msg, secretKey, new ByteData());
+    }
+
+    /// <summary>
+    /// Sign schnorr.
+    /// </summary>
+    /// <param name="msg">32-byte msg</param>
+    /// <param name="secretKey">secret key</param>
     /// <param name="auxRand">32-byte random bytes</param>
     /// <returns>schnorr signature</returns>
     public static SchnorrSignature Sign(ByteData msg, Privkey secretKey, ByteData auxRand)

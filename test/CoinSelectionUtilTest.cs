@@ -67,7 +67,7 @@ namespace Cfd.xTests
       UtxoData[] utxos = GetBitcoinUtxoList();
       UtxoData[] selectedList = util.SelectCoins(utxos, 1500, 39059180, 20.0);
       Assert.Single(selectedList);
-      Assert.Equal(1360, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1380, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList);
       Assert.Equal(39062500, totalAmount);
       if (selectedList.Length == 1)
@@ -89,7 +89,7 @@ namespace Cfd.xTests
       {
         Assert.Equal(156250000, selectedList[0].GetAmount());
       }
-      Assert.Equal(1360, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1380, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -105,7 +105,7 @@ namespace Cfd.xTests
       {
         Assert.Equal(156250000, selectedList[0].GetAmount());
       }
-      Assert.Equal(1360, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1380, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -122,7 +122,7 @@ namespace Cfd.xTests
         Assert.Equal(156250000, selectedList[0].GetAmount());
         Assert.Equal(78125000, selectedList[1].GetAmount());
       }
-      Assert.Equal(2720, util.GetLastSelectedUtxoFee());
+      Assert.Equal(2760, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -139,7 +139,7 @@ namespace Cfd.xTests
         Assert.Equal(312500000, selectedList[0].GetAmount());
         Assert.Equal(156250000, selectedList[1].GetAmount());
       }
-      Assert.Equal(2720, util.GetLastSelectedUtxoFee());
+      Assert.Equal(2760, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -155,7 +155,7 @@ namespace Cfd.xTests
       {
         Assert.Equal(1250000000, selectedList[0].GetAmount());
       }
-      Assert.Equal(1360, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1380, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -173,7 +173,7 @@ namespace Cfd.xTests
         Assert.Equal(312500000, selectedList[0].GetAmount());
         Assert.Equal(156250000, selectedList[1].GetAmount());
       }
-      Assert.Equal(2720, util.GetLastSelectedUtxoFee());
+      Assert.Equal(2760, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -190,7 +190,7 @@ namespace Cfd.xTests
         Assert.Equal(85062500, selectedList[0].GetAmount());
         Assert.Equal(14938590, selectedList[1].GetAmount());
       }
-      Assert.Equal(360, util.GetLastSelectedUtxoFee());
+      Assert.Equal(368, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -206,7 +206,7 @@ namespace Cfd.xTests
       {
         Assert.Equal(155062500, selectedList[0].GetAmount());
       }
-      Assert.Equal(180, util.GetLastSelectedUtxoFee());
+      Assert.Equal(184, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -224,7 +224,7 @@ namespace Cfd.xTests
         Assert.Equal(39062500, selectedList[1].GetAmount());
         Assert.Equal(14938590, selectedList[2].GetAmount());
       }
-      Assert.Equal(270, util.GetLastSelectedUtxoFee());
+      Assert.Equal(276, util.GetLastSelectedUtxoFee());
     }
 
     [Fact]
@@ -245,7 +245,7 @@ namespace Cfd.xTests
       catch (Exception except)
       {
         output.WriteLine(except.Message);
-        throw except;
+        Assert.Equal("", except.Message);
       }
     }
 
@@ -267,7 +267,7 @@ namespace Cfd.xTests
       catch (Exception except)
       {
         output.WriteLine(except.Message);
-        throw except;
+        Assert.Equal("", except.Message);
       }
     }
 
@@ -379,7 +379,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Single(selectedList);
-      Assert.Equal(1820, util.GetLastSelectedUtxoFee());
+      Assert.Equal(1840, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(78125000, totalAmount);
       if (selectedList.Length == 1)
@@ -400,7 +400,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Equal(2, selectedList.Length);
-      Assert.Equal(3640, util.GetLastSelectedUtxoFee());
+      Assert.Equal(3680, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(234375000, totalAmount);
       if (selectedList.Length == 2)
@@ -422,7 +422,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 2.0);
       Assert.Equal(2, selectedList.Length);
-      Assert.Equal(364, util.GetLastSelectedUtxoFee());
+      Assert.Equal(368, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(100001090, totalAmount);
       if (selectedList.Length == 2)
@@ -445,7 +445,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 2.0);
       Assert.Single(selectedList);
-      Assert.Equal(182, util.GetLastSelectedUtxoFee());
+      Assert.Equal(184, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(155062500, totalAmount);
       if (selectedList.Length == 1)
@@ -467,7 +467,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 1.0);
       Assert.Equal(3, selectedList.Length);
-      Assert.Equal(273, util.GetLastSelectedUtxoFee());
+      Assert.Equal(276, util.GetLastSelectedUtxoFee());
       long totalAmount = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       Assert.Equal(115063590, totalAmount);
       if (selectedList.Length == 3)
@@ -492,7 +492,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 20.0);
       Assert.Equal(2, selectedList.Length);
-      Assert.Equal(3640, util.GetLastSelectedUtxoFee());
+      Assert.Equal(3680, util.GetLastSelectedUtxoFee());
       long totalAmountA = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       long totalAmountB = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetB));
       long totalAmountC = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetC));
@@ -520,7 +520,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 2.0);
       Assert.Equal(4, selectedList.Length);
-      Assert.Equal(728, util.GetLastSelectedUtxoFee());
+      Assert.Equal(736, util.GetLastSelectedUtxoFee());
       long totalAmountA = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       long totalAmountB = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetB));
       long totalAmountC = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetC));
@@ -551,7 +551,7 @@ namespace Cfd.xTests
       ElementsUtxoData[] selectedList = util.SelectCoinsForElements(
         utxos, targetAssetAmountMap, feeAsset, 1500, 2.0);
       Assert.Equal(4, selectedList.Length);
-      Assert.Equal(728, util.GetLastSelectedUtxoFee());
+      Assert.Equal(736, util.GetLastSelectedUtxoFee());
       long totalAmountA = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetA));
       long totalAmountB = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetB));
       long totalAmountC = CoinSelectionUtil.GetTotalAmount(selectedList, new ConfidentialAsset(assetC));

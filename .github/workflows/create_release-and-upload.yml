@@ -5,10 +5,6 @@ on:
     tags:
     - 'v*'
 
-env:
-  XCODE_VERSION: 11.5
-  DOTNET_VERSION: 3.1.200
-
 jobs:
   create_releases:
     name: create-releases
@@ -49,12 +45,24 @@ jobs:
     name: upload-object-win
     needs: create_releases
     runs-on: windows-2019
+    strategy:
+      matrix:
+        dotnet_target: [3.1, 5.0]
+        include:
+          - dotnet_target: 3.1
+            dotnet_version: 3.1.407
+            framework: netstandard2.1
+            script_suffix: _core3
+          - dotnet_target: 5.0
+            dotnet_version: 5.0.201
+            framework: net5.0
+            script_suffix:
 
     steps:
     - name: setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ matrix.dotnet_version }}
     - name: checkout
       uses: actions/checkout@v2
     - name: output url
@@ -71,14 +79,14 @@ jobs:
       shell: bash
     - name: cmake-build
       run: |
-        .\tools\build_core3.bat
-        .\tools\test_core3.bat
+        .\tools\build${{matrix.script_suffix}}.bat
+        .\tools\test${{matrix.script_suffix}}.bat
       timeout-minutes: 20
     - name: cmake-install
       shell: cmd
       run: |
         mkdir dist
-        COPY /Y /B dotnet_project\CfdCsharpProject\bin\Release\netstandard2.1\cfdcs.* dist
+        COPY /Y /B dotnet_project\CfdCsharpProject\bin\Release\${{matrix.framework}}\cfdcs.* dist
         COPY /Y /B build\Release\* dist
     - name: create archive file
       run: |
@@ -96,7 +104,7 @@ jobs:
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./cfd.zip
-        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-win-dotnet${{env.DOTNET_VERSION}}-msvc2019-x86_64.zip
+        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-win-dotnet${{matrix.dotnet_version}}-msvc2019-x86_64.zip
         asset_content_type: application/zip
 
   upload-object-ubuntu:
@@ -106,12 +114,22 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
+        dotnet_target: [3.1, 5.0]
+        include:
+          - dotnet_target: 3.1
+            dotnet_version: 3.1.407
+            framework: netstandard2.1
+            script_suffix: _core3
+          - dotnet_target: 5.0
+            dotnet_version: 5.0.201
+            framework: net5.0
+            script_suffix:
 
     steps:
     - name: setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ matrix.dotnet_version }}
     - name: checkout
       uses: actions/checkout@v1
     - name: Get the version
@@ -119,15 +137,15 @@ jobs:
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: cmake-build
       run: |
-        ./tools/build_core3.sh
+        ./tools/build${{matrix.script_suffix}}.sh
     - name: test
       run: |
-        ./tools/test_core3.sh
+        ./tools/test${{matrix.script_suffix}}.sh
     - name: create archive file
       run: |
         mkdir dist
         cp -rp build/Release/* dist
-        cp -rp dotnet_project/CfdCsharpProject/bin/Release/netstandard2.1/cfdcs.* dist
+        cp -rp dotnet_project/CfdCsharpProject/bin/Release/${{matrix.framework}}/cfdcs.* dist
         cd dist
         zip -r cfd.zip .
         echo "---- dump zip file ----"
@@ -142,39 +160,55 @@ jobs:
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./dist/cfd.zip
-        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.os }}-dotnet${{env.DOTNET_VERSION}}-gcc-x86_64.zip
+        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.os }}-dotnet${{matrix.dotnet_version}}-gcc-x86_64.zip
         asset_content_type: application/zip
 
   upload-object-macos:
     name: upload-object-macos
     needs: create_releases
     runs-on: macos-10.15
+    strategy:
+      matrix:
+        xcode_version: [11.7, 12.4]
+        dotnet_target: [3.1, 5.0]
+        exclude:
+          - xcode_version: 12.4
+            dotnet_target: 3.1
+        include:
+          - dotnet_target: 3.1
+            dotnet_version: 3.1.407
+            framework: netstandard2.1
+            script_suffix: _core3
+          - dotnet_target: 5.0
+            dotnet_version: 5.0.201
+            framework: net5.0
+            script_suffix:
 
     steps:
     - name: setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ matrix.dotnet_version }}
     - name: checkout
       uses: actions/checkout@v1
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_${{env.XCODE_VERSION}}.app/Contents/Developer'
+      run: sudo xcode-select -s '/Applications/Xcode_${{matrix.xcode_version}}.app/Contents/Developer'
     - name: Show Xcode version
       run: xcodebuild -version
     - name: cmake-build
       run: |
-        ./tools/build_core3.sh
+        ./tools/build${{matrix.script_suffix}}.sh
     - name: test
       run: |
-        ./tools/test_core3.sh
+        ./tools/test${{matrix.script_suffix}}.sh
     - name: create archive file
       run: |
         mkdir dist
         cp -rp build/Release/* dist
-        cp -rp dotnet_project/CfdCsharpProject/bin/Release/netstandard2.1/cfdcs.* dist
+        cp -rp dotnet_project/CfdCsharpProject/bin/Release/${{matrix.framework}}/cfdcs.* dist
         cd dist
         zip -r cfd.zip .
         echo "---- dump zip file ----"
@@ -189,6 +223,6 @@ jobs:
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./dist/cfd.zip
-        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-macos-dotnet${{env.DOTNET_VERSION}}-xcode${{env.XCODE_VERSION}}-gcc-x86_64.zip
+        asset_name: cfdcs-${{ steps.get_version.outputs.VERSION }}-macos-dotnet${{matrix.dotnet_version}}-xcode${{matrix.xcode_version}}-x86_64.zip
         asset_content_type: application/zip
 

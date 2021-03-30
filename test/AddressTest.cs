@@ -51,6 +51,21 @@ namespace Cfd.xTests
     }
 
     [Fact]
+    public void AddressTaprootTest()
+    {
+      var sk = new Privkey("305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+      var spk = SchnorrPubkey.GetPubkeyFromPrivkey(sk, out bool _);
+      Assert.Equal("1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", spk.ToHexString());
+
+      Address addr = new Address(spk, CfdAddressType.Taproot, CfdNetworkType.Testnet);
+      Assert.Equal("tb1pzamhq9jglfxaj0r5ahvatr8uc77u973s5tm04yytdltsey5r8naskf8ee6", addr.ToAddressString());
+      Assert.Equal("51201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", addr.GetLockingScript().ToHexString());
+
+      Address addr2 = Address.GetAddressByLockingScript(addr.GetLockingScript(), CfdNetworkType.Testnet);
+      Assert.Equal(CfdAddressType.Taproot, addr2.GetAddressType());
+    }
+
+    [Fact]
     public void ConfidentialAddressTest()
     {
       string ctAddr = "VTpvKKc1SNmLG4H8CnR1fGJdHdyWGEQEvdP9gfeneJR7n81S5kiwNtgF7vrZjC8mp63HvwxM81nEbTxU";

@@ -435,7 +435,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = new Script();
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = new ScriptWitness();
       PeginWitness = new ScriptWitness();
       Issuance = new IssuanceData(Array.Empty<byte>(), Array.Empty<byte>(),
@@ -459,7 +459,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = new Script();
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = scriptWitness;
       PeginWitness = new ScriptWitness();
       Issuance = new IssuanceData(Array.Empty<byte>(), Array.Empty<byte>(),
@@ -483,7 +483,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = scriptSig;
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = witnessStack;
       PeginWitness = peginWitness;
       Issuance = issuance;
@@ -842,7 +842,7 @@ namespace Cfd
     /// <param name="vout">utxo vout.</param>
     public void AddTxIn(Txid txid, uint vout)
     {
-      AddTxIn(txid, vout, CfdSequenceLockTime.Disable);
+      AddTxIn(txid, vout, CfdSequenceLockTime.Final);
     }
 
     /// <summary>
@@ -862,7 +862,7 @@ namespace Cfd
     /// <param name="outpoint">outpoint.</param>
     public void AddTxIn(OutPoint outpoint)
     {
-      AddTxIn(outpoint, CfdSequenceLockTime.Disable);
+      AddTxIn(outpoint, CfdSequenceLockTime.Final);
     }
 
     /// <summary>

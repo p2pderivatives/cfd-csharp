@@ -6,26 +6,17 @@ set(PACKAGE_VERSION   1.0.0)
 ####################
 # options
 ####################
-# use "cmake -DCMAKE_BUILD_TYPE=Debug" or "cmake-js -D"
-# option(ENABLE_DEBUG "enable debugging (ON or OFF. default:OFF)" OFF)
-option(ENABLE_TESTS "enable code tests (ON or OFF. default:ON)" ON)
-option(ENABLE_SHARED "enable shared library (ON or OFF. default:ON)" ON)
-option(ENABLE_ELEMENTS "enable elements code (ON or OFF. default:ON)" ON)
+include(./cmake/CfdCommonOption.cmake)
+include(./cmake/CfdWallyOption.cmake)
+
+option(CFD_SHARED "force shared build (ON or OFF. default:OFF)" OFF)
 option(ENABLE_CAPI  "enable c-api (ON or OFF. default:ON)" ON)
+option(ENABLE_JSONAPI  "enable json-api (ON or OFF. default:ON)" ON)
+
 option(ENABLE_CSHARP  "enable csharp build for .NET Framework (ON or OFF. default:OFF)" OFF)
 
-if(NOT WIN32)
-#option(TARGET_RPATH "target rpath list (separator is ';') (default:)" "")
-set(TARGET_RPATH "" CACHE STRING "target rpath list (separator is ';') (default:)")
-option(ENABLE_COVERAGE "enable code coverage (ON or OFF. default:OFF)" OFF)
-else()
-set(TARGET_RPATH "")
-set(ENABLE_COVERAGE FALSE)
-endif()
-
-set(ENABLE_SHARED ON CACHE BOOL "" FORCE)
-set(ENABLE_ELEMENTS ON CACHE BOOL "" FORCE)
-set(ENABLE_CAPI ON CACHE BOOL "" FORCE)
+set(GENERATE_WALLY ON CACHE BOOL "" FORCE)
+set(EXCLUDE_WALLYCORE_LIB ON CACHE BOOL "" FORCE)
 
 if(NOT ${CMAKE_GENERATOR} MATCHES "Visual Studio ([^9]|[9][0-9])")
 set(ENABLE_CSHARP OFF CACHE BOOL "" FORCE)
@@ -34,29 +25,7 @@ endif()
 ####################
 # common setting
 ####################
-set(WORK_WINDOWS_BINARY_DIR_NAME  $<IF:$<CONFIG:Debug>,Debug,Release>)
-if(NOT CFD_OBJ_BINARY_DIR)
-set(CFD_OBJ_BINARY_DIR   ${CMAKE_BINARY_DIR}/${WORK_WINDOWS_BINARY_DIR_NAME})
-set(CFD_ROOT_BINARY_DIR  ${CMAKE_BINARY_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  ${CFD_OBJ_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  ${CFD_OBJ_BINARY_DIR}) # for linux
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CFD_OBJ_BINARY_DIR})
-endif()
-
-
-####################
-# function
-####################
-function(transform_makefile_srclist INPUT_FILE OUTPUT_FILE)
-  file(READ ${INPUT_FILE} MAKEFILE_INC_TEXT)
-
-  string(REGEX REPLACE "\\\\\n" "@@@@LF@@@@" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
-  string(REGEX REPLACE "([a-zA-Z_][a-zA-Z0-9_]*)[\t ]*=[\t ]*([^\n]*)" "SET(\\1 \\2)" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
-  string(REPLACE "@@@@LF@@@@" "\n" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
-  string(REGEX REPLACE "\\$\\(([a-zA-Z_][a-zA-Z0-9_]*)\\)" "\${\\1}" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
-  string(REGEX REPLACE "@([a-zA-Z_][a-zA-Z0-9_]*)@" "\${\\1}" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
-  file(WRITE ${OUTPUT_FILE} ${MAKEFILE_INC_TEXT})
-endfunction()
+include(./cmake/CfdCommonSetting.cmake)
 
 
 ####################

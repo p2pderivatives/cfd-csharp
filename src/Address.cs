@@ -2,43 +2,105 @@ using System;
 
 namespace Cfd
 {
-  /**
-   * @brief network type
-   */
+  /// <summary>
+  /// network type
+  /// </summary>
   public enum CfdNetworkType : int
   {
-    Mainnet = 0,      //!< btc mainnet
-    Testnet,          //!< btc testnet
-    Regtest,          //!< btc regtest
-    Liquidv1 = 10,    //!< liquidv1
-    ElementsRegtest,  //!< elements regtest
-    CustomChain,      //!< elements custom chain
+    /// <summary>
+    /// btc mainnet
+    /// </summary>
+    Mainnet = 0,
+    /// <summary>
+    /// btc testnet
+    /// </summary>
+    Testnet,
+    /// <summary>
+    /// btc regtest
+    /// </summary>
+    Regtest,
+    /// <summary>
+    /// liquidv1
+    /// </summary>
+    Liquidv1 = 10,
+    /// <summary>
+    /// elements regtest
+    /// </summary>
+    ElementsRegtest,
+    /// <summary>
+    /// elements custom chain
+    /// </summary>
+    CustomChain,
   };
 
-  /**
-   * @brief address type
-   */
+  /// <summary>
+  /// address type
+  /// </summary>
   public enum CfdAddressType : int
   {
-    P2sh = 1,   //!< Legacy address (Script Hash)
-    P2pkh,      //!< Legacy address (PublicKey Hash)
-    P2wsh,      //!< Native segwit address (Script Hash)
-    P2wpkh,     //!< Native segwit address (PublicKey Hash)
-    P2shP2wsh,  //!< P2sh wrapped address (Script Hash)
-    P2shP2wpkh  //!< P2sh wrapped address (Pubkey Hash)
+    /// <summary>
+    /// Legacy address (Script Hash)
+    /// </summary>
+    P2sh = 1,
+    /// <summary>
+    /// Legacy address (PublicKey Hash)
+    /// </summary>
+    P2pkh,
+    /// <summary>
+    /// Native segwit address (Script Hash)
+    /// </summary>
+    P2wsh,
+    /// <summary>
+    /// Native segwit address (PublicKey Hash)
+    /// </summary>
+    P2wpkh,
+    /// <summary>
+    /// P2sh wrapped address (Script Hash)
+    /// </summary>
+    P2shP2wsh,
+    /// <summary>
+    /// P2sh wrapped address (Pubkey Hash)
+    /// </summary>
+    P2shP2wpkh,
+    /// <summary>
+    /// taproot address
+    /// </summary>
+    Taproot
   };
 
-  /**
-   * @brief hash type
-   */
+  /// <summary>
+  /// hash type
+  /// </summary>
   public enum CfdHashType : int
   {
-    P2sh = 1,   //!< Script Hash
-    P2pkh,      //!< PublicKey Hash
-    P2wsh,      //!< Native segwit Script Hash
-    P2wpkh,     //!< Native segwit PublicKey Hash
-    P2shP2wsh,  //!< P2sh wrapped segwit Script Hash
-    P2shP2wpkh  //!< P2sh wrapped segwit Pubkey Hash
+    /// <summary>
+    /// Script Hash
+    /// </summary>
+    P2sh = 1,
+    /// <summary>
+    /// PublicKey Hash
+    /// </summary>
+    P2pkh,
+    /// <summary>
+    /// Native segwit Script Hash
+    /// </summary>
+    P2wsh,
+    /// <summary>
+    /// Native segwit PublicKey Hash
+    /// </summary>
+    P2wpkh,
+    /// <summary>
+    /// P2sh wrapped segwit Script Hash
+    /// </summary>
+    P2shP2wsh,
+    /// <summary>
+    /// P2sh wrapped segwit Pubkey Hash
+    /// </summary>
+    P2shP2wpkh,
+    /// <summary>
+    /// Taproot
+    /// </summary>
+    Taproot
   };
 
   /**
@@ -46,9 +108,18 @@ namespace Cfd
    */
   public enum CfdWitnessVersion : int
   {
-    VersionNone = -1,  //!< Missing WitnessVersion
-    Version0 = 0,      //!< version 0
-    Version1,          //!< version 1 (for future use)
+    /// <summary>
+    /// Missing WitnessVersion
+    /// </summary>
+    VersionNone = -1,
+    /// <summary>
+    /// Witness Version 0
+    /// </summary>
+    Version0 = 0,
+    /// <summary>
+    /// Witness Version 1
+    /// </summary>
+    Version1,
     Version2,          //!< version 2 (for future use)
     Version3,          //!< version 3 (for future use)
     Version4,          //!< version 4 (for future use)
@@ -66,15 +137,28 @@ namespace Cfd
     Version16          //!< version 16 (for future use)
   };
 
-  /**
-   * @brief sighash type
-   */
+  /// <summary>
+  /// sighash type
+  /// </summary>
   public enum CfdSighashType
   {
-    All = 0x01,    //!< SIGHASH_ALL
-    None = 0x02,   //!< SIGHASH_NONE
+    /// <summary>
+    /// SIGHASH_DEFAULT
+    /// </summary>
+    Default = 0,
+    /// <summary>
+    /// SIGHASH_ALL
+    /// </summary>
+    All = 0x01,
+    /// <summary>
+    /// SIGHASH_NONE
+    /// </summary>
+    None = 0x02,
 #pragma warning disable CA1720 // Identifier contains type name
-    Single = 0x03  //!< SIGHASH_SINGLE
+    /// <summary>
+    /// SIGHASH_SINGLE
+    /// </summary>
+    Single = 0x03
 #pragma warning restore CA1720 // Identifier contains type name
   };
 
@@ -184,6 +268,47 @@ namespace Cfd
         addressType = type;
       }
     }
+
+    /// <summary>
+    /// constructor for schnorr pubkey.
+    /// </summary>
+    /// <param name="pubkey">schnorr public key</param>
+    /// <param name="type">address type</param>
+    /// <param name="network">network type</param>
+    public Address(SchnorrPubkey pubkey, CfdAddressType type, CfdNetworkType network)
+    {
+      if (pubkey is null)
+      {
+        throw new ArgumentNullException(nameof(pubkey));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdCreateAddress(
+          handle.GetHandle(),
+          (int)type,
+          pubkey.ToHexString(),
+          "",
+          (int)network,
+          out IntPtr outputAddress,
+          out IntPtr outputLockingScript,
+          out IntPtr outputP2shSegwitLockingScript);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        address = CCommon.ConvertToString(outputAddress);
+        lockingScript = CCommon.ConvertToString(outputLockingScript);
+        p2shSegwitLockingScript = CCommon.ConvertToString(outputP2shSegwitLockingScript);
+
+        Initialize(handle, address, out network,
+            out witnessVersion, out string tempLockingScript,
+            out hash);
+
+        this.network = network;
+        addressType = type;
+      }
+    }
+
 
     /// <summary>
     /// constructor for redeem script.

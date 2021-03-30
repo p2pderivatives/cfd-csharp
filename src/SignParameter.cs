@@ -104,18 +104,26 @@ namespace Cfd
       isSetDerEncode = false;
     }
 
-    public SignParameter(string data)
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="hex">byte data hex</param>
+    public SignParameter(string hex)
     {
-      if (data == null)
+      if (hex == null)
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to txid size.");
       }
-      this.data = data;
+      data = hex;
       signatureHashType = new SignatureHashType(CfdSighashType.All, false);
       pubkey = new Pubkey();
       isSetDerEncode = false;
     }
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="bytes">byte data array</param>
     public SignParameter(byte[] bytes)
     {
       if (bytes == null)

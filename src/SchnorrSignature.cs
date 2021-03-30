@@ -8,9 +8,11 @@ namespace Cfd
   public class SchnorrSignature : IEquatable<SchnorrSignature>
   {
     public static readonly uint Size = 64;
+    public static readonly uint AddedSigHashTypeSize = 65;
     private readonly string data;
     private readonly SchnorrPubkey nonce;
     private readonly Privkey key;
+    private readonly SignatureHashType sighashType;
 
     /// <summary>
     /// Constructor. (empty)
@@ -20,6 +22,7 @@ namespace Cfd
       data = "";
       nonce = new SchnorrPubkey();
       key = new Privkey();
+      sighashType = new SignatureHashType(CfdSighashType.Default, false);
     }
 
     /// <summary>
@@ -28,7 +31,11 @@ namespace Cfd
     /// <param name="bytes">byte array</param>
     public SchnorrSignature(byte[] bytes)
     {
-      if ((bytes == null) || (bytes.Length != Size))
+      if (bytes is null)
+      {
+        throw new ArgumentNullException(nameof(bytes));
+      }
+      if ((bytes.Length != Size) && (bytes.Length != AddedSigHashTypeSize))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to signature size.");
       }
@@ -36,6 +43,14 @@ namespace Cfd
       string[] list = Verify(data);
       nonce = new SchnorrPubkey(list[0]);
       key = new Privkey(list[1]);
+      if (bytes.Length == AddedSigHashTypeSize)
+      {
+        sighashType = CollectSigHashType(data);
+      }
+      else
+      {
+        sighashType = new SignatureHashType(CfdSighashType.Default, false);
+      }
     }
 
     /// <summary>
@@ -44,7 +59,11 @@ namespace Cfd
     /// <param name="hex">hex string</param>
     public SchnorrSignature(string hex)
     {
-      if ((hex == null) || (hex.Length != Size * 2))
+      if (hex is null)
+      {
+        throw new ArgumentNullException(nameof(hex));
+      }
+      if ((hex.Length != Size * 2) && (hex.Length != AddedSigHashTypeSize * 2))
       {
         CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError, "Failed to signature size.");
       }
@@ -52,12 +71,24 @@ namespace Cfd
       string[] list = Verify(data);
       nonce = new SchnorrPubkey(list[0]);
       key = new Privkey(list[1]);
+      if (hex.Length == AddedSigHashTypeSize * 2)
+      {
+        sighashType = CollectSigHashType(data);
+      }
+      else
+      {
+        sighashType = new SignatureHashType(CfdSighashType.Default, false);
+      }
     }
 
-    string[] Verify(string signature)
+    static string[] Verify(string signature)
     {
       using (var handle = new ErrorHandle())
       {
+        if (signature.Length == AddedSigHashTypeSize * 2)
+        {
+          signature = signature.Substring(0, (int)(Size * 2));
+        }
         var ret = NativeMethods.CfdSplitSchnorrSignature(
             handle.GetHandle(), signature,
             out IntPtr schnorrNonce,
@@ -70,6 +101,53 @@ namespace Cfd
         string keyStr = CCommon.ConvertToString(privkey);
         return new string[] { nonceStr, keyStr };
       }
+    }
+
+    static SignatureHashType CollectSigHashType(string signature)
+    {
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdGetSighashTypeFromSchnorrSignature(
+            handle.GetHandle(), signature,
+            out int sighashType,
+            out bool anyoneCanPay);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return new SignatureHashType((CfdSighashType)sighashType, anyoneCanPay);
+      }
+    }
+
+    /// <summary>
+    /// Get sign parameter object.
+    /// </summary>
+    /// <param name="signaturehashType">sighash type</param>
+    /// <returns>sign parameter object.</returns>
+    public SignParameter GetSignData(SignatureHashType signaturehashType)
+    {
+      var sig = data;
+      var sigType = sighashType;
+      if ((data.Length == Size * 2) && (signaturehashType.SighashType != CfdSighashType.Default))
+      {
+        using (var handle = new ErrorHandle())
+        {
+          var ret = NativeMethods.CfdAddSighashTypeInSchnorrSignature(
+              handle.GetHandle(), data, signaturehashType.GetValue(),
+              signaturehashType.IsSighashAnyoneCanPay,
+              out IntPtr addedSignature);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          sig = CCommon.ConvertToString(addedSignature);
+        }
+        sigType = signaturehashType;
+      }
+
+      var signData = new SignParameter(sig);
+      signData.SetSignatureHashType(sigType);
+      return signData;
     }
 
     /// <summary>

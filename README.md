@@ -1,10 +1,50 @@
 # Crypto Finance Development Kit for C# (CFD-CSHARP)
 
-<!-- TODO: Write Summary and Overview
+CFD library for C#.
 
 ## Overview
 
--->
+This library is development kit for crypto finance application.
+Useful when developing applications for cryptocurrencies.
+
+### Target Network
+
+- Bitcoin
+- Liquid Network
+
+### Support function by cfd
+
+- Bitcoin
+  - Bitcoin Script (builder, viewer)
+  - Transaction
+    - Create, Parse, Decode
+    - Simple pubkey-hash sign / verify
+    - Estimate Fee
+    - Coin Selection (FundRawTransaction)
+  - ECDSA Pubkey/Privkey (TweakAdd/Mul, Negate, Sign, Verify)
+  - BIP32, BIP39
+  - Output Descriptor (contains miniscript parser)
+  - Schnorr/Taproot
+  - Bitcoin Address (Segwit-v0, Segwit-v1, P2PKH/P2SH)
+- Liquid Network
+  - Confidential Transaction
+    - Blind, Unblind
+    - Reissuance
+  - Confidential Address
+
+### Libraries for each language
+
+- C# : cfd-csharp
+  - C/C++ : cfd
+    - Extend the cfd-core library. Defines the C language API and extension classes.
+  - C++ : cfd-core
+    - Core library. Definition base class.
+- other language:
+  - JavaScript : cfd-js
+  - WebAssembly : cfd-js-wasm
+  - Python : cfd-python
+  - Go : cfd-go
+  - Rust : cfd-rust
 
 ## Dependencies
 
@@ -67,14 +107,14 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 .\tools\build.bat
 ```
 
-- (.NET Core only)
+- (.NET only)
   ```Cmd
   .\tools\build_core3.bat
   ```
 
 ### Linux & MacOSX
 
-- .NET Core 3.x
+- .NET 5.x
 ```Shell
 # configure & build
 ./tools/build.sh
@@ -93,7 +133,7 @@ cmake version 3.14.2 or lower, download from website and install cmake.
 
 - Linux & MacOSX
 ```Shell
-echo ".NET Core 3.x"
+echo ".NET 5.x"
 ./tools/test.sh
 ```
 

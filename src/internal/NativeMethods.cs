@@ -308,6 +308,76 @@ namespace Cfd
         [In] string buffer,
         [Out] out IntPtr output);
 
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdEncryptAES(
+        [In] IntPtr handle,
+        [In] string key,
+        [In] string cbcIv,
+        [In] string buffer,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdDecryptAES(
+        [In] IntPtr handle,
+        [In] string key,
+        [In] string cbcIv,
+        [In] string buffer,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdEncodeBase64(
+        [In] IntPtr handle,
+        [In] string buffer,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdDecodeBase64(
+        [In] IntPtr handle,
+        [In] string base64,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdEncodeBase58(
+        [In] IntPtr handle,
+        [In] string buffer,
+        [In] bool useChecksum,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdDecodeBase58(
+        [In] IntPtr handle,
+        [In] string base58,
+        [In] bool useChecksum,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdRipemd160(
+        [In] IntPtr handle,
+        [In] string message,
+        [In] bool hasText,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSha256(
+        [In] IntPtr handle,
+        [In] string message,
+        [In] bool hasText,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdHash160(
+        [In] IntPtr handle,
+        [In] string message,
+        [In] bool hasText,
+        [Out] out IntPtr output);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdHash256(
+        [In] IntPtr handle,
+        [In] string message,
+        [In] bool hasText,
+        [Out] out IntPtr output);
+
     // ElementsAddress
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdCreateConfidentialAddress(
@@ -870,6 +940,21 @@ namespace Cfd
           [Out] out IntPtr signature);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddSighashTypeInSchnorrSignature(
+          [In] IntPtr handle,
+          [In] string signature,
+          [In] int sighashType,
+          [In] bool anyoneCanPay,
+          [Out] out IntPtr addedSignature);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetSighashTypeFromSchnorrSignature(
+          [In] IntPtr handle,
+          [In] string signature,
+          [Out] out int sighashType,
+          [Out] out bool anyoneCanPay);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdComputeSchnorrSigPoint(
           [In] IntPtr handle,
           [In] string msg,
@@ -952,6 +1037,12 @@ namespace Cfd
           [In] string wif,
           [In] bool isCompressed,
           [Out] out IntPtr pubkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPubkeyFingerprint(
+        [In] IntPtr handle,
+        [In] string pubkey,
+        [Out] out IntPtr fingerprint);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdCompressPubkey(
@@ -1145,6 +1236,407 @@ namespace Cfd
           [In] string language,
           [Out] out IntPtr mnemonic);
 
+    // PSBT
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdCreatePsbtHandle(
+        [In] IntPtr handle,
+        [In] int networkType,
+        [In] string psbtString,
+        [In] string txHexString,
+        [In] uint version,
+        [In] uint locktime,
+        [Out] out IntPtr psbtHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreePsbtHandle(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtData(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [Out] out IntPtr psbtBase64,
+        [Out] out IntPtr psbtHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtGlobalData(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [Out] out uint psbtVersion,
+        [Out] out IntPtr baseTx,
+        [Out] out uint txinCount,
+        [Out] out uint txoutCount);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdJoinPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string psbtJoinBase64);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSignPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string privkey,
+        [In] bool hasGrindR);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdCombinePsbt(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string psbtCombineBase64);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFinalizePsbt(
+      [In] IntPtr handle,
+      [In] IntPtr psbtHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdExtractPsbtTransaction(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [Out] out IntPtr transaction);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdIsFinalizedPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdIsFinalizedPsbtInput(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtTxInWithPubkey(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] uint sequence,
+        [In] long amount,
+        [In] string lockingScript,
+        [In] string descriptor,
+        [In] string fullTxHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtTxInWithScript(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] uint sequence,
+        [In] long amount,
+        [In] string lockingScript,
+        [In] string redeemScript,
+        [In] string descriptor,
+        [In] string fullTxHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtTxInUtxo(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] long amount,
+        [In] string lockingScript,
+        [In] string fullTxHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtTxInBip32Pubkey(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string pubkey,
+        [In] string fingerprint,
+        [In] string bip32Path);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtSignature(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string pubkey,
+        [In] string derSignature);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtSighashType(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] int sighashType);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtFinalizeScript(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string scriptsig);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdClearPsbtSignData(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtSighashType(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [Out] out int sighashType);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtUtxoData(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [Out] out long amount,
+        [Out] out IntPtr lockingScript,
+        [Out] out IntPtr redeemScript,
+        [Out] out IntPtr descriptor,
+        [Out] out IntPtr fullTxHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtUtxoDataByIndex(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] uint index,
+        [Out] out IntPtr txid,
+        [Out] out uint vout,
+        [Out] out long amount,
+        [Out] out IntPtr lockingScript,
+        [Out] out IntPtr redeemScript,
+        [Out] out IntPtr descriptor,
+        [Out] out IntPtr fullTxHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtTxOutWithPubkey(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] long amount,
+        [In] string lockingScript,
+        [In] string descriptor,
+        [Out] out uint index);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtTxOutWithScript(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] long amount,
+        [In] string lockingScript,
+        [In] string redeemScript,
+        [In] string descriptor,
+        [Out] out uint index);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtTxOutBip32Pubkey(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] uint index,
+        [In] string pubkey,
+        [In] string fingerprint,
+        [In] string bip32Path);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtTxInIndex(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout,
+        [Out] out uint index);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtPubkeyRecord(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int kind,
+        [In] uint index,
+        [In] string pubkey,
+        [Out] out IntPtr value);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdIsFindPsbtPubkeyRecord(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int kind,
+        [In] uint index,
+        [In] string pubkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtBip32Data(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int kind,
+        [In] uint index,
+        [In] string pubkey,
+        [Out] out IntPtr fingerprint,
+        [Out] out IntPtr bip32Path);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtPubkeyList(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int kind,
+        [In] uint index,
+        [Out] out uint listNum,
+        [Out] out IntPtr pubkeyListHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtPubkeyListData(
+        [In] IntPtr handle,
+        [In] IntPtr pubkeyListHandle,
+        [In] uint index,
+        [Out] out IntPtr pubkey,
+        [Out] out IntPtr pubkeyHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtPubkeyListBip32Data(
+        [In] IntPtr handle,
+        [In] IntPtr pubkeyListHandle,
+        [In] uint index,
+        [Out] out IntPtr pubkey,
+        [Out] out IntPtr fingerprint,
+        [Out] out IntPtr bip32Path);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreePsbtPubkeyList(
+        [In] IntPtr handle,
+        [In] IntPtr pubkeyListHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtByteDataList(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int kind,
+        [In] uint index,
+        [Out] out uint listNum,
+        [Out] out IntPtr dataListHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtByteDataItem(
+        [In] IntPtr handle,
+        [In] IntPtr dataListHandle,
+        [In] uint index,
+        [Out] out IntPtr data);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreePsbtByteDataList(
+        [In] IntPtr handle,
+        [In] IntPtr dataListHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtGlobalXpubkey(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string xpubkey,
+        [In] string fingerprint,
+        [In] string bip32Path);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetPsbtRedeemScript(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int type,
+        [In] uint index,
+        [In] string redeemScript);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddPsbtRecord(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int type,
+        [In] uint index,
+        [In] string key,
+        [In] string value);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPsbtRecord(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int type,
+        [In] uint index,
+        [In] string key,
+        [Out] out IntPtr value);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdIsFindPsbtRecord(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] int type,
+        [In] uint index,
+        [In] string key);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdVerifyPsbtTxIn(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] string txid,
+        [In] uint vout);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdInitializeFundPsbt(
+        [In] IntPtr handle,
+        [Out] out IntPtr fundHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFundPsbtAddToUtxoList(
+        [In] IntPtr handle,
+        [In] IntPtr fundHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] long amount,
+        [In] string asset,
+        [In] string descriptor,
+        [In] string scriptsigTemplate,
+        [In] string fullUtxoTx);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetOptionFundPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr fundHandle,
+        [In] int key,
+        [In] long int64Value,
+        [In] double doubleValue,
+        [In] bool boolValue);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFinalizeFundPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr psbtHandle,
+        [In] IntPtr fundHandle,
+        [In] string changeAddressDescriptor,
+        [Out] out long txFee,
+        [Out] out uint usedUtxoCount);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetFundPsbtUsedUtxo(
+        [In] IntPtr handle,
+        [In] IntPtr fundHandle,
+        [In] uint index,
+        [Out] out uint utxoIndex,
+        [Out] out IntPtr txid,
+        [Out] out uint vout,
+        [Out] out long amount,
+        [Out] out IntPtr asset,
+        [Out] out IntPtr descriptor,
+        [Out] out IntPtr scriptsigTemplate);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreeFundPsbt(
+        [In] IntPtr handle,
+        [In] IntPtr fundHandle);
+
     // Script
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdParseScript(
@@ -1169,6 +1661,112 @@ namespace Cfd
         [In] IntPtr handle,
         [In] string scriptAsm,
         [Out] out IntPtr scriptHex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdInitializeTaprootScriptTree(
+        [In] IntPtr handle, [Out] out IntPtr treeHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetInitialTapLeaf(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string tapscript,
+        [In] byte leafVersion);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetInitialTapBranchByHash(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [In] string hash);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetScriptTreeFromString(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string treeString,
+        [In] string tapscript,
+        [In] byte leafVersion,
+        [In] string controlNodes);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetTapScriptByWitnessStack(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string controlBlock,
+        [In] string tapscript,
+        [Out] out IntPtr internalPubkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTapBranchByHash(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [In] string branchHash);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTapBranchByScriptTree(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [In] IntPtr branchTree);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTapBranchByScriptTreeString(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [In] string treeString);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTapBranchByTapLeaf(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string tapscript,
+        [In] byte leafVersion);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetBaseTapLeaf(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [Out] out byte leafVersion,
+        [Out] out IntPtr tapscript,
+        [Out] out IntPtr tapLeafHash);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTapBranchCount(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [Out] out uint branchCount);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTapBranchData(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] byte indexFromLeaf,
+        [In] bool isRootData,
+        [Out] out IntPtr branchHash,
+        [Out] out byte leafVersion,
+        [Out] out IntPtr tapscript,
+        [Out] out byte depthByLeafOrEnd);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTapBranchHandle(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] byte indexFromLeaf,
+        [Out] out IntPtr branchHash,
+        [Out] out IntPtr branch_tree_handle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTaprootScriptTreeHash(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string internalPubkey,
+        [Out] out IntPtr hash,
+        [Out] out IntPtr tapLeafHash,
+        [Out] out IntPtr controlBlock);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTaprootTweakedPrivkey(
+        [In] IntPtr handle,
+        [In] IntPtr treeHandle,
+        [In] string internalPrivkey,
+        [Out] out IntPtr tweakedPrivkey);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTaprootScriptTreeSrting(
+        [In] IntPtr handle, [In] IntPtr treeHandle, [Out] out IntPtr treeString);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreeTaprootScriptTreeHandle(
+        [In] IntPtr handle, [In] IntPtr treeHandle);
 
     // Transaction
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1196,6 +1794,116 @@ namespace Cfd
         [In] string address,
         [In] string directLockingScript,
         [In] string asset);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdClearWitnessStack(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdUpdateTxInScriptSig(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string scriptSig);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetTransactionUtxoData(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        long amount,
+        [In] string commitment,
+        [In] string descriptor,
+        [In] string address,
+        [In] string asset,
+        [In] string scriptsigTemplate,
+        [In] bool canInsert);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdCreateSighashByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] string pubkey,
+        [In] string redeemScript,
+        [In] string tapLeafHash,
+        [In] uint codeSeparatorPosition,
+        [In] string annex,
+        [Out] out IntPtr sighash);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddSignWithPrivkeyByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string privkey,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] bool hasGrindR,
+        [In] string auxRand,
+        [In] string annex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdVerifyTxSignByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddTxSignByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] int hashType,
+        [In] string signDataHex,
+        [In] bool useDerEncode,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay,
+        [In] bool clearStack);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddTaprootSignByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string signature,
+        [In] string tapscript,
+        [In] string controlBlock,
+        [In] string annex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddPubkeyHashSignByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] int hashType,
+        [In] string pubkey,
+        [In] string signature,
+        [In] bool useDerEncode,
+        [In] int sighashType,
+        [In] bool sighashAnyoneCanPay);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddScriptHashLastSignByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] int hashType,
+        [In] string redeemScript);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
     internal static extern CfdErrorCode CfdFinalizeTransaction(
