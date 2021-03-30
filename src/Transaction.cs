@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Cfd
 {
@@ -7,10 +8,13 @@ namespace Cfd
   /// </summary>
   public static class CfdSequenceLockTime
   {
-    /// disable locktime
-    public static readonly uint Disable = 0xffffffff;
+    /// locktime final
+    public static readonly uint Final = 0xffffffff;
     /// enable locktime (maximum time)
     public static readonly uint EnableMax = 0xfffffffe;
+    /// disable locktime (deprecated)
+    [Obsolete("Disable is deprecated, please use Final instead.")]
+    public static readonly uint Disable = 0xffffffff;
   };
 
   public static class CfdFundTxOption
@@ -54,6 +58,11 @@ namespace Cfd
       TxFee = txFee;
       InputFee = utxoFee;
 #pragma warning restore CS0618
+    }
+
+    public long GetTotalFee()
+    {
+      return TxOutFee + UtxoFee;
     }
 
     public bool Equals(FeeData other)
@@ -108,11 +117,31 @@ namespace Cfd
     /// Constructor.
     /// </summary>
     /// <param name="sighashType">sighash type.</param>
+    public SignatureHashType(CfdSighashType sighashType)
+    {
+      SighashType = sighashType;
+      IsSighashAnyoneCanPay = false;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="sighashType">sighash type.</param>
     /// <param name="sighashAnyoneCanPay">sighash anyone can pay.</param>
     public SignatureHashType(CfdSighashType sighashType, bool sighashAnyoneCanPay)
     {
       SighashType = sighashType;
       IsSighashAnyoneCanPay = sighashAnyoneCanPay;
+    }
+
+    public int GetValue()
+    {
+      int value = (int)SighashType;
+      if (IsSighashAnyoneCanPay)
+      {
+        value |= 0x80;
+      }
+      return value;
     }
 
     public bool Equals(SignatureHashType other)
@@ -181,7 +210,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = new Script();
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = new ScriptWitness();
     }
 
@@ -207,7 +236,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = new Script();
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = scriptWitness;
     }
 
@@ -235,7 +264,7 @@ namespace Cfd
     {
       OutPoint = outPoint;
       ScriptSig = scriptSig;
-      Sequence = CfdSequenceLockTime.Disable;
+      Sequence = CfdSequenceLockTime.Final;
       WitnessStack = scriptWitness;
     }
 
@@ -353,6 +382,7 @@ namespace Cfd
   public class Transaction
   {
     public static readonly int defaultNetType = (int)CfdNetworkType.Mainnet;
+    public static readonly uint codeSeparatorPositionFinal = (uint)0xffffffff;
     private string tx;
     private string lastGetTx = "";
     private string txid = "";
@@ -363,6 +393,7 @@ namespace Cfd
     private uint txVersion;
     private uint txLocktime;
     private long lastTxFee;
+    private readonly HashSet<UtxoData> utxoMap = new HashSet<UtxoData>();
 
     /// <summary>
     /// Convert tx to decoderawtransaction json string.
@@ -565,7 +596,7 @@ namespace Cfd
     /// <param name="vout">utxo vout.</param>
     public void AddTxIn(Txid txid, uint vout)
     {
-      AddTxIn(txid, vout, CfdSequenceLockTime.Disable);
+      AddTxIn(txid, vout, CfdSequenceLockTime.Final);
     }
 
     /// <summary>
@@ -590,7 +621,7 @@ namespace Cfd
     /// <param name="outpoint">outpoint.</param>
     public void AddTxIn(OutPoint outpoint)
     {
-      AddTxIn(outpoint, CfdSequenceLockTime.Disable);
+      AddTxIn(outpoint, CfdSequenceLockTime.Final);
     }
 
     /// <summary>
@@ -610,6 +641,38 @@ namespace Cfd
     public void AddTxInList(TxIn[] txinList)
     {
       tx = CreateTransaction(0, 0, tx, txinList, null);
+    }
+
+    /// <summary>
+    /// Set transction input utxo data.
+    /// </summary>
+    /// <param name="utxo">utxo.</param>
+    public void SetTxInUtxoData(UtxoData utxo)
+    {
+      if (utxo is null)
+      {
+        throw new ArgumentNullException(nameof(utxo));
+      }
+      utxoMap.Add(utxo);
+    }
+
+    /// <summary>
+    /// Set transction input utxo data.
+    /// </summary>
+    /// <param name="utxo">utxo.</param>
+    public void SetTxInUtxoData(UtxoData[] utxos)
+    {
+      if (utxos is null)
+      {
+        throw new ArgumentNullException(nameof(utxos));
+      }
+      foreach (var utxo in utxos)
+      {
+        if (!(utxo is null))
+        {
+          utxoMap.Add(utxo);
+        }
+      }
     }
 
     /// <summary>
@@ -904,6 +967,130 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="pubkey">pubkey.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType, Pubkey pubkey)
+    {
+      return GetSigHashByUtxoData(outpoint, sighashType, pubkey, null, null, null, codeSeparatorPositionFinal, null);
+    }
+
+    /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="schnorrPubkey">schnorr pubkey.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType, SchnorrPubkey pubkey)
+    {
+      return GetSigHashByUtxoData(outpoint, sighashType, null, pubkey, null, null, codeSeparatorPositionFinal, null);
+    }
+
+    /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="redeemScript">redeem script.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType, Script redeemScript)
+    {
+      return GetSigHashByUtxoData(outpoint, sighashType, null, null, redeemScript, null, codeSeparatorPositionFinal, null);
+    }
+
+    /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="tapLeafHash">tapleaf hash.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType,
+        ByteData256 tapLeafHash)
+    {
+      return GetSigHashByUtxoData(outpoint, sighashType, null, null, null, tapLeafHash, codeSeparatorPositionFinal, null);
+    }
+
+    /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="tapLeafHash">tapleaf hash.</param>
+    /// <param name="codeSeparatorPosition">OP_CODESEPARATOR position.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType,
+        ByteData256 tapLeafHash, uint codeSeparatorPosition)
+    {
+      return GetSigHashByUtxoData(outpoint, sighashType, null, null, null, tapLeafHash, codeSeparatorPosition, null);
+    }
+
+    /// <summary>
+    /// Get sighash by utxo data. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="pubkey">pubkey.</param>
+    /// <param name="schnorrPubkey">schnorr pubkey.</param>
+    /// <param name="redeemScript">redeem script.</param>
+    /// <param name="tapLeafHash">tapleaf hash.</param>
+    /// <param name="codeSeparatorPosition">OP_CODESEPARATOR position.</param>
+    /// <param name="annex">annex.</param>
+    /// <returns>signature hash.</returns>
+    public ByteData GetSigHashByUtxoData(OutPoint outpoint, SignatureHashType sighashType,
+        Pubkey pubkey, SchnorrPubkey schnorrPubkey, Script redeemScript,
+        ByteData256 tapLeafHash, uint codeSeparatorPosition, ByteData annex)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      string pubkeyStr = "";
+      if (!(pubkey is null))
+      {
+        pubkeyStr = pubkey.ToHexString();
+      }
+      else if (!(schnorrPubkey is null))
+      {
+        pubkeyStr = schnorrPubkey.ToHexString();
+      }
+      string scriptStr = "";
+      if (!(redeemScript is null))
+      {
+        scriptStr = redeemScript.ToHexString();
+      }
+      string tapLeafHashStr = "";
+      if (!(tapLeafHash is null))
+      {
+        tapLeafHashStr = tapLeafHash.ToHexString();
+      }
+      string annexStr = "";
+      if (!(annex is null))
+      {
+        annexStr = annex.ToHexString();
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        SetUtxoListByHandle(handle, txHandle);
+        var ret = NativeMethods.CfdCreateSighashByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(), sighashType.GetValue(), sighashType.IsSighashAnyoneCanPay,
+            pubkeyStr, scriptStr, tapLeafHashStr, codeSeparatorPosition, annexStr,
+            out IntPtr sighash);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        return new ByteData(CCommon.ConvertToString(sighash));
+      }
+    }
+
+    /// <summary>
     /// Get signature hash by pubkey.
     /// </summary>
     /// <param name="outpoint">utxo outpoint.</param>
@@ -949,7 +1136,7 @@ namespace Cfd
             handle.GetHandle(), defaultNetType, tx, txid.ToHexString(), vout, (int)hashType,
             pubkey.ToHexString(), "",
             value,
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             out IntPtr sighash);
         if (ret != CfdErrorCode.Success)
@@ -1005,7 +1192,7 @@ namespace Cfd
         var ret = NativeMethods.CfdCreateSighash(
             handle.GetHandle(), defaultNetType, tx, txid.ToHexString(), vout, (int)hashType,
             "", redeemScript.ToHexString(), value,
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             out IntPtr sighash);
         if (ret != CfdErrorCode.Success)
@@ -1013,6 +1200,69 @@ namespace Cfd
           handle.ThrowError(ret);
         }
         return new ByteData(CCommon.ConvertToString(sighash));
+      }
+    }
+
+    /// <summary>
+    /// Add sign to transaction. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    public void AddSignWithPrivkeyByUtxoList(OutPoint outpoint,
+        Privkey privkey, SignatureHashType sighashType)
+    {
+      AddSignWithPrivkeyByUtxoList(outpoint, privkey, sighashType, true, null, null);
+    }
+
+    /// <summary>
+    /// Add sign to transaction. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="privkey">utxo signed privkey.</param>
+    /// <param name="sighashType">signature hash type.</param>
+    /// <param name="hasGrindR">ECDSA grind-R option.</param>
+    /// <param name="auxRand">aux random bytes for schnorr.</param>
+    /// <param name="annex">annex bytes.</param>
+    public void AddSignWithPrivkeyByUtxoList(OutPoint outpoint,
+      Privkey privkey, SignatureHashType sighashType, bool hasGrindR, ByteData auxRand, ByteData annex)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      if (privkey is null)
+      {
+        throw new ArgumentNullException(nameof(privkey));
+      }
+      string auxRandStr = "";
+      if (!(auxRand is null))
+      {
+        auxRandStr = auxRand.ToHexString();
+      }
+      string annexStr = "";
+      if (!(annex is null))
+      {
+        annexStr = annex.ToHexString();
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        SetUtxoListByHandle(handle, txHandle);
+        var ret = NativeMethods.CfdAddSignWithPrivkeyByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(),
+            (privkey.ToHexString().Length > 0) ? privkey.ToHexString() : privkey.GetWif(),
+            sighashType.GetValue(),
+            sighashType.IsSighashAnyoneCanPay,
+            hasGrindR,
+            auxRandStr,
+            annexStr);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
       }
     }
 
@@ -1138,7 +1388,7 @@ namespace Cfd
             pubkey.ToHexString(),
             (privkey.ToHexString().Length > 0) ? privkey.ToHexString() : privkey.GetWif(),
             value,
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             hasGrindR, out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -1194,7 +1444,7 @@ namespace Cfd
             tx, txid.ToHexString(), vout, (int)hashType,
             pubkey.ToHexString(), signature.ToHexString(),
             signature.IsDerEncode(),
-            (int)signature.GetSignatureHashType().SighashType,
+            signature.GetSignatureHashType().GetValue(),
             signature.GetSignatureHashType().IsSighashAnyoneCanPay,
             out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -1260,7 +1510,7 @@ namespace Cfd
               ret = NativeMethods.CfdAddMultisigSignDataToDer(
                 handle.GetHandle(), multiSignHandle,
                 signList[index].ToHexString(),
-                (int)signList[index].GetSignatureHashType().SighashType,
+                signList[index].GetSignatureHashType().GetValue(),
                 signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
                 signList[index].GetRelatedPubkey().ToHexString());
             }
@@ -1345,7 +1595,7 @@ namespace Cfd
               tempTx, txid.ToHexString(), vout, (int)hashType,
               signList[index].ToHexString(),
               signList[index].IsDerEncode(),
-              (int)signList[index].GetSignatureHashType().SighashType,
+              signList[index].GetSignatureHashType().GetValue(),
               signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
               clearStack, out txString);
           if (ret != CfdErrorCode.Success)
@@ -1408,7 +1658,7 @@ namespace Cfd
             handle.GetHandle(), defaultNetType,
             tx, txid.ToHexString(), vout, (int)hashType,
             signData.ToHexString(), signData.IsDerEncode(),
-            (int)signData.GetSignatureHashType().SighashType,
+            signData.GetSignatureHashType().GetValue(),
             signData.GetSignatureHashType().IsSighashAnyoneCanPay,
             clearStack, out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -1416,6 +1666,157 @@ namespace Cfd
           handle.ThrowError(ret);
         }
         tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    /// <summary>
+    /// Add taproot signature to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="signature">signature.</param>
+    public void AddTaprootSchnorrSign(OutPoint outpoint, SignParameter signature)
+    {
+      AddTaprootSchnorrSign(outpoint, signature, null);
+    }
+
+    /// <summary>
+    /// Add taproot signature to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="signature">signature.</param>
+    /// <param name="annex">annex bytes.</param>
+    public void AddTaprootSchnorrSign(OutPoint outpoint, SignParameter signature, ByteData annex)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      if (signature is null)
+      {
+        throw new ArgumentNullException(nameof(signature));
+      }
+      string annexStr = "";
+      if (!(annex is null))
+      {
+        annexStr = annex.ToHexString();
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        SetUtxoListByHandle(handle, txHandle);
+        var ret = NativeMethods.CfdAddTaprootSignByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(), signature.ToHexString(), "", "", annexStr);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
+    /// Add tapscript sign to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="signDataList">sign data list.</param>
+    /// <param name="tapscript">tapscript.</param>
+    /// <param name="controlBlock">control block.</param>
+    public void AddTapScriptSign(OutPoint outpoint, SignParameter[] signDataList,
+        Script tapscript, ByteData controlBlock)
+    {
+      AddTapScriptSign(outpoint, signDataList, tapscript, controlBlock, null);
+    }
+
+    /// <summary>
+    /// Add tapscript sign to transaction.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    /// <param name="signDataList">sign data list.</param>
+    /// <param name="tapscript">tapscript.</param>
+    /// <param name="controlBlock">control block.</param>
+    /// <param name="annex">annex bytes.</param>
+    public void AddTapScriptSign(OutPoint outpoint, SignParameter[] signDataList,
+        Script tapscript, ByteData controlBlock, ByteData annex)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      if (signDataList is null)
+      {
+        throw new ArgumentNullException(nameof(signDataList));
+      }
+      if (tapscript is null)
+      {
+        throw new ArgumentNullException(nameof(tapscript));
+      }
+      if (controlBlock is null)
+      {
+        throw new ArgumentNullException(nameof(controlBlock));
+      }
+      string annexStr = "";
+      if (!(annex is null))
+      {
+        annexStr = annex.ToHexString();
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        SetUtxoListByHandle(handle, txHandle);
+        CfdErrorCode ret;
+        bool clearFlag = true;
+        foreach (var signature in signDataList)
+        {
+          if (!(signature is null))
+          {
+            ret = NativeMethods.CfdAddTxSignByHandle(
+                handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+                outpoint.GetVout(), (int)CfdHashType.Taproot, signature.ToHexString(), false,
+                signature.GetSignatureHashType().GetValue(),
+                signature.GetSignatureHashType().IsSighashAnyoneCanPay,
+                clearFlag);
+            if (ret != CfdErrorCode.Success)
+            {
+              handle.ThrowError(ret);
+            }
+            clearFlag = false;
+          }
+        }
+
+        ret = NativeMethods.CfdAddTaprootSignByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout(), "", tapscript.ToHexString(), controlBlock.ToHexString(),
+            annexStr);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
+    /// Verify sign on transaction by utxo list. Please call SetTxInUtxoData() before calling this function.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint.</param>
+    public void VerifySignByUtxoList(OutPoint outpoint)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        SetUtxoListByHandle(handle, txHandle);
+        var ret = NativeMethods.CfdVerifyTxSignByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), outpoint.GetTxid().ToHexString(),
+            outpoint.GetVout());
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
       }
     }
 
@@ -1544,7 +1945,7 @@ namespace Cfd
             handle.GetHandle(), defaultNetType, tx, sig.ToHexString(),
             (int)hashType,
             pubkey.ToHexString(), "", txid.ToHexString(), vout,
-            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            sighashType.GetValue(), sighashType.IsSighashAnyoneCanPay,
             satoshiValue, "");
         if (ret == CfdErrorCode.Success)
         {
@@ -1643,7 +2044,7 @@ namespace Cfd
             handle.GetHandle(), default, tx, sig.ToHexString(), (int)hashType,
             pubkey.ToHexString(), redeemScript.ToHexString(),
             txid.ToHexString(), vout,
-            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            sighashType.GetValue(), sighashType.IsSighashAnyoneCanPay,
             satoshiValue, "");
         if (ret == CfdErrorCode.Success)
         {
@@ -1940,6 +2341,32 @@ namespace Cfd
     public long GetLastTxFee()
     {
       return lastTxFee;
+    }
+
+    private static string GetTransactionByHandle(ErrorHandle handle, TxHandle txHandle)
+    {
+      var ret = NativeMethods.CfdFinalizeTransaction(
+        handle.GetHandle(), txHandle.GetHandle(), out IntPtr txPtr);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return CCommon.ConvertToString(txPtr);
+    }
+
+    private void SetUtxoListByHandle(ErrorHandle handle, TxHandle txHandle)
+    {
+      foreach (var utxo in utxoMap)
+      {
+        var ret = NativeMethods.CfdSetTransactionUtxoData(
+          handle.GetHandle(), txHandle.GetHandle(), utxo.GetOutPoint().GetTxid().ToHexString(),
+          utxo.GetOutPoint().GetVout(), utxo.GetAmount(), "", utxo.GetDescriptor().ToString(),
+          "", "", utxo.GetScriptSigTemplate().ToHexString(), false);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+      }
     }
 
     private void UpdateTxInfoCache()

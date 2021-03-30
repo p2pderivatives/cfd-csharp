@@ -192,6 +192,17 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Verify schnorr signature.
+    /// </summary>
+    /// <param name="signature">schnorr signature</param>
+    /// <param name="msg">32-byte msg</param>
+    /// <returns>verify result</returns>
+    public bool Verify(SchnorrSignature signature, ByteData msg)
+    {
+      return SchnorrUtil.Verify(signature, msg, this);
+    }
+
+    /// <summary>
     /// hex string.
     /// </summary>
     /// <returns>hex string</returns>

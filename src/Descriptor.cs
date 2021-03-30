@@ -2,9 +2,9 @@ using System;
 
 namespace Cfd
 {
-  /**
-   * @brief descriptor script type.
-   */
+  /// <summary>
+  /// descriptor script type.
+  /// </summary>
   public enum CfdDescriptorScriptType
   {
     Null = 0,     //!< null
@@ -20,9 +20,9 @@ namespace Cfd
     Raw           //!< raw script
   };
 
-  /**
-   * @brief descriptor key type.
-   */
+  /// <summary>
+  /// descriptor key type.
+  /// </summary>
   public enum CfdDescriptorKeyType
   {
     Null = 0,  //!< null
@@ -31,6 +31,9 @@ namespace Cfd
     Bip32Priv  //!< bip32 extprivkey
   };
 
+  /// <summary>
+  /// descriptor key data.
+  /// </summary>
   public struct CfdKeyData : IEquatable<CfdKeyData>
   {
     public CfdDescriptorKeyType KeyType { get; }
@@ -140,6 +143,9 @@ namespace Cfd
     }
   }
 
+  /// <summary>
+  /// descriptor script data
+  /// </summary>
   public struct CfdDescriptorScriptData : IEquatable<CfdDescriptorScriptData>
   {
     public CfdDescriptorScriptType ScriptType { get; }
@@ -351,6 +357,45 @@ namespace Cfd
       {
         descriptor = GetDescriptorChecksum(handle, descriptorString, network);
         scriptList = ParseDescriptor(handle, descriptorString, derivePath, network);
+        rootData = AnalyzeScriptList(scriptList);
+      }
+    }
+
+    /// <summary>
+    /// create descriptor from address.
+    /// </summary>
+    /// <param name="address">address</param>
+    public Descriptor(Address address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      string descriptorString = "raw(" + address.GetLockingScript().ToHexString() + ")";
+      using (var handle = new ErrorHandle())
+      {
+        descriptor = GetDescriptorChecksum(handle, descriptorString, address.GetNetwork());
+        scriptList = ParseDescriptor(handle, descriptorString, "", address.GetNetwork());
+        rootData = AnalyzeScriptList(scriptList);
+      }
+    }
+
+    /// <summary>
+    /// create descriptor from locking script.
+    /// </summary>
+    /// <param name="address">address</param>
+    /// <param name="network">network type for address</param>
+    public Descriptor(Script lockingScript, CfdNetworkType network)
+    {
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      string descriptorString = "raw(" + lockingScript.ToHexString() + ")";
+      using (var handle = new ErrorHandle())
+      {
+        descriptor = GetDescriptorChecksum(handle, descriptorString, network);
+        scriptList = ParseDescriptor(handle, descriptorString, "", network);
         rootData = AnalyzeScriptList(scriptList);
       }
     }

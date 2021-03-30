@@ -270,8 +270,8 @@ namespace Cfd.xTests
         tx.ToHexString());
 
       FeeData feeData = tx.EstimateFee(new[] { utxos[1], utxos[2] }, 10.0);
-      Assert.Equal(720, feeData.TxOutFee);
-      Assert.Equal(1800, feeData.UtxoFee);
+      Assert.Equal(740, feeData.TxOutFee);
+      Assert.Equal(1830, feeData.UtxoFee);
     }
 
     [Fact]
@@ -294,11 +294,11 @@ namespace Cfd.xTests
       string usedAddr = tx.FundRawTransaction(null, utxos, addr1.ToAddressString(), 20.0);
       output.WriteLine("tx: " + tx.ToHexString());
 
-      Assert.Equal("02000000010af4768e14f820cb9063f55833b5999119e53390ecf4bf181842909b11d0974d0000000000ffffffff0380969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470ce47f19000000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+      Assert.Equal("02000000010af4768e14f820cb9063f55833b5999119e53390ecf4bf181842909b11d0974d0000000000ffffffff0380969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c947f19000000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
         tx.ToHexString());
       output.WriteLine(Transaction.DecodeRawTransaction(tx));
       Assert.Equal(addr1.ToAddressString(), usedAddr);
-      Assert.Equal(3860, tx.GetLastTxFee());
+      Assert.Equal(3940, tx.GetLastTxFee());
     }
 
     [Fact]
@@ -333,11 +333,11 @@ namespace Cfd.xTests
       string usedAddr = tx.FundRawTransaction(inputUtxos, utxos, addr1.ToAddressString(), feeRate);
       output.WriteLine("tx: " + tx.ToHexString());
 
-      Assert.Equal("02000000030a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff0a9bf51e0ac499391efd9426e2c909901edd74a97d2378b49c8832c491ad1e9e0000000000ffffffff0a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0300e1f505000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00e1f505000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c0831b8040000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+      Assert.Equal("02000000030a9a33750a810cd384ca5d93b09513f1eb5d93c669091b29eef710d2391ff7300000000000ffffffff0a9bf51e0ac499391efd9426e2c909901edd74a97d2378b49c8832c491ad1e9e0000000000ffffffff0a503dbd4f8f2b064c70e048b21f93fe4584174478abf5f44747932cd21da87c0000000000ffffffff0300e1f505000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00e1f505000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c9030b8040000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
         tx.ToHexString());
       output.WriteLine(Transaction.DecodeRawTransaction(tx));
       Assert.Equal(addr1.ToAddressString(), usedAddr);
-      Assert.Equal(7460, tx.GetLastTxFee());
+      Assert.Equal(7580, tx.GetLastTxFee());
 
       UtxoData[] feeUtxos = new[]{
         utxos[1],
@@ -345,9 +345,9 @@ namespace Cfd.xTests
         utxos[0],
       };
       FeeData feeData = tx.EstimateFee(feeUtxos, feeRate);
-      Assert.Equal(7460, feeData.TxOutFee + feeData.UtxoFee);
-      Assert.Equal(2060, feeData.TxOutFee);
-      Assert.Equal(5400, feeData.UtxoFee);
+      Assert.Equal(7580, feeData.TxOutFee + feeData.UtxoFee);
+      Assert.Equal(2100, feeData.TxOutFee);
+      Assert.Equal(5480, feeData.UtxoFee);
     }
 
     [Fact]
@@ -370,11 +370,11 @@ namespace Cfd.xTests
       string usedAddr = tx.FundRawTransaction(null, utxos, addr1.ToAddressString(), 20.0);
       output.WriteLine("tx: " + tx.ToHexString());
 
-      Assert.Equal("02000000010af4768e14f820cb9063f55833b5999119e53390ecf4bf181842909b11d0974d0000000000ffffffff0380969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470ce47f19000000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
+      Assert.Equal("02000000010af4768e14f820cb9063f55833b5999119e53390ecf4bf181842909b11d0974d0000000000ffffffff0380969800000000001600144352a1a6e86311f22274f7ebb2746de21b09b15d00093d00000000001600148beaaac4654cf4ebd8e46ca5062b0e7fb3e7470c947f19000000000016001478eb9fc2c9e1cdf633ecb646858ba862b21384ab00000000",
         tx.ToHexString());
       output.WriteLine(Transaction.DecodeRawTransaction(tx));
       Assert.Equal(addr1.ToAddressString(), usedAddr);
-      Assert.Equal(3860, tx.GetLastTxFee());
+      Assert.Equal(3940, tx.GetLastTxFee());
     }
 
     static UtxoData[] GetBitcoinBnbUtxoList(CfdNetworkType netType)
@@ -395,6 +395,133 @@ namespace Cfd.xTests
           new Descriptor(desc, netType)),
       };
       return utxos;
+    }
+
+    [Fact]
+    public void TaprootSchnorrSignTest1()
+    {
+      var sk = new Privkey("305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+      var spk = SchnorrPubkey.GetPubkeyFromPrivkey(sk, out bool _);
+      Assert.Equal("1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", spk.ToHexString());
+
+      var addr = new Address(spk, CfdAddressType.Taproot, CfdNetworkType.Testnet);
+
+      var txHex = "020000000116d975e4c2cea30f72f4f5fe528f5a0727d9ea149892a50c030d44423088ea2f0000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d500000000";
+      var outpoint = new OutPoint("2fea883042440d030ca5929814ead927075a8f52fef5f4720fa3cec2e475d916", 0);
+      var utxos = new UtxoData[]{
+        new UtxoData(outpoint, 2499999000, new Descriptor(addr)),
+	    };
+      var tx = new Transaction(txHex);
+      var feeData = tx.EstimateFee(utxos, 2.0);
+      Assert.Equal(202, feeData.GetTotalFee());
+
+      tx.SetTxInUtxoData(utxos);
+      var sighashType = new SignatureHashType(CfdSighashType.All);
+      var sighash = tx.GetSigHashByUtxoData(outpoint, sighashType, spk);
+      Assert.Equal("e5b11ddceab1e4fc49a8132ae589a39b07acf49cabb2b0fbf6104bc31da12c02", sighash.ToHexString());
+
+      var signature = SchnorrUtil.Sign(sighash, sk);
+      var sig = signature.GetSignData(sighashType);
+      Assert.Equal("61f75636003a870b7a1685abae84eedf8c9527227ac70183c376f7b3a35b07ebcbea14749e58ce1a87565b035b2f3963baa5ae3ede95e89fd607ab7849f2087201", sig.ToHexString());
+
+      tx.AddTaprootSchnorrSign(outpoint, sig);
+      Assert.Equal("0200000000010116d975e4c2cea30f72f4f5fe528f5a0727d9ea149892a50c030d44423088ea2f0000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d5014161f75636003a870b7a1685abae84eedf8c9527227ac70183c376f7b3a35b07ebcbea14749e58ce1a87565b035b2f3963baa5ae3ede95e89fd607ab7849f208720100000000", tx.ToHexString());
+
+      tx.VerifySignByUtxoList(outpoint);
+
+      var isVerify = spk.Verify(signature, sighash);
+      Assert.True(isVerify);
+    }
+
+    [Fact]
+    public void TaprootSchnorrSignTest2()
+    {
+      var sk = new Privkey("305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+      var spk = SchnorrPubkey.GetPubkeyFromPrivkey(sk, out bool _);
+      Assert.Equal("1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", spk.ToHexString());
+
+      var addr = new Address(spk, CfdAddressType.Taproot, CfdNetworkType.Testnet);
+
+      var txHex = "020000000116d975e4c2cea30f72f4f5fe528f5a0727d9ea149892a50c030d44423088ea2f0000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d500000000";
+      var outpoint = new OutPoint("2fea883042440d030ca5929814ead927075a8f52fef5f4720fa3cec2e475d916", 0);
+      var utxos = new UtxoData[]{
+        new UtxoData(outpoint, 2499999000, new Descriptor(addr.GetLockingScript(), CfdNetworkType.Mainnet)),
+      };
+      var tx = new Transaction(txHex);
+
+      tx.SetTxInUtxoData(utxos);
+      var sighashType = new SignatureHashType(CfdSighashType.All);
+      tx.AddSignWithPrivkeyByUtxoList(outpoint, sk, sighashType);
+      Assert.Equal("0200000000010116d975e4c2cea30f72f4f5fe528f5a0727d9ea149892a50c030d44423088ea2f0000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d5014161f75636003a870b7a1685abae84eedf8c9527227ac70183c376f7b3a35b07ebcbea14749e58ce1a87565b035b2f3963baa5ae3ede95e89fd607ab7849f208720100000000", tx.ToHexString());
+
+      tx.VerifySignByUtxoList(outpoint);
+    }
+
+    [Fact]
+    public void TapScriptSignTest1()
+    {
+      var sk = new Privkey("305e293b010d29bf3c888b617763a438fee9054c8cab66eb12ad078f819d9f27");
+      var spk = SchnorrPubkey.GetPubkeyFromPrivkey(sk, out bool _);
+      Assert.Equal("1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", spk.ToHexString());
+
+      var scriptCheckSig = Script.CreateFromAsm(new string[]{ spk.ToHexString(), "OP_CHECKSIG"});
+
+      var tree = new TaprootScriptTree(scriptCheckSig);
+      tree.AddBranches(new string[] {
+        "4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6d",
+        "dc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+      });
+      var taprootData = tree.GetTaprootData(spk);
+      Assert.Equal("3dee5a5387a2b57902f3a6e9da077726d19c6cc8c8c7b04bcf5a197b2a9b01d2", taprootData.Pubkey.ToHexString());
+      Assert.Equal("dfc43ba9fc5f8a9e1b6d6a50600c704bb9e41b741d9ed6de6559a53d2f38e513", taprootData.TapLeafHash.ToHexString());
+      Assert.Equal(
+        "c01777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d54",
+        taprootData.ControlBlock.ToHexString());
+      var tweakedPrivkey = tree.GetTweakedPrivkey(sk);
+      Assert.Equal("a7d17bee0b6313cf864a1ac6f203aafd74a40703ffc050f66517e4f83ff41a03", tweakedPrivkey.ToHexString());
+
+      var addr = new Address(taprootData.Pubkey, CfdAddressType.Taproot, CfdNetworkType.Mainnet);
+      Assert.Equal("bc1p8hh955u8526hjqhn5m5a5pmhymgecmxgerrmqj70tgvhk25mq8fqw77n40", addr.ToAddressString());
+
+      var txHex = "02000000015b80a1af0e00c700bee9c8e4442bec933fcdc0c686dac2dc336caaaf186c5d190000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d500000000";
+      var outpoint = new OutPoint("195d6c18afaa6c33dcc2da86c6c0cd3f93ec2b44e4c8e9be00c7000eafa1805b", 0);
+      var utxos = new UtxoData[]{
+        new UtxoData(outpoint, 2499999000, new Descriptor(addr.GetLockingScript(), CfdNetworkType.Mainnet)),
+      };
+      var tx = new Transaction(txHex);
+
+      tx.SetTxInUtxoData(utxos);
+      var sighashType = new SignatureHashType(CfdSighashType.All);
+      var sighash = tx.GetSigHashByUtxoData(outpoint, sighashType, taprootData.TapLeafHash, Transaction.codeSeparatorPositionFinal);
+      Assert.Equal("80e53eaee13048aee9c6c13fa5a8529aad7fe2c362bfc16f1e2affc71f591d36", sighash.ToHexString());
+
+      var signature = SchnorrUtil.Sign(sighash, sk);
+      var sig = signature.GetSignData(sighashType);
+      Assert.Equal(
+        "f5aa6b260f9df687786cd3813ba83b476e195041bccea800f2571212f4aae9848a538b6175a4f8ea291d38e351ea7f612a3d700dca63cd3aff05d315c5698ee901",
+        sig.ToHexString());
+
+      tx.AddTapScriptSign(outpoint, new SignParameter[] { sig }, taprootData.TapScript, taprootData.ControlBlock);
+      Assert.Equal(
+        "020000000001015b80a1af0e00c700bee9c8e4442bec933fcdc0c686dac2dc336caaaf186c5d190000000000ffffffff0130f1029500000000160014164e985d0fc92c927a66c0cbaf78e6ea389629d50341f5aa6b260f9df687786cd3813ba83b476e195041bccea800f2571212f4aae9848a538b6175a4f8ea291d38e351ea7f612a3d700dca63cd3aff05d315c5698ee90122201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfbac61c01777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb4d18084bb47027f47d428b2ed67e1ccace5520fdc36f308e272394e288d53b6ddc82121e4ff8d23745f3859e8939ecb0a38af63e6ddea2fff97a7fd61a1d2d5400000000",
+        tx.ToHexString());
+
+      try
+      {
+        tx.VerifySignByUtxoList(outpoint);
+        Assert.True(false);
+      }
+      catch (InvalidOperationException ae)
+      {
+        Assert.Equal("CFD error[IllegalStateError] message:The script analysis of tapscript is not supported.", ae.Message);
+      }
+      catch (Exception e)
+      {
+        Assert.Null(e);
+      }
+
+      var isVerify = spk.Verify(signature, sighash);
+      Assert.True(isVerify);
     }
   }
 }
