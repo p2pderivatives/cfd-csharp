@@ -163,6 +163,56 @@ namespace Cfd
   };
 
   /// <summary>
+  /// Elements pegin data struct.
+  /// </summary>
+  public struct PeginData : IEquatable<PeginData>
+  {
+    public Address Address { get; }
+    public Script ClaimScript { get; }
+    public Script TweakedFedpegScript { get; }
+
+    public PeginData(Address peginAddress, Script claimScript, Script tweakedFedpegScript)
+    {
+      Address = peginAddress;
+      ClaimScript = claimScript;
+      TweakedFedpegScript = tweakedFedpegScript;
+    }
+
+    public bool Equals(PeginData other)
+    {
+      return Address == other.Address;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if (obj is PeginData)
+      {
+        return Equals((PeginData)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Address.GetHashCode();
+    }
+
+    public static bool operator ==(PeginData left, PeginData right)
+    {
+      return left.Equals(right);
+    }
+
+    public static bool operator !=(PeginData left, PeginData right)
+    {
+      return !(left == right);
+    }
+  };
+
+  /// <summary>
   /// Bitcoin Address class.
   /// </summary>
   public class Address : IEquatable<Address>
@@ -200,6 +250,78 @@ namespace Cfd
         }
         string tempAddress = CCommon.ConvertToString(outputAddress);
         return new Address(tempAddress);
+      }
+    }
+
+    /// <summary>
+    /// Get pegin address.
+    /// </summary>
+    /// <param name="fedpegScript">fedpeg script</param>
+    /// <param name="pubkey">pubkey</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="network">network type</param>
+    /// <returns>pegin address data</returns>
+    public static PeginData GetPeginAddress(Script fedpegScript, Pubkey pubkey, CfdHashType hashType, CfdNetworkType network)
+    {
+      if (fedpegScript is null)
+      {
+        throw new ArgumentNullException(nameof(fedpegScript));
+      }
+      if (pubkey is null)
+      {
+        throw new ArgumentNullException(nameof(pubkey));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdGetPeginAddress(
+          handle.GetHandle(), (int)network, fedpegScript.ToHexString(), (int)hashType,
+          pubkey.ToHexString(), "",
+          out IntPtr outputPeginAddress, out IntPtr outputClaimScript, out IntPtr outputFedpegScript);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        string peginAddress = CCommon.ConvertToString(outputPeginAddress);
+        string claimScript = CCommon.ConvertToString(outputClaimScript);
+        string tweakedFedpegScript = CCommon.ConvertToString(outputFedpegScript);
+        return new PeginData(new Address(peginAddress), new Script(claimScript),
+          new Script(tweakedFedpegScript));
+      }
+    }
+
+    /// <summary>
+    /// Get pegin address.
+    /// </summary>
+    /// <param name="fedpegScript">fedpeg script</param>
+    /// <param name="redeemScript">redeem script</param>
+    /// <param name="hashType">hash type</param>
+    /// <param name="network">network type</param>
+    /// <returns>pegin address data</returns>
+    public static PeginData GetPeginAddress(Script fedpegScript, Script redeemScript, CfdHashType hashType, CfdNetworkType network)
+    {
+      if (fedpegScript is null)
+      {
+        throw new ArgumentNullException(nameof(fedpegScript));
+      }
+      if (redeemScript is null)
+      {
+        throw new ArgumentNullException(nameof(redeemScript));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdGetPeginAddress(
+          handle.GetHandle(), (int)network, fedpegScript.ToHexString(), (int)hashType,
+          "", redeemScript.ToHexString(),
+          out IntPtr outputPeginAddress, out IntPtr outputClaimScript, out IntPtr outputFedpegScript);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        string peginAddress = CCommon.ConvertToString(outputPeginAddress);
+        string claimScript = CCommon.ConvertToString(outputClaimScript);
+        string tweakedFedpegScript = CCommon.ConvertToString(outputFedpegScript);
+        return new PeginData(new Address(peginAddress), new Script(claimScript),
+          new Script(tweakedFedpegScript));
       }
     }
 

@@ -52,7 +52,7 @@ namespace Cfd
       {
         var ret = NativeMethods.CfdEncodeSignatureByDer(
             handle.GetHandle(), signature.ToHexString(),
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             out IntPtr derSignature);
         if (ret != CfdErrorCode.Success)
@@ -80,13 +80,13 @@ namespace Cfd
             handle.GetHandle(), derSignature.ToHexString(),
             out IntPtr signature,
             out int signatureHashType,
-            out bool sighashAnyoneCanPay);
+            out bool _);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
         string signatureStr = CCommon.ConvertToString(signature);
-        SignatureHashType sighashType = new SignatureHashType((CfdSighashType)signatureHashType, sighashAnyoneCanPay);
+        SignatureHashType sighashType = new SignatureHashType(signatureHashType);
         SignParameter signParam = new SignParameter(signatureStr);
         signParam.SetDerEncode(sighashType);
         return signParam;

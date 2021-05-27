@@ -110,12 +110,12 @@ namespace Cfd
         var ret = NativeMethods.CfdGetSighashTypeFromSchnorrSignature(
             handle.GetHandle(), signature,
             out int sighashType,
-            out bool anyoneCanPay);
+            out bool _);
         if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }
-        return new SignatureHashType((CfdSighashType)sighashType, anyoneCanPay);
+        return new SignatureHashType(sighashType);
       }
     }
 

@@ -17,7 +17,9 @@ namespace Cfd
     Multi,        //!< multisig
     SortedMulti,  //!< sorted multisig
     Addr,         //!< address
-    Raw           //!< raw script
+    Raw,          //!< raw script
+    MiniScript,   //!< miniscript (internal)
+    Taproot       //!< taproot
   };
 
   /// <summary>
@@ -25,10 +27,11 @@ namespace Cfd
   /// </summary>
   public enum CfdDescriptorKeyType
   {
-    Null = 0,  //!< null
-    Public,    //!< pubkey
-    Bip32,     //!< bip32 extpubkey
-    Bip32Priv  //!< bip32 extprivkey
+    Null = 0,   //!< null
+    Public,     //!< pubkey
+    Bip32,      //!< bip32 extpubkey
+    Bip32Priv,  //!< bip32 extprivkey
+    SchnorrPubkey   //!< schnorr pubkey
   };
 
   /// <summary>
@@ -40,6 +43,7 @@ namespace Cfd
     public Pubkey Pubkey { get; }
     public ExtPubkey ExtPubkey { get; }
     public ExtPrivkey ExtPrivkey { get; }
+    public SchnorrPubkey SchnorrPubkey { get; }
 
 
     public CfdKeyData(Pubkey pubkey)
@@ -48,6 +52,7 @@ namespace Cfd
       Pubkey = pubkey;
       ExtPubkey = new ExtPubkey();
       ExtPrivkey = new ExtPrivkey();
+      SchnorrPubkey = new SchnorrPubkey();
     }
 
     public CfdKeyData(ExtPubkey extPubkey)
@@ -56,6 +61,7 @@ namespace Cfd
       Pubkey = new Pubkey();
       ExtPubkey = extPubkey;
       ExtPrivkey = new ExtPrivkey();
+      SchnorrPubkey = new SchnorrPubkey();
     }
 
     public CfdKeyData(ExtPrivkey extPrivkey)
@@ -64,6 +70,16 @@ namespace Cfd
       Pubkey = new Pubkey();
       ExtPubkey = new ExtPubkey();
       ExtPrivkey = extPrivkey;
+      SchnorrPubkey = new SchnorrPubkey();
+    }
+
+    public CfdKeyData(SchnorrPubkey schnorrPubkey)
+    {
+      KeyType = CfdDescriptorKeyType.SchnorrPubkey;
+      Pubkey = new Pubkey();
+      ExtPubkey = new ExtPubkey();
+      ExtPrivkey = new ExtPrivkey();
+      SchnorrPubkey = schnorrPubkey;
     }
 
     public CfdKeyData(CfdDescriptorKeyType keyType, Pubkey pubkey,
@@ -73,6 +89,7 @@ namespace Cfd
       Pubkey = pubkey;
       ExtPubkey = extPubkey;
       ExtPrivkey = extPrivkey;
+      SchnorrPubkey = new SchnorrPubkey();
     }
 
     public bool Equals(CfdKeyData other)
@@ -92,6 +109,10 @@ namespace Cfd
       else if (KeyType == CfdDescriptorKeyType.Public)
       {
         return Pubkey.Equals(other.Pubkey);
+      }
+      else if (KeyType == CfdDescriptorKeyType.SchnorrPubkey)
+      {
+        return SchnorrPubkey.Equals(other.SchnorrPubkey);
       }
       else
       {
@@ -126,6 +147,10 @@ namespace Cfd
       {
         return KeyType.GetHashCode() + Pubkey.GetHashCode();
       }
+      else if (KeyType == CfdDescriptorKeyType.SchnorrPubkey)
+      {
+        return KeyType.GetHashCode() + SchnorrPubkey.GetHashCode();
+      }
       else
       {
         return KeyType.GetHashCode();
@@ -156,6 +181,7 @@ namespace Cfd
     public CfdKeyData KeyData { get; }
     public ArraySegment<CfdKeyData> MultisigKeyList { get; }
     public uint MultisigRequireNum { get; }
+    public TapBranch ScriptTree { get; }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
         Script redeemScript)
@@ -168,6 +194,7 @@ namespace Cfd
       KeyData = new CfdKeyData();
       MultisigKeyList = new ArraySegment<CfdKeyData>();
       MultisigRequireNum = 0;
+      ScriptTree = new TaprootScriptTree();
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
@@ -181,6 +208,7 @@ namespace Cfd
       KeyData = new CfdKeyData();
       MultisigKeyList = new ArraySegment<CfdKeyData>();
       MultisigRequireNum = 0;
+      ScriptTree = new TapBranch();
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
@@ -194,6 +222,7 @@ namespace Cfd
       KeyData = keyData;
       MultisigKeyList = new ArraySegment<CfdKeyData>();
       MultisigRequireNum = 0;
+      ScriptTree = new TapBranch();
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
@@ -207,6 +236,7 @@ namespace Cfd
       KeyData = new CfdKeyData();
       MultisigKeyList = new ArraySegment<CfdKeyData>();
       MultisigRequireNum = 0;
+      ScriptTree = new TapBranch();
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
@@ -221,6 +251,7 @@ namespace Cfd
       KeyData = new CfdKeyData();
       MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
       MultisigRequireNum = multisigRequireNum;
+      ScriptTree = new TapBranch();
     }
 
     public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
@@ -235,6 +266,34 @@ namespace Cfd
       KeyData = keyData;
       MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
       MultisigRequireNum = multisigRequireNum;
+      ScriptTree = new TapBranch();
+    }
+
+    public CfdDescriptorScriptData(CfdDescriptorScriptType scriptType, uint depth,
+        CfdHashType hashType, Address address, Script redeemScript,
+        TapBranch scriptTree,
+        CfdKeyData keyData, CfdKeyData[] multisigKeyList, uint multisigRequireNum)
+    {
+      ScriptType = scriptType;
+      Depth = depth;
+      HashType = hashType;
+      Address = address;
+      RedeemScript = redeemScript;
+      KeyData = keyData;
+      ScriptTree = scriptTree;
+      MultisigKeyList = new ArraySegment<CfdKeyData>(multisigKeyList);
+      MultisigRequireNum = multisigRequireNum;
+    }
+
+    public ArraySegment<CfdKeyData> GetKeyListAll()
+    {
+      if (KeyData.KeyType == CfdDescriptorKeyType.Null)
+      {
+        return MultisigKeyList;
+      }
+      CfdKeyData[] keyList = new CfdKeyData[1];
+      keyList[0] = KeyData;
+      return new ArraySegment<CfdKeyData>(keyList);
     }
 
     public bool Equals(CfdDescriptorScriptData other)
@@ -245,6 +304,8 @@ namespace Cfd
       }
       switch (ScriptType)
       {
+        case CfdDescriptorScriptType.Taproot:
+          return KeyData.Equals(other.KeyData) && ScriptTree.Equals(other.ScriptTree);
         case CfdDescriptorScriptType.Pk:
         case CfdDescriptorScriptType.Pkh:
         case CfdDescriptorScriptType.Wpkh:
@@ -280,6 +341,8 @@ namespace Cfd
     {
       switch (ScriptType)
       {
+        case CfdDescriptorScriptType.Taproot:
+          return ScriptType.GetHashCode() + KeyData.GetHashCode() + ScriptTree.GetHashCode();
         case CfdDescriptorScriptType.Pk:
         case CfdDescriptorScriptType.Pkh:
         case CfdDescriptorScriptType.Wpkh:
@@ -332,8 +395,7 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         descriptor = GetDescriptorChecksum(handle, descriptorString, network);
-        scriptList = ParseDescriptor(handle, descriptorString, "", network);
-        rootData = AnalyzeScriptList(scriptList);
+        scriptList = ParseDescriptor(handle, descriptorString, "", network, out rootData);
       }
     }
 
@@ -356,8 +418,7 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         descriptor = GetDescriptorChecksum(handle, descriptorString, network);
-        scriptList = ParseDescriptor(handle, descriptorString, derivePath, network);
-        rootData = AnalyzeScriptList(scriptList);
+        scriptList = ParseDescriptor(handle, descriptorString, derivePath, network, out rootData);
       }
     }
 
@@ -375,8 +436,7 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         descriptor = GetDescriptorChecksum(handle, descriptorString, address.GetNetwork());
-        scriptList = ParseDescriptor(handle, descriptorString, "", address.GetNetwork());
-        rootData = AnalyzeScriptList(scriptList);
+        scriptList = ParseDescriptor(handle, descriptorString, "", address.GetNetwork(), out rootData);
       }
     }
 
@@ -395,8 +455,7 @@ namespace Cfd
       using (var handle = new ErrorHandle())
       {
         descriptor = GetDescriptorChecksum(handle, descriptorString, network);
-        scriptList = ParseDescriptor(handle, descriptorString, "", network);
-        rootData = AnalyzeScriptList(scriptList);
+        scriptList = ParseDescriptor(handle, descriptorString, "", network, out rootData);
       }
     }
 
@@ -414,7 +473,7 @@ namespace Cfd
 
     private static CfdDescriptorScriptData[] ParseDescriptor(
         ErrorHandle handle, string descriptorString,
-        string derivePath, CfdNetworkType network)
+        string derivePath, CfdNetworkType network, out CfdDescriptorScriptData rootData)
     {
       var ret = NativeMethods.CfdParseDescriptor(
         handle.GetHandle(), descriptorString, (int)network, derivePath,
@@ -428,6 +487,62 @@ namespace Cfd
         bool isMultisig = false;
         uint maxKeyNum = 0;
         uint requireNum = 0;
+        {
+          ret = NativeMethods.CfdGetDescriptorRootData(
+            handle.GetHandle(), descriptorHandle,
+            out int scriptType, out IntPtr lockingScript, out IntPtr address,
+            out int hashType, out IntPtr redeemScript,
+            out int keyType, out IntPtr pubkey, out IntPtr extPubkey,
+            out IntPtr extPrivkey, out IntPtr schnorrPubkey, out IntPtr treeString,
+            out isMultisig, out maxKeyNum, out requireNum);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          CCommon.ConvertToString(lockingScript);
+          string tempAddress = CCommon.ConvertToString(address);
+          string tempRedeemScript = CCommon.ConvertToString(redeemScript);
+          string tempPubkey = CCommon.ConvertToString(pubkey);
+          string tempExtPubkey = CCommon.ConvertToString(extPubkey);
+          string tempExtPrivkey = CCommon.ConvertToString(extPrivkey);
+          string tempSchnorr = CCommon.ConvertToString(schnorrPubkey);
+          string tempTreeStr = CCommon.ConvertToString(treeString);
+          CfdDescriptorKeyType type = (CfdDescriptorKeyType)keyType;
+          CfdKeyData keyData;
+          TapBranch scriptTree = new TapBranch();
+          if (type == CfdDescriptorKeyType.Bip32)
+          {
+            keyData = new CfdKeyData(new ExtPubkey(tempExtPubkey));
+          }
+          else if (type == CfdDescriptorKeyType.Bip32Priv)
+          {
+            keyData = new CfdKeyData(new ExtPrivkey(tempExtPrivkey));
+          }
+          else if (type == CfdDescriptorKeyType.SchnorrPubkey)
+          {
+            keyData = new CfdKeyData(new SchnorrPubkey(tempSchnorr));
+          }
+          else if (type == CfdDescriptorKeyType.Public)
+          {
+            keyData = new CfdKeyData(new Pubkey(tempPubkey));
+          }
+          else
+          {
+            keyData = new CfdKeyData();
+          }
+          Address addr = new Address();
+          if (tempAddress.Length > 0)
+          {
+            addr = new Address(tempAddress);
+          }
+          if (tempTreeStr.Length > 0)
+          {
+            scriptTree = new TapBranch(tempTreeStr);
+          }
+          rootData = new CfdDescriptorScriptData((CfdDescriptorScriptType)scriptType, 0,
+              (CfdHashType)hashType, addr, new Script(tempRedeemScript),
+              scriptTree, keyData, Array.Empty<CfdKeyData>(), 0);
+        }
         CfdDescriptorScriptData[] list = new CfdDescriptorScriptData[maxIndex + 1];
         for (uint index = 0; index <= maxIndex; ++index)
         {
@@ -463,6 +578,7 @@ namespace Cfd
             case CfdDescriptorScriptType.Pk:
             case CfdDescriptorScriptType.Pkh:
             case CfdDescriptorScriptType.Wpkh:
+            case CfdDescriptorScriptType.Taproot:
               type = (CfdDescriptorKeyType)keyType;
               if (type == CfdDescriptorKeyType.Bip32)
               {
@@ -471,6 +587,10 @@ namespace Cfd
               else if (type == CfdDescriptorKeyType.Bip32Priv)
               {
                 keyData = new CfdKeyData(new ExtPrivkey(tempExtPrivkey));
+              }
+              else if (type == CfdDescriptorKeyType.SchnorrPubkey)
+              {
+                keyData = new CfdKeyData(new SchnorrPubkey(tempPubkey));
               }
               else
               {
@@ -520,6 +640,9 @@ namespace Cfd
                     (CfdDescriptorScriptType)scriptType,
                     depth, (CfdHashType)hashType, new Address(tempAddress),
                     new Script(tempRedeemScript), keyList, requireNum);
+                rootData = new CfdDescriptorScriptData(rootData.ScriptType, 0,
+                    rootData.HashType, rootData.Address, rootData.RedeemScript,
+                    rootData.KeyData, keyList, requireNum);
               }
               else
               {
@@ -561,79 +684,6 @@ namespace Cfd
           handle.GetHandle(), descriptorHandle);
       }
     }
-
-    private static CfdDescriptorScriptData AnalyzeScriptList(CfdDescriptorScriptData[] scriptList)
-    {
-      if ((scriptList[0].HashType == CfdHashType.P2wsh) ||
-        (scriptList[0].HashType == CfdHashType.P2sh))
-      {
-        if ((scriptList.Length > 1) && (scriptList[1].HashType == CfdHashType.P2pkh))
-        {
-          CfdDescriptorScriptData data = new CfdDescriptorScriptData(
-            scriptList[0].ScriptType,
-            scriptList[0].Depth,
-            scriptList[0].HashType,
-            scriptList[0].Address,
-            scriptList[0].RedeemScript,
-            scriptList[1].KeyData, Array.Empty<CfdKeyData>(), 0);
-          return data;
-        }
-      }
-      if (scriptList[0].HashType == CfdHashType.P2shP2wsh)
-      {
-        if ((scriptList.Length > 2) && (scriptList[2].HashType == CfdHashType.P2pkh))
-        {
-          CfdDescriptorScriptData data = new CfdDescriptorScriptData(
-            scriptList[0].ScriptType, scriptList[0].Depth,
-            scriptList[0].HashType, scriptList[0].Address,
-            scriptList[1].RedeemScript,
-            scriptList[2].KeyData, Array.Empty<CfdKeyData>(), 0);
-          return data;
-        }
-      }
-      if (scriptList.Length == 1)
-      {
-        return scriptList[0];
-      }
-
-      if (scriptList[0].HashType == CfdHashType.P2shP2wsh)
-      {
-        if (scriptList[1].MultisigRequireNum > 0)
-        {
-          CfdDescriptorScriptData data = new CfdDescriptorScriptData(
-            scriptList[0].ScriptType,
-            scriptList[0].Depth,
-            scriptList[0].HashType,
-            scriptList[0].Address,
-            scriptList[1].RedeemScript,
-            scriptList[1].MultisigKeyList.ToArray(),
-            scriptList[1].MultisigRequireNum);
-          return data;
-        }
-        else
-        {
-          CfdDescriptorScriptData data = new CfdDescriptorScriptData(
-            scriptList[0].ScriptType,
-            scriptList[0].Depth,
-            scriptList[0].HashType,
-            scriptList[0].Address,
-            scriptList[1].RedeemScript);
-          return data;
-        }
-      }
-      else if (scriptList[0].HashType == CfdHashType.P2shP2wpkh)
-      {
-        CfdDescriptorScriptData data = new CfdDescriptorScriptData(
-          scriptList[0].ScriptType,
-          scriptList[0].Depth,
-          scriptList[0].HashType,
-          scriptList[0].Address,
-          scriptList[1].KeyData);
-        return data;
-      }
-      return scriptList[0];
-    }
-
 
     public override string ToString()
     {
@@ -746,6 +796,25 @@ namespace Cfd
       CfdKeyData[] keyList = new CfdKeyData[rootData.MultisigKeyList.Count];
       rootData.MultisigKeyList.CopyTo(keyList);
       return keyList;
+    }
+
+    public bool HasTapScript()
+    {
+      if (scriptList[0].ScriptType != CfdDescriptorScriptType.Taproot)
+      {
+        return false;
+      }
+      return rootData.ScriptTree.ToString().Length > 0;
+    }
+
+    public TapBranch GetScriptTree()
+    {
+      if (!HasTapScript())
+      {
+        CfdCommon.ThrowError(CfdErrorCode.IllegalStateError,
+          "Failed to unused script tree.");
+      }
+      return rootData.ScriptTree;
     }
   }
 }
