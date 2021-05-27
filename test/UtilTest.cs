@@ -46,6 +46,34 @@ namespace Cfd.xTests
     }
 
     [Fact]
+    public void DecodeFromDerTest()
+    {
+      SignParameter signParam = SignParameter.DecodeFromDer(
+        new ByteData("30440220773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca4702201907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b2422601"));
+      Assert.Equal("773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca471907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b24226",
+        signParam.GetData().ToHexString());
+      Assert.Equal(CfdSighashType.All, signParam.GetSignatureHashType().SighashType);
+      Assert.False(signParam.GetSignatureHashType().IsSighashAnyoneCanPay);
+      Assert.False(signParam.GetSignatureHashType().IsSighashRangeproof);
+
+      signParam = SignParameter.DecodeFromDer(
+        new ByteData("30440220773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca4702201907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b2422642"));
+      Assert.Equal("773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca471907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b24226",
+        signParam.GetData().ToHexString());
+      Assert.Equal(CfdSighashType.None, signParam.GetSignatureHashType().SighashType);
+      Assert.False(signParam.GetSignatureHashType().IsSighashAnyoneCanPay);
+      Assert.True(signParam.GetSignatureHashType().IsSighashRangeproof);
+
+      signParam = SignParameter.DecodeFromDer(
+        new ByteData("30440220773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca4702201907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b2422683"));
+      Assert.Equal("773420c0ded41a55b1f1205cfb632f08f3f911a53e7338a0dac73ec6cbe3ca471907434d046185abedc5afddc2761a642bccc70af6d22b46394f1d04a8b24226",
+        signParam.GetData().ToHexString());
+      Assert.Equal(CfdSighashType.Single, signParam.GetSignatureHashType().SighashType);
+      Assert.True(signParam.GetSignatureHashType().IsSighashAnyoneCanPay);
+      Assert.False(signParam.GetSignatureHashType().IsSighashRangeproof);
+    }
+
+    [Fact]
     public void EmptyConstructorTest()
     {
       Txid txid = new Txid();

@@ -6,11 +6,13 @@ on:
     - master
     - develop
     - features/sprint*
+    - stable_v*
   pull_request:
     branches:
     - master
     - develop
     - features/sprint*
+    - stable_v*
 
 jobs:
   test-dotnet5:

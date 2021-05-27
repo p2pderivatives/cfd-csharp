@@ -189,6 +189,25 @@ namespace Cfd
     /// <param name="satoshiValue">satoshi amount</param>
     /// <param name="assetBlindFactor">asset blinder</param>
     /// <param name="amountBlindFactor">amount blinder</param>
+    public AssetValueData(ConfidentialAsset asset, long satoshiValue, BlindFactor assetBlindFactor, BlindFactor amountBlindFactor)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      Asset = asset.ToHexString();
+      SatoshiValue = satoshiValue;
+      AssetBlindFactor = assetBlindFactor;
+      AmountBlindFactor = amountBlindFactor;
+    }
+
+    /// <summary>
+    /// Constructor. (use blinded utxo)
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi amount</param>
+    /// <param name="assetBlindFactor">asset blinder</param>
+    /// <param name="amountBlindFactor">amount blinder</param>
     public AssetValueData(string asset, long satoshiValue, BlindFactor assetBlindFactor, BlindFactor amountBlindFactor)
     {
       Asset = asset;
@@ -222,6 +241,11 @@ namespace Cfd
       SatoshiValue = satoshiValue;
       AssetBlindFactor = new BlindFactor();
       AmountBlindFactor = amountBlindFactor;
+    }
+
+    public ConfidentialAsset GetAssetObject()
+    {
+      return new ConfidentialAsset(Asset);
     }
 
     public bool Equals(AssetValueData other)
@@ -295,6 +319,54 @@ namespace Cfd
     }
 
     public static bool operator !=(UnblindIssuanceData left, UnblindIssuanceData right)
+    {
+      return !(left == right);
+    }
+  }
+
+  /// <summary>
+  /// issuance data.
+  /// </summary>
+  public struct IssueAssetData : IEquatable<IssueAssetData>
+  {
+    public ConfidentialAsset Asset { get; }
+    public ConfidentialAsset Token { get; }
+    public BlindFactor Entropy { get; }
+
+    public IssueAssetData(ConfidentialAsset asset, ConfidentialAsset token, BlindFactor entropy)
+    {
+      Asset = asset;
+      Token = token;
+      Entropy = entropy;
+    }
+
+    public bool Equals(IssueAssetData other)
+    {
+      return Asset.Equals(other.Asset) &&
+        Token.Equals(other.Token) &&
+        Entropy.Equals(other.Entropy);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is IssueAssetData)
+      {
+        return Equals((IssueAssetData)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Asset.GetHashCode() + Token.GetHashCode() + Entropy.GetHashCode();
+    }
+
+    public static bool operator ==(IssueAssetData left, IssueAssetData right)
+    {
+      return left.Equals(right);
+    }
+
+    public static bool operator !=(IssueAssetData left, IssueAssetData right)
     {
       return !(left == right);
     }
@@ -539,6 +611,46 @@ namespace Cfd
     public Script ScriptPubkey { get; }
     public ByteData SurjectionProof { get; }
     public ByteData RangeProof { get; }
+
+    /// <summary>
+    /// Create from address.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi value</param>
+    /// <param name="address">address</param>
+    public static ConfidentialTxOut CreateByAddress(ConfidentialAsset asset, long satoshiValue, Address address)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      return new ConfidentialTxOut(asset, new ConfidentialValue(satoshiValue), address.GetLockingScript());
+    }
+
+    /// <summary>
+    /// Create from confidential address.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi value</param>
+    /// <param name="address">confidential address</param>
+    public static ConfidentialTxOut CreateByAddress(ConfidentialAsset asset, long satoshiValue, ConfidentialAddress address)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      return new ConfidentialTxOut(asset, new ConfidentialValue(satoshiValue),
+        address.GetAddress().GetLockingScript(), address.GetConfidentialKey().ToBytes(),
+        Array.Empty<byte>(), Array.Empty<byte>());
+    }
 
     public ConfidentialTxOut(ConfidentialAsset asset, long value)
     {
@@ -882,6 +994,82 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Add transction pegin input.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="asset">asset.</param>
+    /// <param name="mainchainGenesisBlockHash">mainchain genesis block hash.</param>
+    /// <param name="claimScript">claim script.</param>
+    /// <param name="mainchainTx">mainchain transaction.</param>
+    /// <param name="txoutProof">mainchain txout proof.</param>
+    public void AddPeginTxIn(OutPoint outpoint, ConfidentialAsset asset,
+      BlockHash mainchainGenesisBlockHash, Script claimScript, Transaction mainchainTx,
+      ByteData txoutProof)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      AddPeginTxIn(outpoint.GetTxid(), outpoint.GetVout(), asset,
+        mainchainGenesisBlockHash,  claimScript,  mainchainTx, txoutProof);
+    }
+
+    /// <summary>
+    /// Add transction pegin input.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="asset">asset.</param>
+    /// <param name="mainchainGenesisBlockHash">mainchain genesis block hash.</param>
+    /// <param name="claimScript">claim script.</param>
+    /// <param name="mainchainTx">mainchain transaction.</param>
+    /// <param name="txoutProof">mainchain txout proof.</param>
+    public void AddPeginTxIn(Txid txid, uint vout, ConfidentialAsset asset,
+      BlockHash mainchainGenesisBlockHash, Script claimScript, Transaction mainchainTx,
+      ByteData txoutProof)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if (mainchainGenesisBlockHash is null)
+      {
+        throw new ArgumentNullException(nameof(mainchainGenesisBlockHash));
+      }
+      if (claimScript is null)
+      {
+        throw new ArgumentNullException(nameof(claimScript));
+      }
+      if (mainchainTx is null)
+      {
+        throw new ArgumentNullException(nameof(mainchainTx));
+      }
+      if (txoutProof is null)
+      {
+        throw new ArgumentNullException(nameof(txoutProof));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var amount = mainchainTx.GetTxOut(vout).SatoshiValue;
+        var ret = NativeMethods.CfdAddTxPeginInput(
+            handle.GetHandle(), txHandle.GetHandle(), txid.ToHexString(), vout,
+            amount, asset.ToHexString(), mainchainGenesisBlockHash.ToHexString(),
+            claimScript.ToHexString(), mainchainTx.ToHexString(), txoutProof.ToHexString());
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
     /// Add transction input list.
     /// </summary>
     /// <param name="txinList">tx input list.</param>
@@ -1001,16 +1189,66 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Add transction output.
+    /// </summary>
+    /// <param name="asset">txout asset.</param>
+    /// <param name="valueCommitment">txout commitment value.</param>
+    /// <param name="lockingScript">txout ScriptPubkey.</param>
+    /// <param name="nonce">txout nonce.</param>
+    public void AddTxOut(ConfidentialAsset asset, ConfidentialValue valueCommitment, Script lockingScript, ByteData nonce)
+    {
+      if (valueCommitment is null)
+      {
+        throw new ArgumentNullException(nameof(valueCommitment));
+      }
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdAddConfidentialTxOut(
+            handle.GetHandle(), tx,
+            asset.ToHexString(),
+            (valueCommitment.HasBlinding()) ? 0 : valueCommitment.GetSatoshiValue(),
+            (valueCommitment.HasBlinding()) ? valueCommitment.ToHexString() : "",
+            "",
+            lockingScript.ToHexString(),
+            (nonce is null) ? "" : nonce.ToHexString(),
+            out IntPtr txString);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = CCommon.ConvertToString(txString);
+      }
+    }
+
+    /// <summary>
+    /// Add transaction output fee.
+    /// </summary>
+    /// <param name="asset">asset</param>
+    /// <param name="satoshiValue">satoshi amount</param>
+    public void AddFeeTxOut(ConfidentialAsset asset, long satoshiValue)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      AddFeeTxOut(asset.ToHexString(), satoshiValue);
+    }
+
+    /// <summary>
     /// Add transaction output fee.
     /// </summary>
     /// <param name="asset">asset</param>
     /// <param name="satoshiValue">satoshi amount</param>
     public void AddFeeTxOut(string asset, long satoshiValue)
     {
-      if (asset is null)
-      {
-        throw new ArgumentNullException(nameof(asset));
-      }
       AddTxOutList(new[] { new ConfidentialTxOut(new ConfidentialAsset(asset), satoshiValue) });
     }
 
@@ -1030,6 +1268,59 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Add transction pegout output.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="asset">asset.</param>
+    /// <param name="mainchainGenesisBlockHash">mainchain genesis block hash.</param>
+    /// <param name="claimScript">claim script.</param>
+    /// <param name="mainchainTx">mainchain transaction.</param>
+    /// <param name="txoutProof">mainchain txout proof.</param>
+    public Address AddPegoutTxOut(ConfidentialAsset asset, long amount,
+      CfdNetworkType mainchainNetwork, CfdNetworkType elementsNetwork,
+      BlockHash mainchainGenesisBlockHash, Privkey onlinePrivkey,
+      string mainchainOutputDescriptorString, uint bip32Counter,
+      ByteData whitelist)
+    {
+      if (asset is null)
+      {
+        throw new ArgumentNullException(nameof(asset));
+      }
+      if (mainchainGenesisBlockHash is null)
+      {
+        throw new ArgumentNullException(nameof(mainchainGenesisBlockHash));
+      }
+      if (onlinePrivkey is null)
+      {
+        throw new ArgumentNullException(nameof(onlinePrivkey));
+      }
+      if (whitelist is null)
+      {
+        throw new ArgumentNullException(nameof(whitelist));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var onlinePubkey = onlinePrivkey.GetPubkey();
+        var ret = NativeMethods.CfdAddTxPegoutOutput(
+            handle.GetHandle(), txHandle.GetHandle(), asset.ToHexString(), amount,
+            (int)mainchainNetwork, (int)elementsNetwork,
+            mainchainGenesisBlockHash.ToHexString(), onlinePubkey.ToHexString(),
+            onlinePrivkey.ToHexString(), mainchainOutputDescriptorString, bip32Counter,
+            whitelist.ToHexString(), out IntPtr mainchainAddress);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var addr = CCommon.ConvertToString(mainchainAddress);
+        tx = GetTransactionByHandle(handle, txHandle);
+        return new Address(addr);
+      }
+    }
+
+    /// <summary>
     /// Add transaction output list.
     /// </summary>
     /// <param name="txoutList">txout list</param>
@@ -1042,7 +1333,15 @@ namespace Cfd
     /// Blind transction txout only.
     /// </summary>
     /// <param name="utxos">txin utxo list</param>
-    /// <param name="confidentialKeys">txout confidential key list</param>
+    public void BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos)
+    {
+      BlindTxOut(utxos, new Dictionary<uint, Pubkey>());
+    }
+
+    /// <summary>
+    /// Blind transction txout only.
+    /// </summary>
+    /// <param name="utxos">txin utxo list</param>
     /// <param name="confidentialKeys">txout confidential key list</param>
     public void BlindTxOut(IDictionary<OutPoint, AssetValueData> utxos,
         IDictionary<uint, Pubkey> confidentialKeys)
@@ -1473,6 +1772,100 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Update witness stack.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdateWitnessStack(OutPoint outpoint, uint witnessStackIndex, ByteData item)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      UpdateWitnessStack(outpoint.GetTxid(), outpoint.GetVout(), witnessStackIndex, item);
+    }
+
+    /// <summary>
+    /// Update witness stack.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdateWitnessStack(Txid txid, uint vout, uint witnessStackIndex, ByteData item)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (item is null)
+      {
+        throw new ArgumentNullException(nameof(item));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdUpdateWitnessStack(
+            handle.GetHandle(), txHandle.GetHandle(), 0, txid.ToHexString(), vout,
+            witnessStackIndex, item.ToHexString());
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
+    /// Update pegin witness stack.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdatePeginWitnessStack(OutPoint outpoint, uint witnessStackIndex, ByteData item)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      UpdatePeginWitnessStack(outpoint.GetTxid(), outpoint.GetVout(), witnessStackIndex, item);
+    }
+
+    /// <summary>
+    /// Update pegin witness stack.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdatePeginWitnessStack(Txid txid, uint vout, uint witnessStackIndex, ByteData item)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (item is null)
+      {
+        throw new ArgumentNullException(nameof(item));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdUpdateWitnessStack(
+            handle.GetHandle(), txHandle.GetHandle(), 1, txid.ToHexString(), vout,
+            witnessStackIndex, item.ToHexString());
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
     /// Get transaction input data.
     /// </summary>
     /// <param name="outpoint">utxo outpoint(txid and vout)</param>
@@ -1654,12 +2047,116 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Get transaction output index list.
+    /// </summary>
+    /// <param name="address">txout address.</param>
+    /// <returns>transaction output index list.</returns>
+    public uint[] GetTxOutIndexes(Address address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        return GetTxOutIndexesInternal(handle, txHandle, address.ToAddressString(), "");
+      }
+    }
+
+    /// <summary>
+    /// Get transaction output index list.
+    /// </summary>
+    /// <param name="address">txout address.</param>
+    /// <returns>transaction output index list.</returns>
+    public uint[] GetTxOutIndexes(ConfidentialAddress address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        return GetTxOutIndexesInternal(handle, txHandle, address.ToAddressString(), "");
+      }
+    }
+
+    /// <summary>
+    /// Get transaction output index list.
+    /// </summary>
+    /// <param name="lockingScript">txout locking script.</param>
+    /// <returns>transaction output index list.</returns>
+    public uint[] GetTxOutIndexes(Script lockingScript)
+    {
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        return GetTxOutIndexesInternal(handle, txHandle, "", lockingScript.ToHexString());
+      }
+    }
+
+    /// <summary>
     /// Get transaction output fee index.
     /// </summary>
     /// <returns>transaction output index.</returns>
     public uint GetTxOutFeeIndex()
     {
       return GetTxOutIndex(new Script(""));
+    }
+
+    /// <summary>
+    /// Split transaction output.
+    /// </summary>
+    /// <param name="index">target txout index</param>
+    /// <param name="txoutList">txout list</param>
+    public void SplitTxOutList(uint index, ConfidentialTxOut[] txoutList)
+    {
+      if (txoutList is null)
+      {
+        throw new ArgumentNullException(nameof(txoutList));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdCreateSplitTxOutHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out IntPtr splitOutputHandle);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+
+        try
+        {
+          for (uint targetIndex = 0; targetIndex < txoutList.Length; ++targetIndex)
+          {
+            ret = NativeMethods.CfdAddSplitTxOutData(handle.GetHandle(), splitOutputHandle,
+              txoutList[targetIndex].Value.GetSatoshiValue(), "",
+              txoutList[targetIndex].ScriptPubkey.ToHexString(),
+              txoutList[targetIndex].Nonce.ToHexString());
+            if (ret != CfdErrorCode.Success)
+            {
+              handle.ThrowError(ret);
+            }
+          }
+
+          ret = NativeMethods.CfdSplitTxOut(handle.GetHandle(), txHandle.GetHandle(), splitOutputHandle, index);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          tx = GetTransactionByHandle(handle, txHandle);
+        }
+        finally
+        {
+          NativeMethods.CfdFreeSplitTxOutHandle(handle.GetHandle(), splitOutputHandle);
+        }
+      }
     }
 
     /// <summary>
@@ -1733,7 +2230,7 @@ namespace Cfd
             pubkey.ToHexString(), "",
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "",
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             out IntPtr sighash);
         if (ret != CfdErrorCode.Success)
@@ -1795,7 +2292,7 @@ namespace Cfd
             "", redeemScript.ToHexString(),
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "",
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             out IntPtr sighash);
         if (ret != CfdErrorCode.Success)
@@ -1933,7 +2430,7 @@ namespace Cfd
             (privkey.ToHexString().Length > 0) ? privkey.ToHexString() : privkey.GetWif(),
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "",
-            (int)sighashType.SighashType,
+            sighashType.GetValue(),
             sighashType.IsSighashAnyoneCanPay,
             hasGrindR, out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -1989,7 +2486,7 @@ namespace Cfd
             tx, txid.ToHexString(), vout, (int)hashType,
             pubkey.ToHexString(), signature.ToHexString(),
             signature.IsDerEncode(),
-            (int)signature.GetSignatureHashType().SighashType,
+            signature.GetSignatureHashType().GetValue(),
             signature.GetSignatureHashType().IsSighashAnyoneCanPay,
             out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -2055,7 +2552,7 @@ namespace Cfd
               ret = NativeMethods.CfdAddMultisigSignDataToDer(
                 handle.GetHandle(), multiSignHandle,
                 signList[index].ToHexString(),
-                (int)signList[index].GetSignatureHashType().SighashType,
+                signList[index].GetSignatureHashType().GetValue(),
                 signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
                 signList[index].GetRelatedPubkey().ToHexString());
             }
@@ -2140,7 +2637,7 @@ namespace Cfd
               tempTx, txid.ToHexString(), vout, (int)hashType,
               signList[index].ToHexString(),
               signList[index].IsDerEncode(),
-              (int)signList[index].GetSignatureHashType().SighashType,
+              signList[index].GetSignatureHashType().GetValue(),
               signList[index].GetSignatureHashType().IsSighashAnyoneCanPay,
               clearStack, out txString);
           if (ret != CfdErrorCode.Success)
@@ -2187,7 +2684,7 @@ namespace Cfd
             handle.GetHandle(), defaultNetType,
             tx, txid.ToHexString(), vout, (int)hashType,
             signData.ToHexString(), signData.IsDerEncode(),
-            (int)signData.GetSignatureHashType().SighashType,
+            signData.GetSignatureHashType().GetValue(),
             signData.GetSignatureHashType().IsSighashAnyoneCanPay,
             clearStack, out IntPtr txString);
         if (ret != CfdErrorCode.Success)
@@ -2291,7 +2788,7 @@ namespace Cfd
         var ret = NativeMethods.CfdVerifyConfidentialTxSignature(
             handle.GetHandle(), tx, sig.ToHexString(), pubkey.ToHexString(), "",
             txid.ToHexString(), vout,
-            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            sighashType.GetValue(), sighashType.IsSighashAnyoneCanPay,
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "",
             (int)((hashType == CfdHashType.P2pkh) ? CfdWitnessVersion.VersionNone : CfdWitnessVersion.Version0));
@@ -2354,7 +2851,7 @@ namespace Cfd
             handle.GetHandle(), tx, sig.ToHexString(),
             pubkey.ToHexString(), redeemScript.ToHexString(),
             txid.ToHexString(), vout,
-            (int)sighashType.SighashType, sighashType.IsSighashAnyoneCanPay,
+            sighashType.GetValue(), sighashType.IsSighashAnyoneCanPay,
             value.GetSatoshiValue(),
             (value.HasBlinding()) ? value.ToHexString() : "",
             (int)((hashType == CfdHashType.P2sh) ? CfdWitnessVersion.VersionNone : CfdWitnessVersion.Version0));
@@ -2533,6 +3030,149 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Set issue asset.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="assetAmount">issue asset amount</param>
+    /// <param name="assetAddress">sending asset address</param>
+    /// <param name="tokenAmount">issue token amount</param>
+    /// <param name="tokenAddress">sending token address</param>
+    /// <param name="isBlindAmount">blind amount flag</param>
+    /// <returns>issuance asset data</returns>
+    public IssueAssetData SetRawIssueAsset(OutPoint outpoint, long assetAmount,
+      Address assetAddress, long tokenAmount, Address tokenAddress, bool isBlindAmount)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      return SetRawIssueAsset(outpoint.GetTxid(), outpoint.GetVout(),
+        assetAmount, assetAddress, tokenAmount, tokenAddress, isBlindAmount);
+    }
+
+    /// <summary>
+    /// Set issue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="assetAddress">sending asset address</param>
+    /// <param name="tokenAmount">issue token amount</param>
+    /// <param name="tokenAddress">sending token address</param>
+    /// <param name="isBlindAmount">blind amount flag</param>
+    /// <returns>issuance asset data</returns>
+    public IssueAssetData SetRawIssueAsset(Txid txid, uint vout, long assetAmount,
+      Address assetAddress, long tokenAmount, Address tokenAddress, bool isBlindAmount)
+    {
+      if (assetAddress is null)
+      {
+        throw new ArgumentNullException(nameof(assetAddress));
+      }
+      if (tokenAddress is null)
+      {
+        throw new ArgumentNullException(nameof(tokenAddress));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var assetData = SetRawIssueAssetInternal(
+          handle, txHandle, txid, vout, new ByteData256(), assetAmount,
+          assetAddress.ToAddressString(), "", tokenAmount, tokenAddress.ToAddressString(), "",
+          isBlindAmount);
+        tx = GetTransactionByHandle(handle, txHandle);
+        return assetData;
+      }
+    }
+
+    /// <summary>
+    /// Set issue asset.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="assetAmount">issue asset amount</param>
+    /// <param name="assetAddress">sending asset address</param>
+    /// <param name="tokenAmount">issue token amount</param>
+    /// <param name="tokenAddress">sending token address</param>
+    /// <param name="isBlindAmount">blind amount flag</param>
+    /// <returns>issuance asset data</returns>
+    public IssueAssetData SetRawIssueAsset(OutPoint outpoint, long assetAmount,
+      ConfidentialAddress assetAddress, long tokenAmount, ConfidentialAddress tokenAddress, bool isBlindAmount)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      return SetRawIssueAsset(outpoint.GetTxid(), outpoint.GetVout(),
+        assetAmount, assetAddress, tokenAmount, tokenAddress, isBlindAmount);
+    }
+
+    /// <summary>
+    /// Set issue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="assetAddress">sending asset address</param>
+    /// <param name="tokenAmount">issue token amount</param>
+    /// <param name="tokenAddress">sending token address</param>
+    /// <param name="isBlindAmount">blind amount flag</param>
+    /// <returns>issuance asset data</returns>
+    public IssueAssetData SetRawIssueAsset(Txid txid, uint vout, long assetAmount,
+      ConfidentialAddress assetAddress, long tokenAmount, ConfidentialAddress tokenAddress, bool isBlindAmount)
+    {
+      if (assetAddress is null)
+      {
+        throw new ArgumentNullException(nameof(assetAddress));
+      }
+      if (tokenAddress is null)
+      {
+        throw new ArgumentNullException(nameof(tokenAddress));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var assetData = SetRawIssueAssetInternal(
+          handle, txHandle, txid, vout, new ByteData256(), assetAmount,
+          assetAddress.ToAddressString(), "", tokenAmount, tokenAddress.ToAddressString(), "",
+          isBlindAmount);
+        tx = GetTransactionByHandle(handle, txHandle);
+        return assetData;
+      }
+    }
+
+    /// <summary>
+    /// Set issue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="contractHash">contract hash</param>
+    /// <param name="assetLockingScript">sending asset locking script</param>
+    /// <param name="tokenAmount">issue token amount</param>
+    /// <param name="tokenLockingScript">sending token locking script</param>
+    /// <param name="isBlindAmount">blind amount flag</param>
+    /// <returns>issuance asset data</returns>
+    public IssueAssetData SetRawIssueAsset(Txid txid, uint vout, ByteData256 contractHash,
+      long assetAmount, Script assetLockingScript, long tokenAmount, Script tokenLockingScript,
+      bool isBlindAmount)
+    {
+      if (assetLockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(assetLockingScript));
+      }
+      if (tokenLockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(tokenLockingScript));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var assetData = SetRawIssueAssetInternal(
+          handle, txHandle, txid, vout, contractHash, assetAmount,
+          "", assetLockingScript.ToHexString(), tokenAmount, "", tokenLockingScript.ToHexString(),
+          isBlindAmount);
+        tx = GetTransactionByHandle(handle, txHandle);
+        return assetData;
+      }
+    }
+
+    /// <summary>
     /// Set reissue asset.
     /// </summary>
     /// <param name="outpoint">utxo outpoint</param>
@@ -2542,7 +3182,7 @@ namespace Cfd
     /// <param name="address">sending address</param>
     /// <returns>reissuance asset</returns>
     public ConfidentialAsset SetRawReissueAsset(OutPoint outpoint, long assetAmount,
-      ByteData blindingNonce, ByteData entropy, Address address)
+      BlindFactor blindingNonce, BlindFactor entropy, Address address)
     {
       if (outpoint is null)
       {
@@ -2563,37 +3203,116 @@ namespace Cfd
     /// <param name="address">sending address</param>
     /// <returns>reissuance asset</returns>
     public ConfidentialAsset SetRawReissueAsset(Txid txid, uint vout, long assetAmount,
-      ByteData blindingNonce, ByteData entropy, Address address)
+      BlindFactor blindingNonce, BlindFactor entropy, Address address)
     {
-      if (txid is null)
-      {
-        throw new ArgumentNullException(nameof(txid));
-      }
-      if (blindingNonce is null)
-      {
-        throw new ArgumentNullException(nameof(blindingNonce));
-      }
-      if (entropy is null)
-      {
-        throw new ArgumentNullException(nameof(entropy));
-      }
       if (address is null)
       {
         throw new ArgumentNullException(nameof(address));
       }
       using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
-        var ret = NativeMethods.CfdSetRawReissueAsset(
-          handle.GetHandle(), tx, txid.ToHexString(), vout, assetAmount,
-          blindingNonce.ToHexString(), entropy.ToHexString(), address.ToAddressString(),
-          "", out IntPtr assetString, out IntPtr txString);
-        if (ret != CfdErrorCode.Success)
-        {
-          handle.ThrowError(ret);
-        }
-        var asset = CCommon.ConvertToString(assetString);
-        tx = CCommon.ConvertToString(txString);
-        return new ConfidentialAsset(asset);
+        var asset = SetRawReissueAssetInternal(
+          handle, txHandle, txid, vout, assetAmount,
+          blindingNonce, entropy, address.ToAddressString(), "");
+        tx = GetTransactionByHandle(handle, txHandle);
+        return asset;
+      }
+    }
+
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="address">sending address</param>
+    /// <returns>reissuance asset</returns>
+    public ConfidentialAsset SetRawReissueAsset(OutPoint outpoint, long assetAmount,
+      BlindFactor blindingNonce, BlindFactor entropy, ConfidentialAddress address)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      return SetRawReissueAsset(outpoint.GetTxid(), outpoint.GetVout(),
+        assetAmount, blindingNonce, entropy, address);
+    }
+
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="address">sending address</param>
+    /// <returns>reissuance asset</returns>
+    public ConfidentialAsset SetRawReissueAsset(Txid txid, uint vout, long assetAmount,
+      BlindFactor blindingNonce, BlindFactor entropy, ConfidentialAddress address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var asset = SetRawReissueAssetInternal(
+          handle, txHandle, txid, vout, assetAmount,
+          blindingNonce, entropy, address.ToAddressString(), "");
+        tx = GetTransactionByHandle(handle, txHandle);
+        return asset;
+      }
+    }
+
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="outpoint">utxo outpoint</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="lockingScript">direct locking script</param>
+    /// <returns>reissuance asset</returns>
+    public ConfidentialAsset SetRawReissueAsset(OutPoint outpoint, long assetAmount,
+      BlindFactor blindingNonce, BlindFactor entropy, Script lockingScript)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      return SetRawReissueAsset(outpoint.GetTxid(), outpoint.GetVout(),
+        assetAmount, blindingNonce, entropy, lockingScript);
+    }
+
+    /// <summary>
+    /// Set reissue asset.
+    /// </summary>
+    /// <param name="txid">utxo txid</param>
+    /// <param name="vout">utxo vout</param>
+    /// <param name="assetAmount">reissue asset amount</param>
+    /// <param name="blindingNonce">utxo blinding nonce</param>
+    /// <param name="entropy">issuance entropy</param>
+    /// <param name="lockingScript">direct locking script</param>
+    /// <returns>reissuance asset</returns>
+    public ConfidentialAsset SetRawReissueAsset(Txid txid, uint vout, long assetAmount,
+      BlindFactor blindingNonce, BlindFactor entropy, Script lockingScript)
+    {
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var asset = SetRawReissueAssetInternal(
+          handle, txHandle, txid, vout, assetAmount,
+          blindingNonce, entropy, "", lockingScript.ToHexString());
+        tx = GetTransactionByHandle(handle, txHandle);
+        return asset;
       }
     }
 
@@ -3338,5 +4057,104 @@ namespace Cfd
       return index;
     }
 
+    private static string GetTransactionByHandle(ErrorHandle handle, TxHandle txHandle)
+    {
+      var ret = NativeMethods.CfdFinalizeTransaction(
+        handle.GetHandle(), txHandle.GetHandle(), out IntPtr txPtr);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      return CCommon.ConvertToString(txPtr);
+    }
+
+    private static uint[] GetTxOutIndexesInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
+    {
+      List<uint> list = new List<uint>();
+      uint offset = 0;
+      var ret = NativeMethods.CfdGetTxOutIndexWithOffsetByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), offset, address, lockingScript,
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      list.Add(index);
+      offset = index + 1;
+      while (true)
+      {
+        ret = NativeMethods.CfdGetTxOutIndexWithOffsetByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), offset, address, lockingScript,
+            out index);
+        if (ret == CfdErrorCode.OutOfRangeError)
+        {
+          break;
+        }
+        else if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        list.Add(index);
+        offset = index + 1;
+      }
+      return list.ToArray();
+    }
+
+    private static IssueAssetData SetRawIssueAssetInternal(ErrorHandle handle, TxHandle txHandle,
+      Txid txid, uint vout, ByteData256 contractHash,
+      long assetAmount, string assetAddress, string assetLockingScript,
+      long tokenAmount, string tokenAddress, string tokenLockingScript, bool isBlindAmount)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (contractHash is null)
+      {
+        throw new ArgumentNullException(nameof(contractHash));
+      }
+      var ret = NativeMethods.CfdSetIssueAsset(
+        handle.GetHandle(), txHandle.GetHandle(), txid.ToHexString(), vout, contractHash.ToHexString(),
+        assetAmount, assetAddress, assetLockingScript, tokenAmount, tokenAddress, tokenLockingScript,
+        isBlindAmount,
+        out IntPtr entropyString, out IntPtr assetString, out IntPtr tokenString);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      var tempEntropy = CCommon.ConvertToString(entropyString);
+      var tempAsset = CCommon.ConvertToString(assetString);
+      var tempToken = CCommon.ConvertToString(tokenString);
+      return new IssueAssetData(new ConfidentialAsset(tempAsset), new ConfidentialAsset(tempToken),
+        new BlindFactor(tempEntropy));
+    }
+
+    private static ConfidentialAsset SetRawReissueAssetInternal(ErrorHandle handle, TxHandle txHandle,
+      Txid txid, uint vout, long assetAmount,
+      BlindFactor blindingNonce, BlindFactor entropy, string address, string directLockingScript)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (blindingNonce is null)
+      {
+        throw new ArgumentNullException(nameof(blindingNonce));
+      }
+      if (entropy is null)
+      {
+        throw new ArgumentNullException(nameof(entropy));
+      }
+      var ret = NativeMethods.CfdSetReissueAsset(
+        handle.GetHandle(), txHandle.GetHandle(), txid.ToHexString(), vout, assetAmount,
+        blindingNonce.ToHexString(), entropy.ToHexString(), address,
+        directLockingScript, out IntPtr assetString);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      var asset = CCommon.ConvertToString(assetString);
+      return new ConfidentialAsset(asset);
+    }
   }
 }

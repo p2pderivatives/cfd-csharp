@@ -112,6 +112,10 @@ namespace Cfd
     /// use signature hash anyone can pay.
     /// </summary>
     public bool IsSighashAnyoneCanPay { get; }
+    /// <summary>
+    /// use signature hash rangeproof on elements.
+    /// </summary>
+    public bool IsSighashRangeproof { get; }
 
     /// <summary>
     /// Constructor.
@@ -121,6 +125,28 @@ namespace Cfd
     {
       SighashType = sighashType;
       IsSighashAnyoneCanPay = false;
+      IsSighashRangeproof = false;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="sighashType">sighash type.</param>
+    public SignatureHashType(int sighashType)
+    {
+      IsSighashAnyoneCanPay = false;
+      IsSighashRangeproof = false;
+      if ((sighashType & 0x80) != 0)
+      {
+        IsSighashAnyoneCanPay = true;
+        sighashType &= ~0x80;
+      }
+      if ((sighashType & 0x40) != 0)
+      {
+        IsSighashRangeproof = true;
+        sighashType &= ~0x40;
+      }
+      SighashType = (CfdSighashType)sighashType;
     }
 
     /// <summary>
@@ -132,6 +158,20 @@ namespace Cfd
     {
       SighashType = sighashType;
       IsSighashAnyoneCanPay = sighashAnyoneCanPay;
+      IsSighashRangeproof = false;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="sighashType">sighash type.</param>
+    /// <param name="sighashAnyoneCanPay">sighash anyone can pay.</param>
+    /// <param name="sighashRangeproof">sighash rangeproof.</param>
+    public SignatureHashType(CfdSighashType sighashType, bool sighashAnyoneCanPay, bool sighashRangeproof)
+    {
+      SighashType = sighashType;
+      IsSighashAnyoneCanPay = sighashAnyoneCanPay;
+      IsSighashRangeproof = sighashRangeproof;
     }
 
     public int GetValue()
@@ -141,13 +181,18 @@ namespace Cfd
       {
         value |= 0x80;
       }
+      if (IsSighashRangeproof)
+      {
+        value |= 0x40;
+      }
       return value;
     }
 
     public bool Equals(SignatureHashType other)
     {
       return SighashType.Equals(other.SighashType) &&
-          (IsSighashAnyoneCanPay == other.IsSighashAnyoneCanPay);
+          (IsSighashAnyoneCanPay == other.IsSighashAnyoneCanPay) &&
+          (IsSighashRangeproof == other.IsSighashRangeproof);
     }
 
     public override bool Equals(object obj)
@@ -165,7 +210,7 @@ namespace Cfd
 
     public override int GetHashCode()
     {
-      return SighashType.GetHashCode() + IsSighashAnyoneCanPay.GetHashCode();
+      return SighashType.GetHashCode() + IsSighashAnyoneCanPay.GetHashCode() + IsSighashRangeproof.GetHashCode();
     }
 
     public static bool operator ==(SignatureHashType left, SignatureHashType right)
@@ -330,6 +375,20 @@ namespace Cfd
     /// scriptPubkey (locking script).
     /// </summary>
     public Script ScriptPubkey { get; }
+
+    /// <summary>
+    /// Create from address.
+    /// </summary>
+    /// <param name="satoshiValue">satoshi value</param>
+    /// <param name="address">address</param>
+    public static TxOut CreateByAddress(long satoshiValue, Address address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      return new TxOut(satoshiValue, address.GetLockingScript());
+    }
 
     /// <summary>
     /// Constructor.
@@ -676,6 +735,53 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Update witness stack.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdateWitnessStack(OutPoint outpoint, uint witnessStackIndex, ByteData item)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      UpdateWitnessStack(outpoint.GetTxid(), outpoint.GetVout(), witnessStackIndex, item);
+    }
+
+    /// <summary>
+    /// Update witness stack.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="witnessStackIndex">witness stack index.</param>
+    /// <param name="item">witness stack item.</param>
+    public void UpdateWitnessStack(Txid txid, uint vout, uint witnessStackIndex, ByteData item)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+      if (item is null)
+      {
+        throw new ArgumentNullException(nameof(item));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdUpdateWitnessStack(
+            handle.GetHandle(), txHandle.GetHandle(), 0, txid.ToHexString(), vout,
+            witnessStackIndex, item.ToHexString());
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
     /// Add transction output.
     /// </summary>
     /// <param name="satoshiValue">txout satoshi value.</param>
@@ -743,6 +849,55 @@ namespace Cfd
     public void AddTxOutList(TxOut[] txoutList)
     {
       tx = CreateTransaction(0, 0, tx, null, txoutList);
+    }
+
+    /// <summary>
+    /// Split transaction output.
+    /// </summary>
+    /// <param name="index">target txout index</param>
+    /// <param name="txoutList">txout list</param>
+    public void SplitTxOutList(uint index, TxOut[] txoutList)
+    {
+      if (txoutList is null)
+      {
+        throw new ArgumentNullException(nameof(txoutList));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdCreateSplitTxOutHandle(
+          handle.GetHandle(), txHandle.GetHandle(), out IntPtr splitOutputHandle);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+
+        try
+        {
+          for (uint targetIndex = 0; targetIndex < txoutList.Length; ++targetIndex)
+          {
+            ret = NativeMethods.CfdAddSplitTxOutData(handle.GetHandle(), splitOutputHandle,
+              txoutList[targetIndex].SatoshiValue, "",
+              txoutList[targetIndex].ScriptPubkey.ToHexString(), "");
+            if (ret != CfdErrorCode.Success)
+            {
+              handle.ThrowError(ret);
+            }
+          }
+
+          ret = NativeMethods.CfdSplitTxOut(handle.GetHandle(), txHandle.GetHandle(), splitOutputHandle, index);
+          if (ret != CfdErrorCode.Success)
+          {
+            handle.ThrowError(ret);
+          }
+          tx = GetTransactionByHandle(handle, txHandle);
+        }
+        finally
+        {
+          NativeMethods.CfdFreeSplitTxOutHandle(handle.GetHandle(), splitOutputHandle);
+        }
+      }
     }
 
     /// <summary>
@@ -943,6 +1098,42 @@ namespace Cfd
       using (var txHandle = new TxHandle(handle, defaultNetType, tx))
       {
         return GetTxOutIndexInternal(handle, txHandle, "", lockingScript.ToHexString());
+      }
+    }
+
+    /// <summary>
+    /// Get transaction output index list.
+    /// </summary>
+    /// <param name="address">txout address.</param>
+    /// <returns>transaction output index list.</returns>
+    public uint[] GetTxOutIndexes(Address address)
+    {
+      if (address is null)
+      {
+        throw new ArgumentNullException(nameof(address));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        return GetTxOutIndexesInternal(handle, txHandle, address.ToAddressString(), "");
+      }
+    }
+
+    /// <summary>
+    /// Get transaction output index list.
+    /// </summary>
+    /// <param name="lockingScript">txout locking script.</param>
+    /// <returns>transaction output index list.</returns>
+    public uint[] GetTxOutIndexes(Script lockingScript)
+    {
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        return GetTxOutIndexesInternal(handle, txHandle, "", lockingScript.ToHexString());
       }
     }
 
@@ -2517,5 +2708,35 @@ namespace Cfd
       return index;
     }
 
+    private static uint[] GetTxOutIndexesInternal(ErrorHandle handle, TxHandle txHandle, string address, string lockingScript)
+    {
+      List<uint> list = new List<uint>();
+      uint offset = 0;
+      var ret = NativeMethods.CfdGetTxOutIndexWithOffsetByHandle(
+          handle.GetHandle(), txHandle.GetHandle(), offset, address, lockingScript,
+          out uint index);
+      if (ret != CfdErrorCode.Success)
+      {
+        handle.ThrowError(ret);
+      }
+      list.Add(index);
+      offset = index + 1;
+      while (true)
+      {
+        ret = NativeMethods.CfdGetTxOutIndexWithOffsetByHandle(
+            handle.GetHandle(), txHandle.GetHandle(), offset, address, lockingScript,
+            out index);
+        if (ret == CfdErrorCode.OutOfRangeError)
+        {
+          break;
+        } else if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        list.Add(index);
+        offset = index + 1;
+      }
+      return list.ToArray();
+    }
   }
 }

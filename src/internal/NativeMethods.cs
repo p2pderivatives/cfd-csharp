@@ -57,6 +57,25 @@ namespace Cfd
         [Out] out uint maxIndex);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetDescriptorRootData(
+        [In] IntPtr handle,
+        [In] IntPtr descriptorHandle,
+        [Out] out int scriptType,
+        [Out] out IntPtr lockingScript,
+        [Out] out IntPtr address,
+        [Out] out int hashType,
+        [Out] out IntPtr redeemScript,
+        [Out] out int keyType,
+        [Out] out IntPtr pubkey,
+        [Out] out IntPtr extPubkey,
+        [Out] out IntPtr extPrivkey,
+        [Out] out IntPtr schnorrPubkey,
+        [Out] out IntPtr treeString,
+        [Out] out bool isMultisig,
+        [Out] out uint maxKeyNum,
+        [Out] out uint reqSigNum);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdGetDescriptorData(
         [In] IntPtr handle,
         [In] IntPtr descriptorHandle,
@@ -393,6 +412,18 @@ namespace Cfd
         [Out] out IntPtr address,
         [Out] out IntPtr confidentialKey,
         [Out] out int networkType);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetPeginAddress(
+        [In] IntPtr handle,
+        [In] int mainchainNetworkType,
+        [In] string fedpegScript,
+        [In] int hashType,
+        [In] string pubkey,
+        [In] string redeemScript,
+        [Out] out IntPtr peginAddress,
+        [Out] out IntPtr claimScript,
+        [Out] out IntPtr tweakedFedpegScript);
 
     // ElementsTransaction
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
@@ -832,6 +863,66 @@ namespace Cfd
         [In] string directLockingScript,
         [In] string assetString,
         [In] string nonce);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetIssueAsset(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] string contractHash,
+        [In] long assetAmount,
+        [In] string assetAddress,
+        [In] string assetLockingScript,
+        [In] long tokenAmount,
+        [In] string tokenAddress,
+        [In] string tokenLockingScript,
+        [In] bool isBlindAsset,
+        [Out] out IntPtr entropy,
+        [Out] out IntPtr assetString,
+        [Out] out IntPtr tokenString);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSetReissueAsset(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] long assetAmount,
+        [In] string blindingNonce,
+        [In] string entropy,
+        [In] string address,
+        [In] string directLockingScript,
+        [Out] out IntPtr assetString);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTxPeginInput(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string txid,
+        [In] uint vout,
+        [In] long amount,
+        [In] string asset,
+        [In] string mainchainGenesisBlockHash,
+        [In] string claimScript,
+        [In] string mainchainTxHex,
+        [In] string txoutProof);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdAddTxPegoutOutput(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] string asset,
+        [In] long amount,
+        [In] int mainchainNetworkType,
+        [In] int elementsNetworkType,
+        [In] string mainchainGenesisBlockHash,
+        [In] string onlinePubkey,
+        [In] string masterOnlineKey,
+        [In] string mainchainOutputDescriptor,
+        [In] uint bip32Counter,
+        [In] string whitelist,
+        [Out] out IntPtr mainchainAddress);
 
     // Key
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -1796,6 +1887,23 @@ namespace Cfd
         [In] string asset);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdSplitTxOut(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] IntPtr splitOutputHandle,
+        [In] uint txoutIndex);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdUpdateWitnessStack(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [In] int stackType,
+        [In] string txid,
+        [In] uint vout,
+        [In] uint stackIndex,
+        [In] string stackItem);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdClearWitnessStack(
         [In] IntPtr handle,
         [In] IntPtr createHandle,
@@ -1915,6 +2023,26 @@ namespace Cfd
     internal static extern CfdErrorCode CfdFreeTransactionHandle(
         [In] IntPtr handle,
         [In] IntPtr createHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdCreateSplitTxOutHandle(
+        [In] IntPtr handle,
+        [In] IntPtr createHandle,
+        [Out] out IntPtr splitOutputHandle);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall)]
+    internal static extern CfdErrorCode CfdAddSplitTxOutData(
+        [In] IntPtr handle,
+        [In] IntPtr splitOutputHandle,
+        [In] long amount,
+        [In] string address,
+        [In] string directLockingScript,
+        [In] string directNonce);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdFreeSplitTxOutHandle(
+        [In] IntPtr handle,
+        [In] IntPtr splitOutputHandle);
 
     [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
     internal static extern CfdErrorCode CfdUpdateTxOutAmount(
@@ -2236,6 +2364,15 @@ namespace Cfd
     internal static extern CfdErrorCode CfdGetTxOutIndexByHandle(
         [In] IntPtr handle,
         [In] IntPtr txDataHandle,
+        [In] string address,
+        [In] string directLockingScript,
+        [Out] out uint index);
+
+    [DllImport("cfd", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Ansi)]
+    internal static extern CfdErrorCode CfdGetTxOutIndexWithOffsetByHandle(
+        [In] IntPtr handle,
+        [In] IntPtr txDataHandle,
+        [In] uint offset,
         [In] string address,
         [In] string directLockingScript,
         [Out] out uint index);

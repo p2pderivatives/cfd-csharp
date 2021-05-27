@@ -350,5 +350,101 @@ namespace Cfd.xTests
         descriptor.GetRedeemScript().GetAsm());
       Assert.Equal(2, descriptor.GetList().Length);
     }
+
+    [Fact]
+    public void DescriptorTaprootSchnorrTest()
+    {
+      string desc = "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a)";
+      string derivePath = "";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Regtest);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#mavrnmjy", descriptor.ToString());
+      Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
+      Assert.Equal("bcrt1paag57xhtzja2dnzh4vex37ejnjj5p3yy2nmlgem3a4e3ud962gdqqctzwn", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.False(descriptor.HasScriptHash());
+      Assert.Single(descriptor.GetList());
+      Assert.False(descriptor.HasTapScript());
+      Assert.Equal(CfdDescriptorKeyType.SchnorrPubkey,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+        descriptor.GetKeyData().SchnorrPubkey.ToHexString());
+    }
+
+    [Fact]
+    public void DescriptorTaprootXpubDeriveTest()
+    {
+      string desc = "tr([bd16bee5/0]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/0/*)";
+      string derivePath = "1";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Mainnet);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#aa0v9ye4", descriptor.ToString());
+      Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
+      Assert.Equal("bc1p33h4j4kre3e9r4yrl35rlgrtyt2w9hw8f94zty9vacmvfgcnlqtq0txdxt", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.False(descriptor.HasScriptHash());
+      Assert.Single(descriptor.GetList());
+      Assert.False(descriptor.HasTapScript());
+      Assert.Equal(CfdDescriptorKeyType.Bip32,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("xpub6EKMC2gSMfKgSwn7V9VZn7x1MvoeeVzSmmtSJ4z2L2d6R4WxvdQMouokypZHVp4fgKycrrQnGr6WJ5ED5jG9Q9FiA1q5gKYUc8u6JHJhdo8",
+        descriptor.GetKeyData().ExtPubkey.ToString());
+    }
+
+    [Fact]
+    public void DescriptorTaprootTapscriptSingleTest()
+    {
+      string desc = "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,c:pk_k(8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816))";
+      string derivePath = "";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Regtest);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#agrnj9m2", descriptor.ToString());
+      Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
+      Assert.Equal("bcrt1p2druqmxfa49j9ph0ea8d9y4gzrhy2x7u2zj0p2622d9r7k28v02s6x9jx3", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 5347c06cc9ed4b2286efcf4ed292a810ee451bdc50a4f0ab4a534a3f594763d5",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.False(descriptor.HasScriptHash());
+      Assert.Single(descriptor.GetList());
+      Assert.True(descriptor.HasTapScript());
+      Assert.Equal("tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac)",
+        descriptor.GetScriptTree().ToString());
+      Assert.Equal(CfdDescriptorKeyType.SchnorrPubkey,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+        descriptor.GetKeyData().SchnorrPubkey.ToHexString());
+    }
+
+    [Fact]
+    public void DescriptorTaprootTapscriptBranchTest()
+    {
+      string desc = "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,{c:pk_k(8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816),{c:pk_k([bd16bee5/0]xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH/0/0/*),thresh(2,c:pk_k(5cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc),s:sha256(e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f),a:hash160(dd69735817e0e3f6f826a9238dc2e291184f0131))}})";
+      string derivePath = "1";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Regtest);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#7ezsl729", descriptor.ToString());
+      Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
+      Assert.Equal("bcrt1pfuqf4j7ceyzmu3rsmude93ctu948r565hf2ucrn9z7zn7a7hjegskj3rsv", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 4f009acbd8c905be4470df1b92c70be16a71d354ba55cc0e6517853f77d79651",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.False(descriptor.HasScriptHash());
+      Assert.Single(descriptor.GetList());
+      Assert.True(descriptor.HasTapScript());
+      Assert.Equal("{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),tl(205cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bcac7c82012088a820e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f87936b82012088a914dd69735817e0e3f6f826a9238dc2e291184f0131876c935287)}}",
+        descriptor.GetScriptTree().ToString());
+      Assert.Equal(CfdDescriptorKeyType.SchnorrPubkey,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+        descriptor.GetKeyData().SchnorrPubkey.ToHexString());
+    }
   }
 }
