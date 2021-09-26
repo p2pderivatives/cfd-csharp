@@ -213,6 +213,54 @@ namespace Cfd
   };
 
   /// <summary>
+  /// Elements pegout data struct.
+  /// </summary>
+  public struct PegoutData : IEquatable<PegoutData>
+  {
+    public Address Address { get; }
+    public string BaseDescriptor { get; }
+
+    public PegoutData(Address pegoutAddress, string baseDescriptor)
+    {
+      Address = pegoutAddress;
+      BaseDescriptor = baseDescriptor;
+    }
+
+    public bool Equals(PegoutData other)
+    {
+      return Address == other.Address;
+    }
+
+    public override bool Equals(object obj)
+    {
+      if (obj is null)
+      {
+        return false;
+      }
+      if (obj is PegoutData)
+      {
+        return Equals((PegoutData)obj);
+      }
+      return false;
+    }
+
+    public override int GetHashCode()
+    {
+      return Address.GetHashCode();
+    }
+
+    public static bool operator ==(PegoutData left, PegoutData right)
+    {
+      return left.Equals(right);
+    }
+
+    public static bool operator !=(PegoutData left, PegoutData right)
+    {
+      return !(left == right);
+    }
+  };
+
+  /// <summary>
   /// Bitcoin Address class.
   /// </summary>
   public class Address : IEquatable<Address>
@@ -323,6 +371,75 @@ namespace Cfd
         return new PeginData(new Address(peginAddress), new Script(claimScript),
           new Script(tweakedFedpegScript));
       }
+    }
+
+    /// <summary>
+    /// Get pegout address.
+    /// </summary>
+    /// <param name="descriptor">descriptor</param>
+    /// <param name="bip32Counter">bip32 counter</param>
+    /// <param name="addressType">address type</param>
+    /// <param name="network">network type</param>
+    /// <returns>pegout address data</returns>
+    public static PegoutData GetPegoutAddress(string descriptor, uint bip32Counter, CfdAddressType addressType, CfdNetworkType network)
+    {
+      if (descriptor is null)
+      {
+        throw new ArgumentNullException(nameof(descriptor));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        CfdNetworkType elementsNetwork = CfdNetworkType.Liquidv1;
+        if (network != CfdNetworkType.Mainnet)
+        {
+          elementsNetwork = CfdNetworkType.ElementsRegtest;
+        }
+        var ret = NativeMethods.CfdGetPegoutAddress(
+          handle.GetHandle(), (int)network, (int)elementsNetwork, descriptor, bip32Counter,
+          (int)addressType,
+          out IntPtr outputAddress, out IntPtr outputDescriptor);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        string mainchainAddress = CCommon.ConvertToString(outputAddress);
+        string baseDescriptor = CCommon.ConvertToString(outputDescriptor);
+        return new PegoutData(new Address(mainchainAddress), baseDescriptor);
+      }
+    }
+
+    /// <summary>
+    /// Get pegout address.
+    /// </summary>
+    /// <param name="xpub">xpubkey</param>
+    /// <param name="bip32Counter">bip32 counter</param>
+    /// <param name="addressType">address type</param>
+    /// <param name="network">network type</param>
+    /// <returns>pegout address data</returns>
+    public static PegoutData GetPegoutAddress(ExtPubkey xpub, uint bip32Counter, CfdAddressType addressType, CfdNetworkType network)
+    {
+      if (xpub is null)
+      {
+        throw new ArgumentNullException(nameof(xpub));
+      }
+      return GetPegoutAddress(xpub.ToString(), bip32Counter, addressType, network);
+    }
+
+    /// <summary>
+    /// Get pegout address.
+    /// </summary>
+    /// <param name="descriptor">descriptor</param>
+    /// <param name="bip32Counter">bip32 counter</param>
+    /// <param name="addressType">address type</param>
+    /// <param name="network">network type</param>
+    /// <returns>pegout address data</returns>
+    public static PegoutData GetPegoutAddress(Descriptor descriptor, uint bip32Counter, CfdAddressType addressType, CfdNetworkType network)
+    {
+      if (descriptor is null)
+      {
+        throw new ArgumentNullException(nameof(descriptor));
+      }
+      return GetPegoutAddress(descriptor.ToString(), bip32Counter, addressType, network);
     }
 
     /// <summary>

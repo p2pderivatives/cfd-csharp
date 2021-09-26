@@ -305,6 +305,66 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Get taproot data.
+    /// </summary>
+    /// <param name="internalPubkey">internal pubkey</param>
+    /// <returns>taproot data</returns>
+    public TaprootScriptData GetTaprootData(SchnorrPubkey internalPubkey)
+    {
+      if (internalPubkey is null)
+      {
+        throw new ArgumentNullException(nameof(internalPubkey));
+      }
+      using (var handle = new ErrorHandle())
+      using (var treeHandle = new TreeHandle(handle))
+      {
+        Load(handle, treeHandle);
+        var ret = NativeMethods.CfdGetTaprootScriptTreeHash(
+          handle.GetHandle(), treeHandle.GetHandle(), internalPubkey.ToHexString(),
+          out IntPtr witnessProgram, out IntPtr tapLeafHashPtr, out IntPtr controlBlockStr);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var witnessProgramStr = CCommon.ConvertToString(witnessProgram);
+        var tapLeafHash = CCommon.ConvertToString(tapLeafHashPtr);
+        var controlBlock = CCommon.ConvertToString(controlBlockStr);
+
+        return new TaprootScriptData(
+          new SchnorrPubkey(witnessProgramStr), new ByteData(controlBlock),
+          new ByteData256(tapLeafHash), GetTapScript());
+      }
+    }
+
+    /// <summary>
+    /// Get tweaked privkey from internal privkey.
+    /// </summary>
+    /// <param name="privkey">internal privkey.</param>
+    /// <returns>tweaked privkey.</returns>
+    public Privkey GetTweakedPrivkey(Privkey privkey)
+    {
+      if (privkey is null)
+      {
+        throw new ArgumentNullException(nameof(privkey));
+      }
+      using (var handle = new ErrorHandle())
+      using (var treeHandle = new TreeHandle(handle))
+      {
+        Load(handle, treeHandle);
+        var ret = NativeMethods.CfdGetTaprootTweakedPrivkey(
+          handle.GetHandle(), treeHandle.GetHandle(), privkey.ToHexString(),
+          out IntPtr tweakedPrivkey);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var tweakedPrivkeyStr = CCommon.ConvertToString(tweakedPrivkey);
+
+        return new Privkey(tweakedPrivkeyStr);
+      }
+    }
+
+    /// <summary>
     /// Check exist tapscript on this branch root.
     /// </summary>
     /// <returns>true or false</returns>
@@ -319,10 +379,6 @@ namespace Cfd
     /// <returns></returns>
     public Script GetTapScript()
     {
-      if (tapscript.IsEmpty())
-      {
-        CfdCommon.ThrowError(CfdErrorCode.IllegalStateError, "tapscript not found.");
-      }
       return tapscript;
     }
 

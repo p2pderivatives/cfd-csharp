@@ -362,8 +362,8 @@ namespace Cfd.xTests
       output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
       Assert.Equal(desc + "#mavrnmjy", descriptor.ToString());
       Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
-      Assert.Equal("bcrt1paag57xhtzja2dnzh4vex37ejnjj5p3yy2nmlgem3a4e3ud962gdqqctzwn", descriptor.GetAddress().ToAddressString());
-      Assert.Equal("OP_1 ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+      Assert.Equal("bcrt1pvv8jm84ye0xr7p9h8l2k58rm287nryk73cnw0nvfxyjfqqpn60gssz7u5f", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 630f2d9ea4cbcc3f04b73fd56a1c7b51fd3192de8e26e7cd893124900033d3d1",
         descriptor.GetAddress().GetLockingScript().GetAsm());
       Assert.False(descriptor.HasScriptHash());
       Assert.Single(descriptor.GetList());
@@ -385,8 +385,8 @@ namespace Cfd.xTests
       output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
       Assert.Equal(desc + "#aa0v9ye4", descriptor.ToString());
       Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
-      Assert.Equal("bc1p33h4j4kre3e9r4yrl35rlgrtyt2w9hw8f94zty9vacmvfgcnlqtq0txdxt", descriptor.GetAddress().ToAddressString());
-      Assert.Equal("OP_1 8c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816",
+      Assert.Equal("bc1p4jueea9m897g4me0ef8eyqg9x5n02jzpwnl0yydvdtrl459r3fyqg8wvnj", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 acb99cf4bb397c8aef2fca4f9201053526f5484174fef211ac6ac7fad0a38a48",
         descriptor.GetAddress().GetLockingScript().GetAsm());
       Assert.False(descriptor.HasScriptHash());
       Assert.Single(descriptor.GetList());
@@ -440,6 +440,31 @@ namespace Cfd.xTests
       Assert.Single(descriptor.GetList());
       Assert.True(descriptor.HasTapScript());
       Assert.Equal("{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),{tl(208c6f5956c3cc7251d483fc683fa06b22d4e2ddc7496a2590acee36c4a313f816ac),tl(205cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bcac7c82012088a820e38990d0c7fc009880a9c07c23842e886c6bbdc964ce6bdd5817ad357335ee6f87936b82012088a914dd69735817e0e3f6f826a9238dc2e291184f0131876c935287)}}",
+        descriptor.GetScriptTree().ToString());
+      Assert.Equal(CfdDescriptorKeyType.SchnorrPubkey,
+        descriptor.GetKeyData().KeyType);
+      Assert.Equal("ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a",
+        descriptor.GetKeyData().SchnorrPubkey.ToHexString());
+    }
+
+    [Fact]
+    public void DescriptorTaprootHashOnlyTest()
+    {
+      string desc = "tr(ef514f1aeb14baa6cc57ab3268fb329ca540c48454f7f46771ed731e34ba521a,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,80039cda864c4f2f1c87f161b0038e57fb7a4a59ff37517048696b85cdaaf911}})";
+      string derivePath = "1";
+      Descriptor descriptor = new Descriptor(desc, derivePath, CfdNetworkType.Regtest);
+      output.WriteLine("desc: " + descriptor.ToString());
+      output.WriteLine("addr: " + descriptor.GetAddress().ToAddressString());
+      output.WriteLine("asm: " + descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.Equal(desc + "#xffhk3u4", descriptor.ToString());
+      Assert.Equal(CfdHashType.Taproot, descriptor.GetHashType());
+      Assert.Equal("bcrt1pfuqf4j7ceyzmu3rsmude93ctu948r565hf2ucrn9z7zn7a7hjegskj3rsv", descriptor.GetAddress().ToAddressString());
+      Assert.Equal("OP_1 4f009acbd8c905be4470df1b92c70be16a71d354ba55cc0e6517853f77d79651",
+        descriptor.GetAddress().GetLockingScript().GetAsm());
+      Assert.False(descriptor.HasScriptHash());
+      Assert.Single(descriptor.GetList());
+      Assert.True(descriptor.HasTapScript());
+      Assert.Equal("{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,{1717a480c2e3a474eed8dba83f684731243cff8ef384521936cf3a730dd0a286,80039cda864c4f2f1c87f161b0038e57fb7a4a59ff37517048696b85cdaaf911}}",
         descriptor.GetScriptTree().ToString());
       Assert.Equal(CfdDescriptorKeyType.SchnorrPubkey,
         descriptor.GetKeyData().KeyType);

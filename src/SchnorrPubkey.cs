@@ -222,7 +222,7 @@ namespace Cfd
 
     public bool IsValid()
     {
-      return data.Length == Size;
+      return data.Length == Size * 2;
     }
 
     public bool Equals(SchnorrPubkey other)

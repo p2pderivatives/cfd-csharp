@@ -18,7 +18,8 @@ namespace Cfd
     InvalidSettingError = 4,
     ConnectionError = 5,
     DiskAccessError = 6,
-    SignVerificationError = 7
+    SignVerificationError = 7,
+    NotFound = 8
   };
 
   /// <summary>

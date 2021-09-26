@@ -50,11 +50,11 @@ jobs:
         dotnet_target: [3.1, 5.0]
         include:
           - dotnet_target: 3.1
-            dotnet_version: 3.1.407
+            dotnet_version: 3.1.412
             framework: netstandard2.1
             script_suffix: _core3
           - dotnet_target: 5.0
-            dotnet_version: 5.0.201
+            dotnet_version: 5.0.400
             framework: net5.0
             script_suffix:
 
@@ -117,11 +117,11 @@ jobs:
         dotnet_target: [3.1, 5.0]
         include:
           - dotnet_target: 3.1
-            dotnet_version: 3.1.407
+            dotnet_version: 3.1.412
             framework: netstandard2.1
             script_suffix: _core3
           - dotnet_target: 5.0
-            dotnet_version: 5.0.201
+            dotnet_version: 5.0.400
             framework: net5.0
             script_suffix:
 
@@ -176,11 +176,11 @@ jobs:
             dotnet_target: 3.1
         include:
           - dotnet_target: 3.1
-            dotnet_version: 3.1.407
+            dotnet_version: 3.1.412
             framework: netstandard2.1
             script_suffix: _core3
           - dotnet_target: 5.0
-            dotnet_version: 5.0.201
+            dotnet_version: 5.0.400
             framework: net5.0
             script_suffix:
 

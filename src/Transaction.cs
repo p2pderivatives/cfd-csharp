@@ -735,6 +735,47 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Update txin sequence.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="sequence">sequence number.</param>
+    public void UpdateTxInSequence(OutPoint outpoint, uint sequence)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      UpdateTxInSequence(outpoint.GetTxid(), outpoint.GetVout(), sequence);
+    }
+
+    /// <summary>
+    /// Update txin sequence.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="sequence">sequence number.</param>
+    public void UpdateTxInSequence(Txid txid, uint vout, uint sequence)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdUpdateTxInSequence(
+            handle.GetHandle(), txHandle.GetHandle(), txid.ToHexString(), vout,
+            sequence);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
     /// Update witness stack.
     /// </summary>
     /// <param name="outpoint">outpoint.</param>
@@ -2729,7 +2770,8 @@ namespace Cfd
         if (ret == CfdErrorCode.OutOfRangeError)
         {
           break;
-        } else if (ret != CfdErrorCode.Success)
+        }
+        else if (ret != CfdErrorCode.Success)
         {
           handle.ThrowError(ret);
         }

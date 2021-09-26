@@ -222,16 +222,22 @@ namespace Cfd
       out ByteData version, out ByteData fingerprint, out ByteData chainCode,
       out uint depth, out uint childNumber, out CfdNetworkType networkType)
     {
-      var ret = NativeMethods.CfdGetExtkeyInformation(
+      var ret = NativeMethods.CfdGetExtkeyInfo(
           handle.GetHandle(), extkey,
           out IntPtr tempVersion,
           out IntPtr tempFingerprint,
           out IntPtr tempChainCode,
           out depth,
-          out childNumber);
+          out childNumber,
+          out int keyType,
+          out int netType);
       if (ret != CfdErrorCode.Success)
       {
         handle.ThrowError(ret);
+      }
+      else if (keyType != (int)CfdExtKeyType.Privkey)
+      {
+        throw new ArgumentException("ExtKeyType is unmatch. This key is xpub.");
       }
       string workVersion = CCommon.ConvertToString(tempVersion);
       string workFingerprint = CCommon.ConvertToString(tempFingerprint);
@@ -239,19 +245,7 @@ namespace Cfd
       version = new ByteData(workVersion);
       fingerprint = new ByteData(workFingerprint);
       chainCode = new ByteData(workChainCode);
-      if (VersionMainnet == version.ToHexString())
-      {
-        networkType = CfdNetworkType.Mainnet;
-      }
-      else
-      {
-        networkType = CfdNetworkType.Testnet;
-        if (VersionTestnet != version.ToHexString())
-        {
-          CfdCommon.ThrowError(CfdErrorCode.IllegalArgumentError,
-          "Failed to version format.");
-        }
-      }
+      networkType = (CfdNetworkType)netType;
     }
 
     private static Privkey GetPrivkeyFromExtKey(ErrorHandle handle, string extPrivkey,

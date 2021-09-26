@@ -86,5 +86,42 @@ namespace Cfd.xTests
       Assert.Equal("76a914751e76e8199196d454941c45d1b3a323f1433bd688ac", caddr.GetAddress().GetLockingScript().ToHexString());
       Assert.Equal(ctKey, caddr.GetConfidentialKey().ToHexString());
     }
+
+    [Fact]
+    public void PeginAddressTest()
+    {
+      Script fedpegScript = new Script("522102baae8e066e4f2a1da4b731017697bb8fcacc60e4569f3ec27bc31cf3fb13246221026bccd050e8ecf7a702bc9fb63205cfdf278a22ba8b1f1d3ca3d8e5b38465a9702103430d354b89d1fbe43eb54ea138a4aee1076e4c54f4c805f62f9cee965351a1d053ae");
+      Pubkey pubkey = new Pubkey("027592aab5d43618dda13fba71e3993cd7517a712d3da49664c06ee1bd3d1f70af");
+      var peginAddrData = Address.GetPeginAddress(fedpegScript, pubkey, CfdHashType.P2shP2wsh, CfdNetworkType.Mainnet);
+      Assert.Equal("39cTKhjjh9YWDQT5hhSRkQwjvmpc4d1C7k", peginAddrData.Address.ToAddressString());
+      Assert.Equal("0014925d4028880bd0c9d68fbc7fc7dfee976698629c", peginAddrData.ClaimScript.ToHexString());
+      Assert.Equal("522103e3b215b75e015a5948efb043079d325a90e68b19112211ae3c1ff62366d441732102779396d5c2348c33bcbdcfd87bf59646ccbebc94bacf4750a9c5245dd297213021036416a1c936d3dc84747d5e544c200578cccfb6ec62dda48df79a0a6a8c7e63fa53ae",
+        peginAddrData.TweakedFedpegScript.ToHexString());
+
+      Script redeemScript = new Script("522103a7bd50beb3aff9238336285c0a790169eca90b7ad807abc4b64897ca1f6dedb621039cbaf938d050dd2582e4c2f56d1f75cfc9d165f2f3270532363d9871fb7be14252ae");
+      var peginAddrData2 = Address.GetPeginAddress(fedpegScript, redeemScript, CfdHashType.P2shP2wsh, CfdNetworkType.Mainnet);
+      Assert.Equal("3DZHAW3TmdwfGuJTGKatD7XpCNJvnX6GiE", peginAddrData2.Address.ToAddressString());
+      Assert.Equal("0020c45384fa00fe363ed60968fff46541c89bc1766686c279ffdf0a335b80cad728", peginAddrData2.ClaimScript.ToHexString());
+      Assert.Equal("52210272d86fcc18fc129a3fe72ed268356735a176f01ba1bb6b5a6e5181735570fca021021909156e0a206a5a8f47bee2418eebd6db0ecae9b4810d761117fa7891f86f7021026e90023fe74aff9f5a26c76ca88eb19fd4477ae43cebb9d2e81e197961b263b753ae",
+        peginAddrData2.TweakedFedpegScript.ToHexString());
+    }
+
+    [Fact]
+    public void PegoutAddressTest()
+    {
+      Descriptor desc1 = new Descriptor("wpkh(tpubDASgDECJvTMzUgS7GkSCxQAAWPveW7BeTPSvbi1wpUe1Mq1v743FRw1i7vTavjAb3D3Y8geCTYw2ezgiVS7SFXDXS6NpZmvr6XPjPvg632y)", CfdNetworkType.Regtest);
+      var pegoutData1 = Address.GetPegoutAddress(
+        desc1, 0, CfdAddressType.P2wpkh, CfdNetworkType.Regtest);
+      Assert.Equal("bcrt1qa77w63m523kq82z4fn3d5f7qxqxfm4pmdthkdf", pegoutData1.Address.ToAddressString());
+      Assert.Equal("wpkh(tpubDASgDECJvTMzUgS7GkSCxQAAWPveW7BeTPSvbi1wpUe1Mq1v743FRw1i7vTavjAb3D3Y8geCTYw2ezgiVS7SFXDXS6NpZmvr6XPjPvg632y)",
+        pegoutData1.BaseDescriptor.ToString());
+
+      ExtPubkey pubkey2 = new ExtPubkey("xpub67v4wfueMiZVkc7UbutFgPiptQw4kkNs89ooNMrwht8xEjnZZim1rNZHhEdrLejB99fiBdnWNNAB8hmUK7tCo5Ua6UtHzwVLj2Bzpch7vB2");
+      var pegoutData2 = Address.GetPegoutAddress(
+        pubkey2, 0, CfdAddressType.P2pkh, CfdNetworkType.Mainnet);
+      Assert.Equal("1MMxsm4QG8NRHqaFZaUTFQQ9c9dEHUPWnD", pegoutData2.Address.ToAddressString());
+      Assert.Equal("pkh(xpub67v4wfueMiZVkc7UbutFgPiptQw4kkNs89ooNMrwht8xEjnZZim1rNZHhEdrLejB99fiBdnWNNAB8hmUK7tCo5Ua6UtHzwVLj2Bzpch7vB2)",
+        pegoutData2.BaseDescriptor.ToString());
+    }
   }
 }
