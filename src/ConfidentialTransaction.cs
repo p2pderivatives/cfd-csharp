@@ -1011,7 +1011,7 @@ namespace Cfd
         throw new ArgumentNullException(nameof(outpoint));
       }
       AddPeginTxIn(outpoint.GetTxid(), outpoint.GetVout(), asset,
-        mainchainGenesisBlockHash,  claimScript,  mainchainTx, txoutProof);
+        mainchainGenesisBlockHash, claimScript, mainchainTx, txoutProof);
     }
 
     /// <summary>
@@ -1772,6 +1772,47 @@ namespace Cfd
     }
 
     /// <summary>
+    /// Update txin sequence.
+    /// </summary>
+    /// <param name="outpoint">outpoint.</param>
+    /// <param name="sequence">sequence number.</param>
+    public void UpdateTxInSequence(OutPoint outpoint, uint sequence)
+    {
+      if (outpoint is null)
+      {
+        throw new ArgumentNullException(nameof(outpoint));
+      }
+      UpdateTxInSequence(outpoint.GetTxid(), outpoint.GetVout(), sequence);
+    }
+
+    /// <summary>
+    /// Update txin sequence.
+    /// </summary>
+    /// <param name="txid">txid.</param>
+    /// <param name="vout">vout.</param>
+    /// <param name="sequence">sequence number.</param>
+    public void UpdateTxInSequence(Txid txid, uint vout, uint sequence)
+    {
+      if (txid is null)
+      {
+        throw new ArgumentNullException(nameof(txid));
+      }
+
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdUpdateTxInSequence(
+            handle.GetHandle(), txHandle.GetHandle(), txid.ToHexString(), vout,
+            sequence);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        tx = GetTransactionByHandle(handle, txHandle);
+      }
+    }
+
+    /// <summary>
     /// Update witness stack.
     /// </summary>
     /// <param name="outpoint">outpoint.</param>
@@ -2176,6 +2217,39 @@ namespace Cfd
           handle.ThrowError(ret);
         }
         tx = CCommon.ConvertToString(txHex);
+      }
+    }
+
+    /// <summary>
+    /// Get pegout address.
+    /// </summary>
+    /// <param name="index">txout index.</param>
+    /// <param name="network">mainchain network.</param>
+    /// <returns>Pegout address. If txout is not unblind, returns empty address.</returns>
+    public Address GetPegoutAddress(uint index, CfdNetworkType network)
+    {
+      using (var handle = new ErrorHandle())
+      using (var txHandle = new TxHandle(handle, defaultNetType, tx))
+      {
+        var ret = NativeMethods.CfdHasPegoutConfidentialTxOut(
+          handle.GetHandle(), txHandle.GetHandle(), index);
+        if (ret == CfdErrorCode.NotFound)
+        {
+          return new Address();
+        }
+        else if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+
+        ret = NativeMethods.CfdGetPegoutMainchainAddress(
+          handle.GetHandle(), txHandle.GetHandle(), index, (int)network, out IntPtr addr);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        string address = CCommon.ConvertToString(addr);
+        return new Address(address);
       }
     }
 
@@ -2944,12 +3018,13 @@ namespace Cfd
         {
           foreach (ElementsUtxoData txin in txinList)
           {
-            ret = NativeMethods.CfdAddTxInTemplateForEstimateFee(
+            ret = NativeMethods.CfdAddTxInputForEstimateFee(
               handle.GetHandle(), feeHandle, txin.GetOutPoint().GetTxid().ToHexString(),
               txin.GetOutPoint().GetVout(), txin.GetDescriptor().ToString(),
               txin.GetAsset(), txin.IsIssuance(), txin.IsBlindIssuance(),
-              txin.IsPegin(), txin.GetPeginBtcTxSize(),
-              (txin.GetFedpegScript() is null) ? "" : txin.GetFedpegScript().ToHexString(),
+              txin.IsPegin(),
+              (txin.GetClaimScript() is null) ? "" : txin.GetClaimScript().ToHexString(),
+              txin.GetPeginBtcTxSize(), txin.GetPeginTxoutproofSize(),
               txin.GetScriptSigTemplate().ToHexString());
             if (ret != CfdErrorCode.Success)
             {
@@ -3438,14 +3513,15 @@ namespace Cfd
           {
             foreach (var txin in txinList)
             {
-              ret = NativeMethods.CfdAddTxInTemplateForFundRawTx(
+              ret = NativeMethods.CfdAddTxInputForFundRawTx(
                 handle.GetHandle(), fundHandle,
                 txin.GetOutPoint().GetTxid().ToHexString(),
                 txin.GetOutPoint().GetVout(),
                 txin.GetAmount(), txin.GetDescriptor().ToString(),
                 txin.GetAsset(), txin.IsIssuance(), txin.IsBlindIssuance(),
-                txin.IsPegin(), txin.GetPeginBtcTxSize(),
-                (txin.GetFedpegScript() is null) ? "" : txin.GetFedpegScript().ToHexString(),
+                txin.IsPegin(),
+                (txin.GetClaimScript() is null) ? "" : txin.GetClaimScript().ToHexString(),
+                txin.GetPeginBtcTxSize(), txin.GetPeginTxoutproofSize(),
                 txin.GetScriptSigTemplate().ToHexString());
               if (ret != CfdErrorCode.Success)
               {
@@ -3837,6 +3913,63 @@ namespace Cfd
         }
         var commitment = CCommon.ConvertToString(valueCommitment);
         return new ConfidentialValue(commitment);
+      }
+    }
+
+    /// <summary>
+    /// Unblind data.
+    /// </summary>
+    /// <param name="blindingKey">blinding key</param>
+    /// <param name="lockingScript">locking script</param>
+    /// <param name="assetCommitment">asset commitment</param>
+    /// <param name="valueCommitment">value commitment</param>
+    /// <param name="confidentialNonce">nonce</param>
+    /// <param name="rangeproof">rangeproof</param>
+    /// <returns>Unblind data</returns>
+    public static AssetValueData UnblindData(Privkey blindingKey, Script lockingScript,
+      ConfidentialAsset assetCommitment, ConfidentialValue valueCommitment, ByteData confidentialNonce,
+      ByteData rangeproof)
+    {
+      if (blindingKey is null)
+      {
+        throw new ArgumentNullException(nameof(blindingKey));
+      }
+      if (lockingScript is null)
+      {
+        throw new ArgumentNullException(nameof(lockingScript));
+      }
+      if (assetCommitment is null)
+      {
+        throw new ArgumentNullException(nameof(assetCommitment));
+      }
+      if (valueCommitment is null)
+      {
+        throw new ArgumentNullException(nameof(valueCommitment));
+      }
+      if (confidentialNonce is null)
+      {
+        throw new ArgumentNullException(nameof(confidentialNonce));
+      }
+      if (rangeproof is null)
+      {
+        throw new ArgumentNullException(nameof(rangeproof));
+      }
+      using (var handle = new ErrorHandle())
+      {
+        var ret = NativeMethods.CfdUnblindTxOutData(
+            handle.GetHandle(),
+            blindingKey.ToHexString(), lockingScript.ToHexString(),
+            assetCommitment.ToHexString(), valueCommitment.ToHexString(),
+            confidentialNonce.ToHexString(), rangeproof.ToHexString(),
+            out IntPtr asset, out long amount, out IntPtr abf, out IntPtr vbf);
+        if (ret != CfdErrorCode.Success)
+        {
+          handle.ThrowError(ret);
+        }
+        var assetStr = CCommon.ConvertToString(asset);
+        var assetBlinder = CCommon.ConvertToString(abf);
+        var blinder = CCommon.ConvertToString(vbf);
+        return new AssetValueData(assetStr, amount, new BlindFactor(assetBlinder), new BlindFactor(blinder));
       }
     }
 

@@ -162,6 +162,17 @@ namespace Cfd.xTests
     }
 
     [Fact]
+    public void UpdateTxInSequenceTest()
+    {
+      var tx = new Transaction("02000000000101ffa8db90b81db256874ff7a98fb7202cdc0b91b5b02d7c3427c4190adc66981f0000000000ffffffff0118f50295000000002251201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb02473044022018b10265080f8c491c43595000461a19212239fea9ee4c6fd26498f358b1760d0220223c1389ac26a2ed5f77ad73240af2fa6eb30ef5d19520026c2f7b7e817592530121023179b32721d07deb06cade59f56dedefdc932e89fde56e998f7a0e93a3e30c4400000000");
+      tx.UpdateTxInSequence(
+        new OutPoint("1f9866dc0a19c427347c2db0b5910bdc2c20b78fa9f74f8756b21db890dba8ff", 0),
+        4294967294);
+      Assert.Equal("02000000000101ffa8db90b81db256874ff7a98fb7202cdc0b91b5b02d7c3427c4190adc66981f0000000000feffffff0118f50295000000002251201777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb02473044022018b10265080f8c491c43595000461a19212239fea9ee4c6fd26498f358b1760d0220223c1389ac26a2ed5f77ad73240af2fa6eb30ef5d19520026c2f7b7e817592530121023179b32721d07deb06cade59f56dedefdc932e89fde56e998f7a0e93a3e30c4400000000",
+        tx.ToHexString());
+    }
+
+    [Fact]
     public void UpdateWitnessStackTest()
     {
       var tx = new Transaction("020000000001014cdeada737db97af334f0fa4e87432d6068759eea65a3067d1f14a979e5a9dea0000000000ffffffff010cdff5050000000017a91426b9ba9cf5d822b70cf490ad0394566f9db20c63870247304402200b3ca71e82551a333fe5c8ce9a8f8454eb8f08aa194180e5a87c79ccf2e46212022065c1f2a363ebcb155a80e234258394140d08f6ab807581953bb21a58f2d229a6012102fd54c734e48c544c3c3ad1aab0607f896eb95e23e7058b174a580826a7940ad800000000");
@@ -454,7 +465,7 @@ namespace Cfd.xTests
       var outpoint = new OutPoint("2fea883042440d030ca5929814ead927075a8f52fef5f4720fa3cec2e475d916", 0);
       var utxos = new UtxoData[]{
         new UtxoData(outpoint, 2499999000, new Descriptor(addr)),
-	    };
+        };
       var tx = new Transaction(txHex);
       var feeData = tx.EstimateFee(utxos, 2.0);
       Assert.Equal(202, feeData.GetTotalFee());
@@ -508,7 +519,7 @@ namespace Cfd.xTests
       var spk = SchnorrPubkey.GetPubkeyFromPrivkey(sk, out bool _);
       Assert.Equal("1777701648fa4dd93c74edd9d58cfcc7bdc2fa30a2f6fa908b6fd70c92833cfb", spk.ToHexString());
 
-      var scriptCheckSig = Script.CreateFromAsm(new string[]{ spk.ToHexString(), "OP_CHECKSIG"});
+      var scriptCheckSig = Script.CreateFromAsm(new string[] { spk.ToHexString(), "OP_CHECKSIG" });
 
       var tree = new TaprootScriptTree(scriptCheckSig);
       tree.AddBranches(new string[] {

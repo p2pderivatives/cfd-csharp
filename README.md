@@ -154,7 +154,7 @@ echo ".NET 5.x"
 
 ### formatter
 
-- dotnet format
+- dotnet format (5.1 or higher)
 
 ### support compilers
 

@@ -14,7 +14,8 @@ namespace Cfd
     private readonly bool isBlindIssuance;
     private readonly bool isPegin;
     private readonly uint peginBtcTxSize;
-    private readonly Script fedpegScript;
+    private readonly uint peginTxoutproofSize;
+    private readonly Script claimScript;
     private readonly BlindFactor assetBlindFactor;
     private readonly BlindFactor amountBlindFactor;
 
@@ -206,26 +207,34 @@ namespace Cfd
       this.isBlindIssuance = isBlindIssuance;
     }
 
-    public ElementsUtxoData(OutPoint outpoint, string asset,
-        long amount, ConfidentialAsset assetCommitment, ConfidentialValue valueCommitment,
-        Descriptor descriptor, uint peginBtcTxSize, Script fedpegScript)
-          : this(outpoint, asset, amount, assetCommitment, valueCommitment, descriptor, peginBtcTxSize, fedpegScript, null, null)
+    public ElementsUtxoData(OutPoint outpoint, string asset, long amount,
+        Descriptor descriptor, uint peginBtcTxSize, uint peginTxoutproofSize, Script claimScript)
+          : this(outpoint, asset, amount, new ConfidentialAsset(asset), new ConfidentialValue(amount), descriptor, peginBtcTxSize, peginTxoutproofSize, claimScript, null, null)
     {
       // do nothing
     }
 
     public ElementsUtxoData(OutPoint outpoint, string asset,
         long amount, ConfidentialAsset assetCommitment, ConfidentialValue valueCommitment,
-        Descriptor descriptor, uint peginBtcTxSize, Script fedpegScript, BlindFactor assetBlinder, BlindFactor amountBlinder)
+        Descriptor descriptor, uint peginBtcTxSize, uint peginTxoutproofSize, Script claimScript)
+          : this(outpoint, asset, amount, assetCommitment, valueCommitment, descriptor, peginBtcTxSize, peginTxoutproofSize, claimScript, null, null)
+    {
+      // do nothing
+    }
+
+    public ElementsUtxoData(OutPoint outpoint, string asset,
+        long amount, ConfidentialAsset assetCommitment, ConfidentialValue valueCommitment,
+        Descriptor descriptor, uint peginBtcTxSize, uint peginTxoutproofSize, Script claimScript, BlindFactor assetBlinder, BlindFactor amountBlinder)
           : this(outpoint, asset, amount, assetCommitment, valueCommitment, descriptor, assetBlinder, amountBlinder)
     {
-      if (fedpegScript is null)
+      if (claimScript is null)
       {
-        throw new ArgumentNullException(nameof(fedpegScript));
+        throw new ArgumentNullException(nameof(claimScript));
       }
       isPegin = true;
       this.peginBtcTxSize = peginBtcTxSize;
-      this.fedpegScript = fedpegScript;
+      this.peginTxoutproofSize = peginTxoutproofSize;
+      this.claimScript = claimScript;
     }
 
     public string GetAsset()
@@ -264,9 +273,14 @@ namespace Cfd
       return peginBtcTxSize;
     }
 
-    public Script GetFedpegScript()
+    public uint GetPeginTxoutproofSize()
     {
-      return fedpegScript;
+      return peginTxoutproofSize;
+    }
+
+    public Script GetClaimScript()
+    {
+      return claimScript;
     }
 
     public BlindFactor GetAssetBlindFactor()
